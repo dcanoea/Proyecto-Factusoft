@@ -9,6 +9,6 @@ public class Config {
     public static final String BASE_MANAGEMENT_URL = "https://dashboard.fiskaly.com/api/v0"; // API Management
 
     // Credenciales
-    public static final String API_KEY = "test_3vmx986rgw9ijbql1ouzxmtzr_acf";
-    public static final String API_SECRET = "Hpa1rnihtlEbQB0XSGuXKtWWrHc8hd33OcZZtL09Qip";
+    public static final String API_KEY = "test_dz8evcra8g5lccbn2xt6a2kj8_acfmanaged";
+    public static final String API_SECRET = "NhWMs0VpVe228dqr4CJUY8LKjyDofTqj08vCoxRzaWT";
 }
