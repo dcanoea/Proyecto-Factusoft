@@ -1,14 +1,12 @@
-package com.mycompany.pruebaFiskaly.Authentication;
+package com.mycompany.pruebaFiskaly;
 
-
-import com.mycompany.pruebaFiskaly.Config;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class Retrieve_token {
+public class Authentication {
 
-    public static String get_token() throws IOException {
+    public static String retrieve_token() throws IOException {
         URL url = new URL(Config.BASE_URL + "/auth");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");

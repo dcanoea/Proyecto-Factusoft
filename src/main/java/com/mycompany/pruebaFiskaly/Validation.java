@@ -1,11 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.mycompany.pruebaFiskaly.Validation;
+package com.mycompany.pruebaFiskaly;
 
-import com.mycompany.pruebaFiskaly.Authentication.Retrieve_token;
-import com.mycompany.pruebaFiskaly.Config;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,11 +11,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author user
- */
-public class Validate_NIF {
+public class Validation {
     
     // AEAT no tiene entorno de pruebas, verificar en modo LIVE para confirmar las respuestas de la API
     public static String validate_AEAT(String nif) {
@@ -31,7 +21,7 @@ public class Validate_NIF {
             URL url = new URL(Config.BASE_URL + "/validation/tin");
 
             // Obtiene el token desde Authentication.Recuperar_token
-            String token = Retrieve_token.get_token();
+            String token = Authentication.retrieve_token();
 
             // Abre una conexión HTTP con la URL especificada
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -88,9 +78,9 @@ public class Validate_NIF {
                 }
             }
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Validate_NIF.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Validation.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(Validate_NIF.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Validation.class.getName()).log(Level.SEVERE, null, ex);
         }
         return validation;
     }
@@ -102,7 +92,7 @@ public class Validate_NIF {
             URL url = new URL(Config.BASE_URL + "/validation/tin");
 
             // Obtiene el token desde Authentication.Recuperar_token
-            String token = Retrieve_token.get_token();
+            String token = Authentication.retrieve_token();
 
             // Abre una conexión HTTP con la URL especificada
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
