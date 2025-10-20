@@ -49,6 +49,12 @@ public class Pruebas {
                 "Actualización de datos fiscales"
         );*/
 
+        //LISTAR ORGANIZACIONES
+        //Organizations.list_Organizations();
+        
+        //RECUPERAR ORGANIZACION
+        //Organizations.retrieve_Organization("ec1e055b-f2dd-43b7-b550-4624575b0674");
+        
         // CREAR FIRMANTE
         //Signers.create_Signer();
         
@@ -73,14 +79,12 @@ public class Pruebas {
         //Invoices.create_Simplified_Invoice();
         
         // CREAR FACTURA COMPLETA
-        Invoices.create_Complete_Invoice();
+        //Invoices.create_Complete_Invoice();
         
         //A PARTIR DE AQUI NO ESTÁN EN FUNCIONAMIENTO
         
-        //LISTAR ORGANIZACIONES
-        //Organizations.list_Organizations();
+
         
-        //RECUPERAR ORGANIZACION
-        //Organizations.retrieve_Organization("ec1e055b-f2dd-43b7-b550-4624575b0674");
+
     }
 }
