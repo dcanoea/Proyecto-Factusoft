@@ -6,7 +6,7 @@ public class Pruebas {
 
     public static void main(String[] args) throws IOException {
         // RECUPERAR TOKEN
-        //System.out.println(Authentication.retrieve_token());
+        // System.out.println(Authentication.retrieve_token());
 
         //VALIDACIÓN NIF AEAT
         //System.out.println(Validation.validate_AEAT("T00000001"));
@@ -49,14 +49,33 @@ public class Pruebas {
                 "Actualización de datos fiscales"
         );*/
 
-                
+        // CREAR FIRMANTE
+        //Signers.create_Signer();
+        
+        // LISTAR FIRMANTES
+        // Signers.list_Signers();
+        
+        // RECUPERAR ID DEL PRIMER FIRMANTE
+        //String signerId = Signers.get_First_Signer_Id();
+        //System.out.println(signerId);
+                      
+        // CREAR CLIENTE
+        //Clients.create_Client();
+        
+        // LISTAR CLIENTES
+        //Clients.list_Clients();
+        
+        // RECUPERAR ID EL PRIMER CLIENTE
+        //String clientId = Clients.get_First_Client_Id();
+        //System.out.println(clientId);
+        
+        // CREAR FACTURA SIMPLIFICADA
+        //Invoices.create_Simplified_Invoice();
+        
+        // CREAR FACTURA COMPLETA
+        Invoices.create_Complete_Invoice();
+        
         //A PARTIR DE AQUI NO ESTÁN EN FUNCIONAMIENTO
-        
-        //CREAR CLIENTE
-        Clients.create_client();
-        
-        //LISTAR CLIENTES
-        //Clients.list_clients();
         
         //LISTAR ORGANIZACIONES
         //Organizations.list_Organizations();

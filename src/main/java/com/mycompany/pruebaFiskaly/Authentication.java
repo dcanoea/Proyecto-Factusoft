@@ -1,56 +1,50 @@
 package com.mycompany.pruebaFiskaly;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 public class Authentication {
 
     public static String retrieve_token() throws IOException {
-        URL url = new URL(Config.BASE_URL + "/auth");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            String url = Config.BASE_URL + "/auth";
 
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
+            HttpPost post = new HttpPost(url);
+            post.setHeader("Content-Type", "application/json");
 
-        String jsonInputString = String.format(
-                "{\"content\": {\"api_key\": \"%s\", \"api_secret\": \"%s\"}}",
-                Config.API_KEY, Config.API_SECRET
-        );
+            JSONObject content = new JSONObject();
+            content.put("api_key", Config.API_KEY);
+            content.put("api_secret", Config.API_SECRET);
 
-        OutputStream os = connection.getOutputStream();
-        os.write(jsonInputString.getBytes("utf-8"));
-        os.flush();
-        os.close();
+            JSONObject body = new JSONObject();
+            body.put("content", content);
 
-        InputStream responseStream;
-        try {
-            responseStream = connection.getInputStream();
-        } catch (IOException e) {
-            responseStream = connection.getErrorStream();
-        }
+            StringEntity entity = new StringEntity(body.toString(), StandardCharsets.UTF_8);
+            post.setEntity(entity);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(responseStream, "utf-8"));
-        StringBuilder response = new StringBuilder();
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-        in.close();
+            HttpResponse response = client.execute(post);
+            int statusCode = response.getStatusLine().getStatusCode();
+            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
-        // Extraer el bearer token del JSON
-        String token = null;
-        String marker = "\"bearer\":\"";
-        int start = response.indexOf(marker);
-        if (start != -1) {
-            start += marker.length();
-            int end = response.indexOf("\"", start);
-            if (end != -1) {
-                token = response.substring(start, end);
+            // Extraer el bearer token del JSON
+            String token = null;
+            String marker = "\"bearer\":\"";
+            int start = responseBody.indexOf(marker);
+            if (start != -1) {
+                start += marker.length();
+                int end = responseBody.indexOf("\"", start);
+                if (end != -1) {
+                    token = responseBody.substring(start, end);
+                }
             }
+            return token;
         }
-
-        return token;
     }
 }
