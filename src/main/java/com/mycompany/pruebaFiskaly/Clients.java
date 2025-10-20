@@ -1,0 +1,96 @@
+package com.mycompany.pruebaFiskaly;
+
+import static com.mycompany.pruebaFiskaly.Signers.list_Signers;
+import java.util.UUID;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+//CLIENTE IDENTIFICA DE FORMA ÚNICA UN DISPOSITIVO TPV, APLICACIÓN U OTRO DISPOSITIVO UTILIZADO PARA EMITIR FACTURAS
+public class Clients {
+
+    public static void create_Client() {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            UUID uuid = UUID.randomUUID();
+            String url = Config.BASE_URL + "/clients/" + uuid.toString();
+            String token = Authentication.retrieve_token();
+
+            HttpPut put = new HttpPut(url);
+            put.setHeader("Content-Type", "application/json");
+            put.setHeader("Authorization", "Bearer " + token);
+
+            // Enviar solicitud
+            StringEntity entity = new StringEntity("{}", StandardCharsets.UTF_8);
+            put.setEntity(entity);
+
+            HttpResponse response = client.execute(put);
+            int statusCode = response.getStatusLine().getStatusCode();
+            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+            System.out.println("Código de respuesta: " + statusCode);
+            System.out.println("Respuesta del servidor: " + responseBody);
+
+        } catch (Exception e) {
+            System.out.println("Error al crear el signer");
+            e.printStackTrace();
+        }
+    }
+
+    public static String list_Clients() {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            String url = Config.BASE_URL + "/clients";
+            String token = Authentication.retrieve_token();
+
+            HttpGet get = new HttpGet(url);
+            get.setHeader("Content-Type", "application/json");
+            get.setHeader("Authorization", "Bearer " + token);
+
+            HttpResponse response = client.execute(get);
+            int statusCode = response.getStatusLine().getStatusCode();
+            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+            System.out.println("Código de respuesta: " + statusCode);
+            System.out.println("Respuesta del servidor:");
+            JSONObject json = new JSONObject(responseBody);
+            System.out.println(json.toString(2)); // Indentación de 2 espacios
+            
+            return responseBody;
+
+        } catch (Exception e) {
+            System.out.println("Error al recuperar los clients");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+        public static String get_First_Client_Id() {
+        String responseBody = list_Clients();
+        if (responseBody == null) {
+            System.out.println("No se pudo obtener la respuesta de los clients.");
+            return null;
+        }
+
+        try {
+            JSONArray results = new JSONObject(responseBody).getJSONArray("results");
+            String signerId = results.getJSONObject(0).getJSONObject("content").getString("id");
+            return signerId;
+
+        } catch (Exception e) {
+            System.out.println("Error al extraer el ID del primer client");
+            e.printStackTrace();
+            return null;
+        }
+    }
+}
