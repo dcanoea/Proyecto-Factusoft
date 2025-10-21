@@ -1,12 +1,6 @@
 package com.mycompany.pruebaFiskaly;
 
-import static com.mycompany.pruebaFiskaly.Signers.list_Signers;
 import java.util.UUID;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;

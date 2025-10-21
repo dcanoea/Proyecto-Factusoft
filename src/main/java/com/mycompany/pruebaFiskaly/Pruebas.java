@@ -1,5 +1,9 @@
 package com.mycompany.pruebaFiskaly;
 
+import com.mycompany.pruebaFiskaly.Invoices.Complete;
+import com.mycompany.pruebaFiskaly.Invoices.Correcting;
+import com.mycompany.pruebaFiskaly.Invoices.Invoices_Management;
+import com.mycompany.pruebaFiskaly.Invoices.Simplified;
 import java.io.IOException;
 
 public class Pruebas {
@@ -76,15 +80,29 @@ public class Pruebas {
         //System.out.println(clientId);
         
         // CREAR FACTURA SIMPLIFICADA
-        //Invoices.create_Simplified_Invoice();
+        //Simplified.create_Simplified_Invoice();
         
         // CREAR FACTURA COMPLETA
-        //Invoices.create_Complete_Invoice();
+        //Complete.create_Complete_Invoice();
+        
+        // LISTAR FACTURAS 
+        //String client_id = Clients.get_First_Client_Id();
+        //Invoices_Management.list_Invoices(client_id);
+        
+        // BUSCAR FACTURA POR Nº
+        //String invoice_id = Invoices_Management.get_Invoice_Id("C-2025-004"); // id d7ee6242-282c-4e87-94b8-dcc4be9d6466}
+        //System.out.println(invoice_id);
         
         //A PARTIR DE AQUI NO ESTÁN EN FUNCIONAMIENTO
         
-
+        // CREAR FACTURAS RECTIFICATIVAS
+        String numeroFactura = "F-2025-008R";
+        String idFactura = Invoices_Management.get_Invoice_Id(numeroFactura);
+        //Correcting.createCorrectingInvoice_Substitution_Complete( numeroFactura,idFactura);
+        //Correcting.createCorrectingInvoice_Substitution_Simplified(numeroFactura, idFactura);
+        //Correcting.create_Correcting_Difference_Simplified(numeroFactura, idFactura);
         
-
+        Correcting.createCorrectingInvoice_Differences_Complete(numeroFactura, idFactura);
+        
     }
 }

@@ -1,0 +1,45 @@
+//JSON EJEMPLO
+//FACTURA RECTIFICATIVA DE SUSTITUCIÓN PARA FACTURA COMPLETA
+{
+  "type": "CORRECTING",
+  "method": "SUBSTITUTION",
+  "code": "CORRECTION_1",
+  "id": "9a2fcb86-1e2f-4c77-bf93-9b2a1c5a7e01",
+  "invoice": {
+    "type": "COMPLETE",
+    "data": {
+      "type": "SIMPLIFIED",
+      "number": "C-2025-004R",
+      "series": "RC-2025",
+      "text": "Rectificación por error en cantidad",
+      "issued_at": "2025-10-21T10:45:00+02:00",
+      "full_amount": "242.00",
+      "items": [
+        {
+          "text": "Curso ADR",
+          "quantity": "2.00",
+          "unit_amount": "100.00",
+          "full_amount": "242.00",
+          "system": {
+            "type": "REGULAR",
+            "category": {
+              "type": "VAT",
+              "rate": "21.0"
+            }
+          }
+        }
+      ]
+    },
+    "recipients": [
+      {
+        "id": {
+          "legal_name": "ARAGON FORMACION ACF S.L.",
+          "tax_number": "B22260863",
+          "registered": true
+        },
+        "address_line": "Calle Mayor 123, Huesca",
+        "postal_code": "22001"
+      }
+    ]
+  }
+}
