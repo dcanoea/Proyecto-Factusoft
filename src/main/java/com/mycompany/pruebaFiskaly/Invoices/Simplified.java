@@ -28,13 +28,13 @@ import java.util.HashMap;
 
 public class Simplified {
 
-    public static void create_Simplified_Invoice() {
+    public static void createSimplifiedInvoice() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.get_First_Client_Id();
+            String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
             String invoice_number = "S-2025-017";
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");

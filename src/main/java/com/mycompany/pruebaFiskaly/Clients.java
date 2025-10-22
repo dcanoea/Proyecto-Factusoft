@@ -15,11 +15,11 @@ import org.json.JSONObject;
 //CLIENTE IDENTIFICA DE FORMA ÚNICA UN DISPOSITIVO TPV, APLICACIÓN U OTRO DISPOSITIVO UTILIZADO PARA EMITIR FACTURAS
 public class Clients {
 
-    public static void create_Client() {
+    public static void createClient() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             UUID uuid = UUID.randomUUID();
             String url = Config.BASE_URL + "/clients/" + uuid.toString();
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
@@ -42,10 +42,10 @@ public class Clients {
         }
     }
 
-    public static String list_Clients() {
+    public static String listClients() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/clients";
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Content-Type", "application/json");
@@ -69,8 +69,8 @@ public class Clients {
         }
     }
 
-    public static String get_First_Client_Id() {
-        String responseBody = list_Clients();
+    public static String getFirstClientID() {
+        String responseBody = listClients();
         if (responseBody == null) {
             System.out.println("No se pudo obtener la respuesta de los clients.");
             return null;

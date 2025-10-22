@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.itextpdf.text.BaseColor;
@@ -39,19 +35,15 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/**
- *
- * @author user
- */
 public class Summary {
 
-    public static void create_Summary_Invoice(List<String> numerosFactura) {
+    public static void createSummaryInvoice(List<String> numerosFactura) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.get_First_Client_Id();
+            String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
             String invoice_number = "R-" + invoice_id.toString().substring(0, 8).toUpperCase();
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
@@ -64,8 +56,8 @@ public class Summary {
             double tipoIVA = 21.0;
 
             for (String numero : numerosFactura) {
-                String uuid = Invoices_Management.get_Invoice_Id(numero);
-                String importeStr = Invoices_Management.getFullAmount(uuid);
+                String uuid = InvoicesManagement.getInvoiceID(numero);
+                String importeStr = InvoicesManagement.getFullAmount(uuid);
 
                 if (importeStr == null || importeStr.trim().isEmpty()) {
                     System.err.println("⚠️ Importe vacío para factura " + numero);

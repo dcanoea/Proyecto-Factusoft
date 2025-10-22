@@ -22,11 +22,11 @@ import org.json.JSONObject;
  */
 public class Signers {
 
-    public static void create_Signer() {
+    public static void createSigner() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             UUID uuid = UUID.randomUUID();
             String url = Config.BASE_URL + "/signers/" + uuid.toString();
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
@@ -49,10 +49,10 @@ public class Signers {
         }
     }
 
-    public static String list_Signers() {
+    public static String listSigners() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/signers";
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Content-Type", "application/json");
@@ -76,8 +76,8 @@ public class Signers {
         }
     }
 
-    public static String get_First_Signer_Id() {
-        String responseBody = list_Signers();
+    public static String getFirstSignerID() {
+        String responseBody = listSigners();
         if (responseBody == null) {
             System.out.println("No se pudo obtener la respuesta de los signers.");
             return null;
