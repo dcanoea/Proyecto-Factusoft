@@ -1,7 +1,9 @@
 package com.mycompany.pruebaFiskaly;
 
-import com.mycompany.pruebaFiskaly.Invoices.*;
+import com.mycompany.pruebaFiskaly.Invoices.Invoices_Management;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Pruebas {
 
@@ -77,28 +79,56 @@ public class Pruebas {
         //System.out.println(clientId);
         
         // CREAR FACTURA SIMPLIFICADA
-        Simplified.create_Simplified_Invoice();
+        //Simplified.create_Simplified_Invoice();
         
         // CREAR FACTURA COMPLETA
         //Complete.create_Complete_Invoice();
         
         // LISTAR FACTURAS 
-        //String client_id = Clients.get_First_Client_Id();
-        //Invoices_Management.list_Invoices(client_id);
+        //Invoices_Management.list_Invoices();
         
         // BUSCAR FACTURA POR Nº
-        //String invoice_id = Invoices_Management.get_Invoice_Id("C-2025-004"); // id d7ee6242-282c-4e87-94b8-dcc4be9d6466}
+        //String invoice_id = Invoices_Management.get_Invoice_Id("C-2025-004"); // id d7ee6242-282c-4e87-94b8-dcc4be9d6466
         //System.out.println(invoice_id);
         
-        //A PARTIR DE AQUI NO ESTÁN EN FUNCIONAMIENTO
+        // OBTENER DETALLES DE UNA FACTURA
+        //String invoice_id = Invoices_Management.get_Invoice_Id("C-2025-004"); // id d7ee6242-282c-4e87-94b8-dcc4be9d6466
+        //Invoices_Management.getInvoiceDetails(invoice_id);
         
         // CREAR FACTURAS RECTIFICATIVAS
         //String numeroFactura = "F-2025-008R";
         //String idFactura = Invoices_Management.get_Invoice_Id(numeroFactura);
         //Correcting.createCorrectingInvoice_Substitution_Complete( numeroFactura,idFactura);
         //Correcting.createCorrectingInvoice_Substitution_Simplified(numeroFactura, idFactura);
-        //Correcting.create_Correcting_Difference_Simplified(numeroFactura, idFactura);
-        //Correcting.createCorrectingInvoice_Differences_Complete(numeroFactura, idFactura);
+        //Correcting.createCorrecting_Differences_Simplified(numeroFactura, idFactura);
+        //Correcting.createCorrectingInvoice_Differences_Complete(numeroFactura, idFactura);       
         
+        // RECUPERAMOS ID_FACTURA Y TOTAL FACTURA 
+        //String idFactura = Invoices_Management.get_Invoice_Id("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
+        //System.out.println("idFactura -> " + idFactura + " --- Total -> " + Invoices_Management.getFullAmount(idFactura));
+        
+        //A PARTIR DE AQUI NO ESTÁN EN FUNCIONAMIENTO
+        
+        
+        // HACER METODO FACTURA RECAPITULATIVA, PASAR POR PARAMETROS UN ARRAY DE idFactura y totalFactura.
+        // AGREGAR CADA FACTURA EN UNA LINEA Y SUMAR EL TOTAL.
+        
+        String idFactura1 = Invoices_Management.get_Invoice_Id("S-2025-009");
+        String idFactura2 = Invoices_Management.get_Invoice_Id("S-2025-010");
+        String idFactura3 = Invoices_Management.get_Invoice_Id("S-2025-011");
+        
+        List<String> listaIdFacturas = new ArrayList();
+        listaIdFacturas.add(idFactura1);
+        listaIdFacturas.add(idFactura2);
+        listaIdFacturas.add(idFactura3);
+        List<String> listaTotalFacturas = new ArrayList<>();
+        listaTotalFacturas.add(Invoices_Management.getFullAmount(idFactura1));
+        listaTotalFacturas.add(Invoices_Management.getFullAmount(idFactura2));
+        listaTotalFacturas.add(Invoices_Management.getFullAmount(idFactura3));
+        
+        listaIdFacturas.toString();
+        listaTotalFacturas.toString();
+        
+
     }
 }

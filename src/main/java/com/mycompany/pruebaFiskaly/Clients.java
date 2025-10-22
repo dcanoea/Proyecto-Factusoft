@@ -55,10 +55,10 @@ public class Clients {
             int statusCode = response.getStatusLine().getStatusCode();
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
-            System.out.println("Código de respuesta: " + statusCode);
+            /*System.out.println("Código de respuesta: " + statusCode);
             System.out.println("Respuesta del servidor:");
             JSONObject json = new JSONObject(responseBody);
-            System.out.println(json.toString(2)); // Indentación de 2 espacios
+            System.out.println(json.toString(2)); // Indentación de 2 espacios*/
             
             return responseBody;
 
@@ -68,8 +68,8 @@ public class Clients {
             return null;
         }
     }
-    
-        public static String get_First_Client_Id() {
+
+    public static String get_First_Client_Id() {
         String responseBody = list_Clients();
         if (responseBody == null) {
             System.out.println("No se pudo obtener la respuesta de los clients.");
