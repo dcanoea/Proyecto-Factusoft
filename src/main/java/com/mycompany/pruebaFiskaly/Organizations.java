@@ -10,10 +10,10 @@ import org.json.JSONObject;
 
 public class Organizations {
 
-    public static void list_Organizations() {
+    public static void listOrganizations() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_MANAGEMENT_URL + "/organizations";
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Content-Type", "application/json");
@@ -34,11 +34,11 @@ public class Organizations {
         }
     }
 
-    public static void retrieve_Organization(String idCliente) {
+    public static void retrieveOrganization(String idCliente) {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_MANAGEMENT_URL + "/organizations/" + idCliente;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Content-Type", "application/json");

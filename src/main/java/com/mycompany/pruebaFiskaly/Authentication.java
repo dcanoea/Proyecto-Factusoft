@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 public class Authentication {
 
-    public static String retrieve_token() throws IOException {
+    public static String retrieveToken() throws IOException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/auth";
 

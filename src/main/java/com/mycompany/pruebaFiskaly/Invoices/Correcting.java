@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.itextpdf.text.BaseColor;
@@ -39,21 +35,17 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/**
- *
- * @author user
- */
 public class Correcting {
 
     // FACTURA RECTIFICATIVA DE SUSTITUCIÓN DE FACTURA SIMPLIFICADA(reemplaza completamente a la factura original)
-    public static void createCorrectingInvoice_Substitution_Simplified(String original_invoice_number, String original_invoice_id) {
+    public static void createCorrectingInvoiceSubstitutionSimplified(String original_invoice_number, String original_invoice_id) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.get_First_Client_Id();
+            String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
             String invoice_number = original_invoice_number + "R"; // Máximo 20 caracteres
             String invoice_series = "R-2025"; // Obligatorio en facturas rectificativas
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
@@ -137,14 +129,14 @@ public class Correcting {
     }
 
     //FACTURA RECTIFICATIVA DE DIFERENCIA DE FACTURA SIMPLIFICADA
-    public static void createCorrectingInvoice_Differences_Simplified(String original_invoice_number, String original_invoice_id) {
+    public static void createCorrectingInvoiceDifferencesSimplified(String original_invoice_number, String original_invoice_id) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.get_First_Client_Id();
+            String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
             String invoice_number = original_invoice_number + "R";
             String invoice_series = "R-2025"; // Serie para rectificativas
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
@@ -229,14 +221,14 @@ public class Correcting {
     }
 
     // FACTURA RECTIFICATIVA DE SUSTITUCIÓN DE FACTURA COMPLETA(reemplaza completamente a la factura original)
-    public static void createCorrectingInvoice_Substitution_Complete(String original_invoice_number, String original_invoice_id) {
+    public static void createCorrectingInvoiceSubstitutionComplete(String original_invoice_number, String original_invoice_id) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.get_First_Client_Id();
+            String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
             String invoice_number = original_invoice_number + "R"; // Máximo 20 caracteres
             String invoice_series = "R-2025";// Obligatorio en facturas rectificativas
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
@@ -344,9 +336,9 @@ public class Correcting {
     }
     
     //MÉTODO PARA CREAR FACTURAS RECTIFICATIVAS POR DIFERENCIA PARA FACTURAS COMPLETAS
-    public static void createCorrectingInvoice_Differences_Complete(String original_invoice_number, String original_invoice_id) {
+    public static void createCorrectingInvoiceDifferencesComplete(String original_invoice_number, String original_invoice_id) {
     try (CloseableHttpClient client = HttpClients.createDefault()) {
-        String client_id = Clients.get_First_Client_Id();
+        String client_id = Clients.getFirstClientID();
         UUID invoice_id = UUID.randomUUID();
         String invoice_number = original_invoice_number + "R";
         if (invoice_number.length() > 20) {
@@ -354,7 +346,7 @@ public class Correcting {
         }
         String invoice_series = "R-2025";
         String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
-        String token = Authentication.retrieve_token();
+        String token = Authentication.retrieveToken();
 
         HttpPut put = new HttpPut(url);
         put.setHeader("Content-Type", "application/json");
@@ -460,7 +452,6 @@ public class Correcting {
         e.printStackTrace();
     }
 }
-
 
     public static void generateCorrectingInvoicePDF(
             String number, String correctionType, String clientName, String clientNIF, String clientAddress,

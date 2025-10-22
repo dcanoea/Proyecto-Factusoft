@@ -14,14 +14,14 @@ import java.util.logging.Logger;
 public class Validation {
     
     // AEAT no tiene entorno de pruebas, verificar en modo LIVE para confirmar las respuestas de la API
-    public static String validate_AEAT(String nif) {
+    public static String validateAEAT(String nif) {
         String validation = null;
         try {
             // Crea un objeto URL con la dirección base (Config.BASE_URL) más el endpoint /validation/tin
             URL url = new URL(Config.BASE_URL + "/validation/tin");
 
             // Obtiene el token desde Authentication.Recuperar_token
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             // Abre una conexión HTTP con la URL especificada
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -85,14 +85,14 @@ public class Validation {
         return validation;
     }
 
-    public static boolean validate_VIES(String country_code, String nif) {
+    public static boolean validateVIES(String country_code, String nif) {
         String validation = null;
         try {
             // Crea un objeto URL con la dirección base (Config.BASE_URL) más el endpoint /validation/tin
             URL url = new URL(Config.BASE_URL + "/validation/tin");
 
             // Obtiene el token desde Authentication.Recuperar_token
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             // Abre una conexión HTTP con la URL especificada
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -147,14 +147,12 @@ public class Validation {
                 if (end != -1) {
                     validation = response.substring(start, end); // Extrae el token
                 }
-            }
-            
+            }      
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
         }     
-        
         return validation.equals("VALID");
     }
 }

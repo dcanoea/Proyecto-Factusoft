@@ -25,11 +25,11 @@ import org.json.JSONObject;
 public class Invoices_Management {
 
     // Este endpoint obtiene una lista de las facturas emitidas desde un dispositivo cliente.
-    public static void list_Invoices() {
+    public static void listInvoices() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.get_First_Client_Id();
+            String client_id = Clients.getFirstClientID();
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices";
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Content-Type", "application/json");
@@ -51,11 +51,11 @@ public class Invoices_Management {
     }
 
     // Obtiene id factura filtrando por nº de factura
-    public static String get_Invoice_Id(String number) {
+    public static String getInvoiceID(String number) {
         String invoice_id = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/invoices?number=" + number;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Content-Type", "application/json");
@@ -81,11 +81,11 @@ public class Invoices_Management {
     }
 
     // Obtiene los detalles de una factura
-    public static JSONObject retrieve_Invoice(String invoice_id) {
+    public static JSONObject retrieveInvoice(String invoice_id) {
         JSONObject factura = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String token = Authentication.retrieve_token();
-            String client_id = Clients.get_First_Client_Id();
+            String token = Authentication.retrieveToken();
+            String client_id = Clients.getFirstClientID();
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
 
             HttpGet get = new HttpGet(url);
@@ -117,8 +117,8 @@ public class Invoices_Management {
     public static String getFullAmount(String invoice_id) {
         String full_amount = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String token = Authentication.retrieve_token();
-            String client_id = Clients.get_First_Client_Id();
+            String token = Authentication.retrieveToken();
+            String client_id = Clients.getFirstClientID();
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
 
             HttpGet get = new HttpGet(url);

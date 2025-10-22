@@ -109,19 +109,24 @@ public class Pruebas {
         //String idFactura = Invoices_Management.get_Invoice_Id("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
         //System.out.println("idFactura -> " + idFactura + " --- Total -> " + Invoices_Management.getFullAmount(idFactura));
         
-        //A PARTIR DE AQUI NO ESTÁN EN FUNCIONAMIENTO
-        
-        
-        // HACER METODO FACTURA RECAPITULATIVA, PASAR POR PARAMETROS UN ARRAY DE idFactura y totalFactura.
-        // AGREGAR CADA FACTURA EN UNA LINEA Y SUMAR EL TOTAL.
-        
-        
+                /*
+        // FACTURA RECAPITULATIVA
         List<String> numerosFacturas = new ArrayList<>();
         numerosFacturas.add("S-2025-015");
         numerosFacturas.add("S-2025-016");
         numerosFacturas.add("S-2025-017");
         
         Summary.create_Summary_Invoice(numerosFacturas);
+        */
         
+        
+        //MÉTODO PARA RECUPERAR EL ESTADO DE ERROR DE LA FACTURA
+        //MÉTODO PARA CORREGIR LA FACTURA
+        
+        
+        
+        
+
+
     }
 }

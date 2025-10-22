@@ -13,10 +13,10 @@ import org.json.JSONObject;
 
 public class Taxpayers {
 
-    public static void retrieve_Taxpayer() {
+    public static void retrieveTaxpayer() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/taxpayer";
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Content-Type", "application/json");
@@ -36,14 +36,14 @@ public class Taxpayers {
         }
     }
 
-    public static void create_Taxpayer(
+    public static void createTaxpayer(
             String legal_name,
             String tax_number,
             String territory
     ) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/taxpayer";
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
@@ -81,7 +81,7 @@ public class Taxpayers {
     }
 
     // MÉTODO PARA ACTUALIZAR CONTRIBUYENTE. SI SE PASA UN PARAMETRO NULL O "" LO IGNORA
-    public static void update_Taxpayer(
+    public static void updateTaxpayer(
             boolean deactivate,
             String legal_name,
             String tax_number,
@@ -106,7 +106,7 @@ public class Taxpayers {
     ) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/taxpayer";
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPatch patch = new HttpPatch(url);
             patch.setHeader("Content-Type", "application/json");

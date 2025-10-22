@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.itextpdf.text.BaseColor;
@@ -36,22 +32,18 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/**
- *
- * @author user
- */
 public class Complete {
     
     // FALTA AÑADIR VALIDACIÓN NIF
     // FALTA CREAR UN METODO PARA HACER FACTURAS RECAPITULATIVAS (SUSTITUYE A MULTIPLES SIMPLIFICADAS DEL MISMO CLIENTE)
     // SE DEBE VALIDAR EL NIF, SINO LA FACTURA SE SUBE PERO EN ESTADO DE REVISIÓN
-    public static void create_Complete_Invoice() {
+    public static void createCompleteInvoice() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.get_First_Client_Id();
+            String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
             String invoice_number = "C-2025-004";
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
-            String token = Authentication.retrieve_token();
+            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
