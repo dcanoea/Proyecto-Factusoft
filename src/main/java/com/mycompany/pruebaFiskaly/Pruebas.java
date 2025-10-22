@@ -1,6 +1,8 @@
 package com.mycompany.pruebaFiskaly;
 
 import com.mycompany.pruebaFiskaly.Invoices.Invoices_Management;
+import com.mycompany.pruebaFiskaly.Invoices.Simplified;
+import com.mycompany.pruebaFiskaly.Invoices.Summary;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,8 +94,8 @@ public class Pruebas {
         //System.out.println(invoice_id);
         
         // OBTENER DETALLES DE UNA FACTURA
-        //String invoice_id = Invoices_Management.get_Invoice_Id("C-2025-004"); // id d7ee6242-282c-4e87-94b8-dcc4be9d6466
-        //Invoices_Management.getInvoiceDetails(invoice_id);
+        //String invoice_id = Invoices_Management.get_Invoice_Id("RC-2025-001"); 
+        //Invoices_Management.retrieve_Invoice(invoice_id);
         
         // CREAR FACTURAS RECTIFICATIVAS
         //String numeroFactura = "F-2025-008R";
@@ -113,22 +115,13 @@ public class Pruebas {
         // HACER METODO FACTURA RECAPITULATIVA, PASAR POR PARAMETROS UN ARRAY DE idFactura y totalFactura.
         // AGREGAR CADA FACTURA EN UNA LINEA Y SUMAR EL TOTAL.
         
-        String idFactura1 = Invoices_Management.get_Invoice_Id("S-2025-009");
-        String idFactura2 = Invoices_Management.get_Invoice_Id("S-2025-010");
-        String idFactura3 = Invoices_Management.get_Invoice_Id("S-2025-011");
         
-        List<String> listaIdFacturas = new ArrayList();
-        listaIdFacturas.add(idFactura1);
-        listaIdFacturas.add(idFactura2);
-        listaIdFacturas.add(idFactura3);
-        List<String> listaTotalFacturas = new ArrayList<>();
-        listaTotalFacturas.add(Invoices_Management.getFullAmount(idFactura1));
-        listaTotalFacturas.add(Invoices_Management.getFullAmount(idFactura2));
-        listaTotalFacturas.add(Invoices_Management.getFullAmount(idFactura3));
+        List<String> numerosFacturas = new ArrayList<>();
+        numerosFacturas.add("S-2025-015");
+        numerosFacturas.add("S-2025-016");
+        numerosFacturas.add("S-2025-017");
         
-        listaIdFacturas.toString();
-        listaTotalFacturas.toString();
+        Summary.create_Summary_Invoice(numerosFacturas);
         
-
     }
 }

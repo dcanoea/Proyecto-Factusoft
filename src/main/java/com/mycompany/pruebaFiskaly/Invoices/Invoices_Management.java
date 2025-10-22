@@ -81,7 +81,7 @@ public class Invoices_Management {
     }
 
     // Obtiene los detalles de una factura
-    public static JSONObject getInvoiceDetails(String invoice_id) {
+    public static JSONObject retrieve_Invoice(String invoice_id) {
         JSONObject factura = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieve_token();

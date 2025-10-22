@@ -32,7 +32,7 @@ public class Simplified {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.get_First_Client_Id();
             UUID invoice_id = UUID.randomUUID();
-            String invoice_number = "S-2025-011";
+            String invoice_number = "S-2025-017";
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
             String token = Authentication.retrieve_token();
 
@@ -46,7 +46,7 @@ public class Simplified {
             Map<String, String> item1 = new HashMap<>();
             item1.put("text", "Curso C+E");
             item1.put("quantity", "1.00");
-            item1.put("unit_amount", "383.74");
+            item1.put("unit_amount", "527.74");
             item1.put("iva_rate", "21.0");
             itemsData.add(item1);
 
