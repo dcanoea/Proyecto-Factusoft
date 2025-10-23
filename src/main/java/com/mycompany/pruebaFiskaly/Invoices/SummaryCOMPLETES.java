@@ -15,6 +15,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.mycompany.pruebaFiskaly.Authentication;
 import com.mycompany.pruebaFiskaly.Clients;
 import com.mycompany.pruebaFiskaly.Config;
+import com.mycompany.pruebaFiskaly.Invoices.InvoicesManagement;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -37,15 +39,13 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class Complete {
+public class SummaryCOMPLETES {
 
-    // FALTA AÑADIR VALIDACIÓN NIF
-    // SE DEBE VALIDAR EL NIF, SINO LA FACTURA SE SUBE PERO EN ESTADO DE REVISIÓN
-    public static void createCompleteInvoice(int numFactura) {
+    public static void createSummaryCompleteInvoice(int invoiceNumber, List<String> numerosFactura) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
-            String invoice_number = String.valueOf(numFactura);
+            String invoiceNumStr = String.valueOf(invoiceNumber);
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
             String token = Authentication.retrieveToken();
 
@@ -53,60 +53,72 @@ public class Complete {
             put.setHeader("Content-Type", "application/json");
             put.setHeader("Authorization", "Bearer " + token);
 
-            // ======== ÍTEMS DE EJEMPLO =========
-            List<Map<String, String>> itemsData = new ArrayList<>();
-
-            Map<String, String> item1 = new HashMap<>();
-            item1.put("text", "Curso ADR");
-            item1.put("quantity", "1.00");
-            item1.put("unit_amount", "210.74");
-            item1.put("iva_rate", "21.0");
-            itemsData.add(item1);
-
-            Map<String, String> item2 = new HashMap<>();
-            item2.put("text", "Manual ADR");
-            item2.put("quantity", "1.00");
-            item2.put("unit_amount", "35.00");
-            item2.put("iva_rate", "10.0");
-            itemsData.add(item2);
-
             JSONArray items = new JSONArray();
-            double totalAmount = 0.0;
+            JSONArray summarizedInvoices = new JSONArray();
+            double totalConIVA = 0.0;
 
-            for (Map<String, String> itemData : itemsData) {
-                String text = itemData.get("text");
-                String quantity = itemData.get("quantity");
-                String unitAmount = itemData.get("unit_amount");
-                String ivaRate = itemData.get("iva_rate");
+            for (String numero : numerosFactura) {
+                String uuid = InvoicesManagement.getInvoiceIDByNumber(numero);
+                if (uuid == null || uuid.isEmpty()) {
+                    System.err.println("❌ No se encontró UUID para la factura " + numero);
+                    continue;
+                }
 
-                double unit = Double.parseDouble(unitAmount);
-                double qty = Double.parseDouble(quantity);
-                double iva = Double.parseDouble(ivaRate);
-                double full = unit * qty * (1 + iva / 100);
-                totalAmount += full;
-                String fullAmount = String.format(Locale.US, "%.2f", full);
+                JSONObject facturaJson = getRawInvoiceJson(uuid);
+                if (facturaJson == null) {
+                    System.err.println("❌ No se pudo recuperar la factura " + uuid);
+                    continue;
+                }
 
-                JSONObject category = new JSONObject();
-                category.put("type", "VAT");
-                category.put("rate", ivaRate);
+                String state = facturaJson.optString("state", "");
+                if (!"ISSUED".equalsIgnoreCase(state)) {
+                    System.err.println("Factura " + uuid + " no está emitida (estado: " + state + ")");
+                    continue;
+                }
 
-                JSONObject system = new JSONObject();
-                system.put("type", "REGULAR");
-                system.put("category", category);
+                JSONArray facturaItems = getItemsFromParsedCompleteJson(facturaJson);
+                if (facturaItems.length() == 0) {
+                    System.err.println("Factura " + uuid + " no tiene ítems válidos");
+                    continue;
+                }
 
-                JSONObject item = new JSONObject();
-                item.put("text", text);
-                item.put("quantity", quantity);
-                item.put("unit_amount", unitAmount);
-                item.put("full_amount", fullAmount);
-                item.put("system", system);
+                summarizedInvoices.put(uuid);
 
-                items.put(item);
+                for (int i = 0; i < facturaItems.length(); i++) {
+                    JSONObject originalItem = facturaItems.getJSONObject(i);
+                    String text = originalItem.getString("text");
+                    String quantity = originalItem.getString("quantity");
+                    String unitAmount = originalItem.getString("unit_amount");
+
+                    JSONObject system = originalItem.getJSONObject("system");
+                    JSONObject category = system.getJSONObject("category");
+                    String ivaRate = category.getString("rate");
+
+                    double unit = Double.parseDouble(unitAmount);
+                    double qty = Double.parseDouble(quantity);
+                    double iva = Double.parseDouble(ivaRate);
+                    double base = unit * qty;
+                    double cuota = base * iva / 100;
+                    double total = base + cuota;
+
+                    totalConIVA += total;
+
+                    JSONObject item = new JSONObject();
+                    item.put("text", "Factura " + numero + ": " + text);
+                    item.put("quantity", quantity);
+                    item.put("unit_amount", String.format(Locale.US, "%.2f", unit));
+                    item.put("full_amount", String.format(Locale.US, "%.2f", total));
+                    item.put("system", system);
+
+                    items.put(item);
+                }
             }
 
-            String fullAmountTotal = String.format(Locale.US, "%.2f", totalAmount);
+            if (items.length() == 0) {
+                System.err.println("❌ No se encontraron ítems válidos. No se puede emitir la recapitulativa.");
+                return;
+            }
 
-            // ======== RECEPTOR =========
             JSONObject id = new JSONObject();
             id.put("legal_name", "ARAGON FORMACION ACF S.L.");
             id.put("tax_number", "B22260863");
@@ -120,19 +132,18 @@ public class Complete {
             JSONArray recipients = new JSONArray();
             recipients.put(recipient);
 
-            // ======== CONTENIDO DE DATA =========
             JSONObject data = new JSONObject();
-            data.put("type", "SIMPLIFIED");
-            data.put("number", invoice_number);
-            data.put("text", "Factura COMPLETA");
+            data.put("type", "COMPLETE");
+            data.put("number", invoiceNumStr);
+            data.put("text", "Factura recapitulativa de facturas completas");
             data.put("items", items);
-            data.put("full_amount", fullAmountTotal);
+            data.put("full_amount", String.format(Locale.US, "%.2f", totalConIVA));
 
-            // ======== CONTENIDO PRINCIPAL =========
             JSONObject content = new JSONObject();
             content.put("type", "COMPLETE");
             content.put("recipients", recipients);
             content.put("data", data);
+            content.put("summarized_invoices", summarizedInvoices);
 
             JSONObject body = new JSONObject();
             body.put("content", content);
@@ -144,51 +155,122 @@ public class Complete {
 
             System.out.println("Código de respuesta: " + statusCode);
             System.out.println("Respuesta del servidor: " + responseBody);
-            JSONObject jsonPrint = new JSONObject(responseBody);
-            System.out.println(jsonPrint.toString(2));
 
             if (statusCode >= 200 && statusCode < 300) {
                 JSONObject json = new JSONObject(responseBody).getJSONObject("content");
                 JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
                 String qrBase64 = qr.getString("data");
 
-                generateCompleteInvoicePDF(invoice_number, itemsData, fullAmountTotal, qrBase64);
+                List<Map<String, String>> itemsData = itemsDataFromJson(items);
+                generateRecapPDF(invoiceNumStr, itemsData, numerosFactura, qrBase64);
             } else {
-                System.err.println("Error al crear la factura completa (" + statusCode + ")");
+                System.err.println("Error al crear la factura recapitulativa (" + statusCode + ")");
             }
 
         } catch (Exception e) {
-            System.err.println("Error al crear la factura completa");
+            System.err.println("Error al crear la factura recapitulativa");
             e.printStackTrace();
         }
     }
 
-    public static void generateCompleteInvoicePDF(String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
+    public static JSONObject getRawInvoiceJson(String uuid) {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            String client_id = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + uuid;
+            String token = Authentication.retrieveToken();
+
+            HttpGet get = new HttpGet(url);
+            get.setHeader("Authorization", "Bearer " + token);
+
+            HttpResponse response = client.execute(get);
+            int statusCode = response.getStatusLine().getStatusCode();
+            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+            if (statusCode >= 200 && statusCode < 300) {
+                return new JSONObject(responseBody);
+            } else {
+                System.err.println("Error al recuperar factura " + uuid + " (" + statusCode + ")");
+                return null;
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error al obtener JSON de factura " + uuid);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static JSONArray getItemsFromParsedCompleteJson(JSONObject facturaJson) {
+        try {
+            JSONObject content = facturaJson.optJSONObject("content");
+            if (content == null) {
+                System.err.println("Factura sin campo 'content'");
+                return new JSONArray();
+            }
+
+            String dataStr = content.optString("data", null);
+            if (dataStr == null || dataStr.isEmpty()) {
+                System.err.println("Factura sin campo 'data'");
+                return new JSONArray();
+            }
+
+            JSONObject outerData = new JSONObject(dataStr);
+            JSONObject innerData = outerData.optJSONObject("data");
+            if (innerData == null) {
+                System.err.println("Factura sin campo 'data.data'");
+                return new JSONArray();
+            }
+
+            JSONArray items = innerData.optJSONArray("items");
+            if (items == null || items.length() == 0) {
+                System.err.println("Factura sin ítems");
+                return new JSONArray();
+            }
+
+            return items;
+
+        } catch (Exception e) {
+            System.err.println("Error al parsear ítems de factura");
+            e.printStackTrace();
+            return new JSONArray();
+        }
+    }
+
+    public static List<Map<String, String>> itemsDataFromJson(JSONArray items) {
+        List<Map<String, String>> result = new ArrayList<>();
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+            Map<String, String> map = new HashMap<>();
+            map.put("text", item.optString("text", ""));
+            map.put("quantity", item.optString("quantity", ""));
+            map.put("unit_amount", item.optString("unit_amount", ""));
+
+            JSONObject system = item.optJSONObject("system");
+            JSONObject category = system != null ? system.optJSONObject("category") : null;
+            map.put("iva_rate", category != null ? category.optString("rate", "21.0") : "21.0");
+
+            result.add(map);
+        }
+        return result;
+    }
+
+    public static void generateRecapPDF(String number, List<Map<String, String>> itemsData, List<String> facturas, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        String fileName = "Factura_Completa_" + number + ".pdf";
+        String fileName = "Factura_Recapitulativa_" + number + "_" + date + ".pdf";
 
         Document document = new Document(PageSize.A4, 50, 50, 50, 50);
         PdfWriter.getInstance(document, new FileOutputStream(desktopPath + fileName));
         document.open();
 
-        // ======== CABECERA ========
-        Paragraph title = new Paragraph("FACTURA COMPLETA", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+        Paragraph title = new Paragraph("FACTURA RECAPITULATIVA", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
         document.add(new Paragraph("Número: " + number));
         document.add(new Paragraph("Fecha: " + date));
+        document.add(new Paragraph("Facturas agrupadas: " + String.join(", ", facturas)));
         document.add(Chunk.NEWLINE);
 
-        // ======== DATOS DEL CLIENTE ========
-        Paragraph clientHeader = new Paragraph("Datos del Cliente", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
-        document.add(clientHeader);
-        document.add(new Paragraph("Razón social: ARAGON FORMACION ACF S.L."));
-        document.add(new Paragraph("NIF: B22260863"));
-        document.add(new Paragraph("Dirección: Calle Mayor 123, Huesca"));
-        document.add(Chunk.NEWLINE);
-
-        // ======== AGRUPAR ÍTEMS POR IVA ========
         Map<String, List<Map<String, String>>> groupedByIVA = new HashMap<>();
         for (Map<String, String> item : itemsData) {
             String ivaRaw = item.getOrDefault("iva_rate", "21.0").trim();
@@ -253,14 +335,12 @@ public class Complete {
             document.add(Chunk.NEWLINE);
         }
 
-        // ======== TOTAL GENERAL ========
         Paragraph total = new Paragraph("Importe total (IVA incluido): " + String.format(Locale.US, "%.2f €", totalConIVA),
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13));
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);
         document.add(Chunk.NEWLINE);
 
-        // ======== QR FISCAL ========
         byte[] qrBytes = Base64.getDecoder().decode(qrBase64);
         Image qrImage = Image.getInstance(qrBytes);
         qrImage.scaleToFit(120, 120);
@@ -268,7 +348,6 @@ public class Complete {
         document.add(new Paragraph("\nCódigo QR fiscal:"));
         document.add(qrImage);
 
-        // ======== PIE DE PÁGINA ========
         document.add(Chunk.NEWLINE);
         document.add(new Paragraph("Factura emitida electrónicamente conforme a la normativa Verifactu.",
                 FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10, BaseColor.GRAY)));
@@ -276,7 +355,7 @@ public class Complete {
                 FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10, BaseColor.GRAY)));
 
         document.close();
-        System.out.println("PDF de factura completa guardado en: " + desktopPath + fileName);
+        System.out.println("✅ PDF guardado en: " + desktopPath + fileName);
     }
 
 }

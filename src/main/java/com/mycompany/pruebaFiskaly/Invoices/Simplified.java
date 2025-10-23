@@ -24,15 +24,16 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Simplified {
 
-    public static void createSimplifiedInvoice() {
+    public static void createSimplifiedInvoice(int numFactura) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
-            String invoice_number = "S-2025-017";
+            String invoice_number = String.valueOf(numFactura);
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
             String token = Authentication.retrieveToken();
 
@@ -44,18 +45,25 @@ public class Simplified {
             List<Map<String, String>> itemsData = new ArrayList<>();
 
             Map<String, String> item1 = new HashMap<>();
-            item1.put("text", "Curso C+E");
+            item1.put("text", "Curso D");
             item1.put("quantity", "1.00");
-            item1.put("unit_amount", "527.74");
-            item1.put("iva_rate", "21.0");
+            item1.put("unit_amount", "427.24");
+            item1.put("iva_rate", Config.IVA_21);
             itemsData.add(item1);
 
             Map<String, String> item2 = new HashMap<>();
-            item2.put("text", "Manual C+E");
+            item2.put("text", "Manual D");
             item2.put("quantity", "1.00");
             item2.put("unit_amount", "35.00");
-            item2.put("iva_rate", "10.0");
+            item2.put("iva_rate", Config.IVA_10);
             itemsData.add(item2);
+
+            Map<String, String> item3 = new HashMap<>();
+            item3.put("text", "Horas Autobús");
+            item3.put("quantity", "14.00");
+            item3.put("unit_amount", "60.00");
+            item3.put("iva_rate", Config.IVA_4);
+            itemsData.add(item3);
 
             JSONArray items = new JSONArray();
             double totalAmount = 0.0;
@@ -64,7 +72,7 @@ public class Simplified {
                 String text = itemData.get("text");
                 String quantity = itemData.get("quantity");
                 String unitAmount = itemData.get("unit_amount");
-                String ivaRate = itemData.getOrDefault("iva_rate", "21.0");
+                String ivaRate = itemData.get("iva_rate");
 
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
@@ -132,7 +140,7 @@ public class Simplified {
     public static void generateSimplifiedInvoicePDF(String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        String fileName = "Factura_" + number + "_" + date + ".pdf";
+        String fileName = "Factura " + number + ".pdf";
 
         Document document = new Document(PageSize.A4, 50, 50, 50, 50);
         PdfWriter.getInstance(document, new FileOutputStream(desktopPath + fileName));
@@ -146,44 +154,74 @@ public class Simplified {
         document.add(new Paragraph("Fecha: " + date));
         document.add(Chunk.NEWLINE);
 
-        // ======== TABLA DE ÍTEMS ========
-        PdfPTable table = new PdfPTable(5);
-        table.setWidthPercentage(100);
-        table.setSpacingBefore(10f);
-        table.setSpacingAfter(10f);
-
-        Stream.of("Descripción", "Cantidad", "Precio sin IVA", "IVA (%)", "Total con IVA")
-                .forEach(headerTitle -> {
-                    PdfPCell header = new PdfPCell();
-                    header.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                    header.setBorderWidth(1);
-                    header.setPhrase(new Phrase(headerTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
-                    table.addCell(header);
-                });
-
+        // ======== AGRUPAR ÍTEMS POR IVA ========
+        Map<String, List<Map<String, String>>> groupedByIVA = new HashMap<>();
         for (Map<String, String> item : itemsData) {
-            String text = item.get("text");
-            String quantity = item.get("quantity");
-            String unitAmount = item.get("unit_amount");
-            String ivaRate = item.getOrDefault("iva_rate", "21.0");
-
-            double unit = Double.parseDouble(unitAmount);
-            double qty = Double.parseDouble(quantity);
-            double iva = Double.parseDouble(ivaRate);
-            double full = unit * qty * (1 + iva / 100);
-            String fullAmountItem = String.format(Locale.US, "%.2f", full);
-
-            table.addCell(text);
-            table.addCell(quantity);
-            table.addCell(unitAmount + " €");
-            table.addCell(ivaRate);
-            table.addCell(fullAmountItem + " €");
+            String ivaRaw = item.getOrDefault("iva_rate", "21.0").trim();
+            String ivaRate = String.format(Locale.US, "%.1f", Double.parseDouble(ivaRaw));
+            groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
 
-        document.add(table);
+        List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0");
+        double totalConIVA = 0.0;
 
-        // ======== TOTALES ========
-        Paragraph total = new Paragraph("Importe total (IVA incluido): " + fullAmount + " €",
+        for (String ivaRate : ivaOrder) {
+            List<Map<String, String>> group = groupedByIVA.get(ivaRate);
+            if (group == null || group.isEmpty()) {
+                continue;
+            }
+
+            document.add(new Paragraph("IVA " + ivaRate + "%", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(5f);
+            table.setSpacingAfter(5f);
+
+            Stream.of("Descripción", "Precio unitario", "Unidades", "Base imponible")
+                    .forEach(headerTitle -> {
+                        PdfPCell header = new PdfPCell(new Phrase(headerTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
+                        header.setBorderWidth(1);
+                        table.addCell(header);
+                    });
+
+            double baseTotal = 0.0;
+            double ivaTotal = 0.0;
+
+            for (Map<String, String> item : group) {
+                String text = item.get("text");
+                String unitAmount = item.get("unit_amount");
+                String quantity = item.get("quantity");
+
+                double unit = Double.parseDouble(unitAmount);
+                double qty = Double.parseDouble(quantity);
+                double base = unit * qty;
+                double iva = Double.parseDouble(ivaRate);
+                double cuota = base * iva / 100;
+                double total = base + cuota;
+
+                baseTotal += base;
+                ivaTotal += cuota;
+                totalConIVA += total;
+
+                table.addCell(text);
+                table.addCell(String.format(Locale.US, "%.2f €", unit));
+                table.addCell(quantity);
+                table.addCell(String.format(Locale.US, "%.2f €", base));
+            }
+
+            document.add(table);
+
+            Paragraph ivaSummary = new Paragraph("Total base: " + String.format(Locale.US, "%.2f €", baseTotal)
+                    + "   IVA " + ivaRate + "%: " + String.format(Locale.US, "%.2f €", ivaTotal),
+                    FontFactory.getFont(FontFactory.HELVETICA, 11));
+            ivaSummary.setAlignment(Element.ALIGN_RIGHT);
+            document.add(ivaSummary);
+            document.add(Chunk.NEWLINE);
+        }
+
+        // ======== TOTAL GENERAL ========
+        Paragraph total = new Paragraph("Importe total (IVA incluido): "
+                + String.format(Locale.US, "%.2f €", totalConIVA),
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13));
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);
@@ -200,8 +238,9 @@ public class Simplified {
         // ======== PIE DE PÁGINA ========
         document.add(Chunk.NEWLINE);
         document.add(new Paragraph("Factura emitida electrónicamente conforme a la normativa Verifactu.",
-                FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10, BaseColor.GRAY)));
-        document.add(new Paragraph("Gracias por su confianza.", FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10, BaseColor.GRAY)));
+                FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10)));
+        document.add(new Paragraph("Gracias por su confianza.",
+                FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10)));
 
         document.close();
         System.out.println("PDF guardado en: " + desktopPath + fileName);

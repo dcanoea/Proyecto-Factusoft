@@ -1,0 +1,29 @@
+{"content": {
+  "transmission": {
+    "cancellation": "NOT_CANCELLED",
+    "registration": "REGISTERED"
+  },
+  "data": "{\"text\": \"Factura simplificada\", \"type\": \"SIMPLIFIED\", \"items\": [{\"text\": \"Curso D\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"21\", \"type\": \"VAT\"}}, \"quantity\": \"1.00\", \"full_amount\": \"516.96\", \"unit_amount\": \"427.24\"}, {\"text\": \"Manual D\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"10\", \"type\": \"VAT\"}}, \"quantity\": \"1.00\", \"full_amount\": \"38.50\", \"unit_amount\": \"35.00\"}, {\"text\": \"Horas Autob�s\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"4\", \"type\": \"VAT\"}}, \"quantity\": \"14.00\", \"full_amount\": \"873.60\", \"unit_amount\": \"60.00\"}], \"number\": \"20250027\", \"full_amount\": \"1429.06\"}",
+  "compliance": {
+    "code": {
+      "image": {
+        "data": "iVBORw0KGgoAAAANSUhEUgAAAC0AAAAtEAAAAABP4WEFAAACcElEQVR4nJxXWa7DMAjEUe5/ZZ5SSpmF/LxKbRMvLAOM8RX0ycys/3rut3rCb//Ornmvz41D56CSGsmc0eepRp7ZfupRVvfZ1a+smS1Bq9Ez3MnrP1b7Zyxt+9T+HkUrF0Bc8Aiv/waHlfnbIpr11fLZ0ti2glLWv2y7B1Ms/v+XrN60cEAY4UG1IoAomyx2h5dtFmVyxvPIrLlUAAeorW7UHdUOZGHeip73XwG0i/POQUSFvE5LDWRqwqNzXBzjOH8Vjq88ZYn5KPI7+hq6Uf1jg6k3RJwLgnnFIUEgIw5W3KCMiHO4Bk182krlsFtoDZY4+oa1OJ5pSDMPu40WgX6xS5UymL3icAi41pieGCpkQgXlO8f8q/ysueAJp3VJychZq+Jxjle8UcLPdk0ZDtLUFs+n0DDnRs3eiBguG3Ecoi3zdb5UX0zzs5m44MU6HT+Ub7dzGW6ZE0YPMuRErYLwYPEIMoga4CzjEtbkZ7Q1hJy/6uXUq5RwUAEo0iySiytCw3uzI2+o734oB3L2WB+BfBJyyG4iGD709D5Cq+Gd22dbQpe3EKgV1FlpJVCMcrQCyHHB6FwtVM8NrVKnorDa7F/IbA0cdxq+RjPbj2lgPrYp6JR3gt2KbPFII6xMoAdBLKcMJyV1IaPbKX23NNerh3r3AoSjGmts3hVbL79X2MJrEdYJxHJES0A8lFt4I8J6W1x9ReCpV1mJ3SlakXRgaEhDzqF7c2K2lRq/seTS8WmxX4aJLBvO2HMaO29W9HIDw4vEHGEzE3R5Usau+SusowYOAI7YGoaJyGbeMpR0M9f4h3FILLf55+kvAAD//5GBhBoInVbcAAAAAElFTkSuQmCC",
+        "format": "image/png",
+        "measurements": {
+          "unit": "px",
+          "width": 45,
+          "height": 45
+        }
+      },
+      "type": "QR_CODE"
+    },
+    "text": "QR tributario:|VERI*FACTU",
+    "url": "https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=B22260863&numserie=20250027&fecha=23-10-2025&importe=1429.06"
+  },
+  "client": {"id": "ce46883c-5425-4a85-bf15-f04141ba13e5"},
+  "id": "006b16ea-6e24-4c2a-98e5-5f2b1e1f49ae",
+  "state": "ISSUED",
+  "validations": [],
+  "issued_at": "23-10-2025 11:47:08",
+  "signer": {"id": "0ad13b28-87e1-4573-b7e6-fb40ae584303"}
+}}
