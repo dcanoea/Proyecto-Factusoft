@@ -129,5 +129,14 @@ public class Pruebas {
 
         SummaryCOMPLETES.createSummaryCompleteInvoice(NUM_FACTURA, numerosFacturas);
 
+        
+        //MÉTODO PARA RECUPERAR EL ESTADO DE ERROR DE LA FACTURA
+        //MÉTODO PARA CORREGIR LA FACTURA
+        
+        
+        
+        
+
+
     }
 }
