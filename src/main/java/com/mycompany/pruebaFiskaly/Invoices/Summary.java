@@ -240,18 +240,14 @@ public class Summary {
         // ======== AGRUPAR ÍTEMS POR IVA ========
         Map<String, List<Map<String, String>>> groupedByIVA = new HashMap<>();
         for (Map<String, String> item : itemsData) {
-            String ivaRaw = item.getOrDefault("iva_rate", Config.IVA_21).trim();
+            String ivaRaw = item.getOrDefault("iva_rate", Config.IVA_GENERAL).trim();
             String ivaRate = String.format(Locale.US, "%.1f", Double.parseDouble(ivaRaw));
 
             groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
 
-        List<String> ivaOrder = Arrays.asList(
-                Config.IVA_21 + ".0",
-                Config.IVA_10 + ".0",
-                Config.IVA_4 + ".0",
-                Config.IVA_EXENTO + ".0"
-        );
+        List<String> ivaOrder = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO, Config.IVA_SUPLIDO);
+
         double totalConIVA = 0.0;
 
         for (String ivaRate : ivaOrder) {

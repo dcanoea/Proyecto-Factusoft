@@ -12,6 +12,9 @@ import com.mycompany.pruebaFiskaly.Config;
 import java.nio.charset.StandardCharsets;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -247,6 +250,33 @@ public class InvoicesManagement {
 
         } catch (Exception e) {
             System.err.println("Error al inspeccionar la factura: " + invoiceID);
+            e.printStackTrace();
+        }
+    }
+
+    public static void cancelInvoice(String invoiceNumber) {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            String invoice_id = getInvoiceIDByNumber(invoiceNumber);
+            String token = Authentication.retrieveToken();
+            String client_id = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+
+            HttpPatch patch = new HttpPatch(url);
+            patch.setHeader("Authorization", "Bearer " + token);
+            patch.setHeader("Content-Type", "application/json");
+            StringEntity entity = new StringEntity("{}", ContentType.APPLICATION_JSON);
+            patch.setEntity(entity);
+
+            HttpResponse response = client.execute(patch);
+            int statusCode = response.getStatusLine().getStatusCode();
+            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+            System.out.println("Código de respuesta: " + statusCode);
+            System.out.println("Respuesta del servidor: " + responseBody);
+            JSONObject jsonPrint = new JSONObject(responseBody);
+            System.out.println(jsonPrint.toString(2));
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

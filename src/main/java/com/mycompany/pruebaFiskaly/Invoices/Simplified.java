@@ -29,46 +29,22 @@ import java.util.HashMap;
 
 public class Simplified {
 
-    public static void createSimplifiedInvoice(int numFactura) {
+    public static void createSimplifiedInvoice(int invoiceNumber, List<Map<String, String>> itemsList) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
-            String invoice_number = String.valueOf(numFactura);
+            String invoice_number = String.valueOf(invoiceNumber);
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
             put.setHeader("Authorization", "Bearer " + token);
-
-            // ======== ÍTEMS DE EJEMPLO =========
-            List<Map<String, String>> itemsData = new ArrayList<>();
-
-            Map<String, String> item1 = new HashMap<>();
-            item1.put("text", "Curso D");
-            item1.put("quantity", "1.00");
-            item1.put("unit_amount", "427.24");
-            item1.put("iva_rate", Config.IVA_21);
-            itemsData.add(item1);
-
-            Map<String, String> item2 = new HashMap<>();
-            item2.put("text", "Manual D");
-            item2.put("quantity", "1.00");
-            item2.put("unit_amount", "35.00");
-            item2.put("iva_rate", Config.IVA_10);
-            itemsData.add(item2);
-
-            Map<String, String> item3 = new HashMap<>();
-            item3.put("text", "Horas Autobús");
-            item3.put("quantity", "14.00");
-            item3.put("unit_amount", "60.00");
-            item3.put("iva_rate", Config.IVA_4);
-            itemsData.add(item3);
-
+            
             JSONArray items = new JSONArray();
             double totalAmount = 0.0;
 
-            for (Map<String, String> itemData : itemsData) {
+            for (Map<String, String> itemData : itemsList) {
                 String text = itemData.get("text");
                 String quantity = itemData.get("quantity");
                 String unitAmount = itemData.get("unit_amount");
@@ -126,7 +102,7 @@ public class Simplified {
                 JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
                 String qrBase64 = qr.getString("data");
 
-                generateSimplifiedInvoicePDF(invoice_number, itemsData, fullAmountTotal, qrBase64);
+                generateSimplifiedInvoicePDF(invoice_number, itemsList, fullAmountTotal, qrBase64);
             } else {
                 System.err.println("Error al crear la factura simplificada (" + statusCode + ")");
             }
@@ -135,6 +111,20 @@ public class Simplified {
             System.out.println("Error al crear la factura");
             e.printStackTrace();
         }
+    }
+
+    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unit_amount, String iva_rate) {
+        //Validar que el IVA está entre los permitidos
+        List<String> validIvaRates = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO, Config.IVA_SUPLIDO);
+        if (!validIvaRates.contains(iva_rate)) {
+            throw new IllegalArgumentException("IVA no válido: " + iva_rate + ". Debe ser uno de: " + validIvaRates);
+        }
+        Map<String, String> item = new HashMap<>();
+        item.put("text", text);
+        item.put("quantity", quantity);
+        item.put("unit_amount", unit_amount);
+        item.put("iva_rate", iva_rate);
+        itemsList.add(item);
     }
 
     public static void generateSimplifiedInvoicePDF(String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {

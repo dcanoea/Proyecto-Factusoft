@@ -41,7 +41,7 @@ public class Complete {
 
     // FALTA AÑADIR VALIDACIÓN NIF
     // SE DEBE VALIDAR EL NIF, SINO LA FACTURA SE SUBE PERO EN ESTADO DE REVISIÓN
-    public static void createCompleteInvoice(int numFactura) {
+    public static void createCompleteInvoice(int numFactura, List<Map<String, String>> itemsList, Map<String, String> receptorDetails) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
@@ -53,27 +53,10 @@ public class Complete {
             put.setHeader("Content-Type", "application/json");
             put.setHeader("Authorization", "Bearer " + token);
 
-            // ======== ÍTEMS DE EJEMPLO =========
-            List<Map<String, String>> itemsData = new ArrayList<>();
-
-            Map<String, String> item1 = new HashMap<>();
-            item1.put("text", "Curso ADR");
-            item1.put("quantity", "1.00");
-            item1.put("unit_amount", "210.74");
-            item1.put("iva_rate", "21.0");
-            itemsData.add(item1);
-
-            Map<String, String> item2 = new HashMap<>();
-            item2.put("text", "Manual ADR");
-            item2.put("quantity", "1.00");
-            item2.put("unit_amount", "35.00");
-            item2.put("iva_rate", "10.0");
-            itemsData.add(item2);
-
             JSONArray items = new JSONArray();
             double totalAmount = 0.0;
 
-            for (Map<String, String> itemData : itemsData) {
+            for (Map<String, String> itemData : itemsList) {
                 String text = itemData.get("text");
                 String quantity = itemData.get("quantity");
                 String unitAmount = itemData.get("unit_amount");
@@ -108,14 +91,14 @@ public class Complete {
 
             // ======== RECEPTOR =========
             JSONObject id = new JSONObject();
-            id.put("legal_name", "ARAGON FORMACION ACF S.L.");
-            id.put("tax_number", "B22260863");
-            id.put("registered", true);
+            id.put("legal_name", receptorDetails.get("legal_name"));
+            id.put("tax_number", receptorDetails.get("tax_number"));
+            id.put("registered", Boolean.parseBoolean(receptorDetails.get("registered")));// BOOLEAN
 
             JSONObject recipient = new JSONObject();
             recipient.put("id", id);
-            recipient.put("address_line", "Calle Mayor 123, Huesca");
-            recipient.put("postal_code", "22001");
+            recipient.put("address_line", receptorDetails.get("address_line"));
+            recipient.put("postal_code", receptorDetails.get("postal_code"));
 
             JSONArray recipients = new JSONArray();
             recipients.put(recipient);
@@ -143,19 +126,12 @@ public class Complete {
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
             System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Respuesta del servidor: " + responseBody);
-            JSONObject jsonPrint = new JSONObject(responseBody);
-            System.out.println(jsonPrint.toString(2));
 
-            if (statusCode >= 200 && statusCode < 300) {
-                JSONObject json = new JSONObject(responseBody).getJSONObject("content");
-                JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
-                String qrBase64 = qr.getString("data");
+            JSONObject json = new JSONObject(responseBody).getJSONObject("content");
+            JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
+            String qrBase64 = qr.getString("data");
 
-                generateCompleteInvoicePDF(invoice_number, itemsData, fullAmountTotal, qrBase64);
-            } else {
-                System.err.println("Error al crear la factura completa (" + statusCode + ")");
-            }
+            generateCompleteInvoicePDF(receptorDetails, invoice_number, itemsList, fullAmountTotal, qrBase64);
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura completa");
@@ -163,7 +139,31 @@ public class Complete {
         }
     }
 
-    public static void generateCompleteInvoicePDF(String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
+    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unit_amount, String iva_rate) {
+        //Validar que el IVA está entre los permitidos
+        List<String> validIvaRates = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO, Config.IVA_SUPLIDO);
+        if (!validIvaRates.contains(iva_rate)) {
+            throw new IllegalArgumentException("IVA no válido: " + iva_rate + ". Debe ser uno de: " + validIvaRates);
+        }
+        Map<String, String> item = new HashMap<>();
+        item.put("text", text);
+        item.put("quantity", quantity);
+        item.put("unit_amount", unit_amount);
+        item.put("iva_rate", iva_rate);
+        itemsList.add(item);
+    }
+
+    public static Map<String,String> createReceptor(String legal_name, String tax_number, boolean registered, String address_line, String postal_code) {
+        Map<String,String> receptorDetails = new HashMap<>();
+        receptorDetails.put("legal_name", legal_name);
+        receptorDetails.put("tax_number", tax_number);
+        receptorDetails.put("registered", String.valueOf(registered));//BOOLEANO
+        receptorDetails.put("address_line", address_line);
+        receptorDetails.put("postal_code", postal_code);
+        return receptorDetails;
+    }
+
+    public static void generateCompleteInvoicePDF(Map<String,String> receptorDetails, String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         String fileName = "Factura_Completa_" + number + ".pdf";
@@ -183,9 +183,9 @@ public class Complete {
         // ======== DATOS DEL CLIENTE ========
         Paragraph clientHeader = new Paragraph("Datos del Cliente", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
         document.add(clientHeader);
-        document.add(new Paragraph("Razón social: ARAGON FORMACION ACF S.L."));
-        document.add(new Paragraph("NIF: B22260863"));
-        document.add(new Paragraph("Dirección: Calle Mayor 123, Huesca"));
+        document.add(new Paragraph(receptorDetails.get("legal_name")));
+        document.add(new Paragraph(receptorDetails.get("tax_number")));
+        document.add(new Paragraph(receptorDetails.get("address_line")));
         document.add(Chunk.NEWLINE);
 
         // ======== AGRUPAR ÍTEMS POR IVA ========
@@ -196,7 +196,7 @@ public class Complete {
             groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
 
-        List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0");
+        List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0","0.0");
         double totalConIVA = 0.0;
 
         for (String ivaRate : ivaOrder) {
