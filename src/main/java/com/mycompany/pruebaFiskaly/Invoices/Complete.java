@@ -140,21 +140,35 @@ public class Complete {
     }
 
     public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unit_amount, String iva_rate) {
-        //Validar que el IVA está entre los permitidos
-        List<String> validIvaRates = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO, Config.IVA_SUPLIDO);
+        // Validar que el IVA está entre los permitidos
+        List<String> validIvaRates = Arrays.asList(
+                Config.IVA_GENERAL,
+                Config.IVA_REDUCIDO,
+                Config.IVA_SUPERREDUCIDO,
+                Config.IVA_EXENTO,
+                Config.IVA_SUPLIDO
+        );
+
         if (!validIvaRates.contains(iva_rate)) {
             throw new IllegalArgumentException("IVA no válido: " + iva_rate + ". Debe ser uno de: " + validIvaRates);
         }
+
         Map<String, String> item = new HashMap<>();
-        item.put("text", text);
+        // Añadir nota fiscal si el IVA es exento
+        if (iva_rate.equals("0")) {
+            item.put("text", text + " (Exento según art. 20 Ley 37/1992 del IVA)");
+        } else {
+            item.put("text", text);
+        }
         item.put("quantity", quantity);
         item.put("unit_amount", unit_amount);
         item.put("iva_rate", iva_rate);
+        
         itemsList.add(item);
     }
 
-    public static Map<String,String> createReceptor(String legal_name, String tax_number, boolean registered, String address_line, String postal_code) {
-        Map<String,String> receptorDetails = new HashMap<>();
+    public static Map<String, String> createReceptor(String legal_name, String tax_number, boolean registered, String address_line, String postal_code) {
+        Map<String, String> receptorDetails = new HashMap<>();
         receptorDetails.put("legal_name", legal_name);
         receptorDetails.put("tax_number", tax_number);
         receptorDetails.put("registered", String.valueOf(registered));//BOOLEANO
@@ -163,7 +177,7 @@ public class Complete {
         return receptorDetails;
     }
 
-    public static void generateCompleteInvoicePDF(Map<String,String> receptorDetails, String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
+    public static void generateCompleteInvoicePDF(Map<String, String> receptorDetails, String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         String fileName = "Factura_Completa_" + number + ".pdf";
@@ -196,7 +210,7 @@ public class Complete {
             groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
 
-        List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0","0.0");
+        List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0", "0.0");
         double totalConIVA = 0.0;
 
         for (String ivaRate : ivaOrder) {

@@ -16,7 +16,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250065;
+    public static int NUM_FACTURA = 20250072;
 
     public static void main(String[] args) throws IOException {
 
@@ -41,7 +41,7 @@ public class Pruebas {
         //String invoiceNumber = InvoicesManagement.getInvoiceNumberByID("b6134f79-cb3c-4254-ae1d-c4a720c62a42");
         //System.out.println(invoiceNumber);
         // OBTENER DETALLES DE UNA FACTURA
-        String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250065");
+        String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250072");
         InvoicesManagement.retrieveInvoice(invoiceid);
         // OBTENER ESTADO DE ERROR DE LA FACTURA Y SU DESCRIPCION
         //String invoiceNumber = InvoicesManagement.getInvoiceNumberByID("b6134f79-cb3c-4254-ae1d-c4a720c62a42");
@@ -59,7 +59,7 @@ public class Pruebas {
         }*/
         // CREAR FACTURA COMPLETA
         /*List<Map<String, String>> itemsList = new ArrayList<>();
-        Complete.createItem(itemsList, "Prueba1", "1", "111", "21");
+        Complete.createItem(itemsList, "Prueba1", "1", "111", "0");
         Complete.createItem(itemsList, "Prueba2", "2", "222", "4");
         Complete.createItem(itemsList, "Pureba3", "3", "333", "10");
         
