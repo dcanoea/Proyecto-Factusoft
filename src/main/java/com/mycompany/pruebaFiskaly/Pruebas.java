@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250100;
+    public static int NUM_FACTURA = 20250103;
 
     public static void main(String[] args) throws IOException {
 
@@ -34,7 +34,7 @@ public class Pruebas {
 //-------------------------------------------------------------------------------------------------------------------------------
         //INVOICES
         // OBTENER DETALLES DE UNA FACTURA
-        //String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250097");
+        //String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250100");
         //InvoicesManagement.retrieveInvoice(invoiceid);
         
         // OBTENER ESTADO DE ERROR DE LA FACTURA Y SU DESCRIPCION
@@ -48,14 +48,15 @@ public class Pruebas {
         
         Map<String,String> receptorDetails = Complete.createReceptor("David Cano Escario", "18053094A", true, "Paseo Ramon y Cajal", "22006");
         // CREAR FACTURA COMPLETA
-        Complete.createCompleteInvoice(NUM_FACTURA, itemsList, receptorDetails);
+        //Complete.createCompleteInvoice(NUM_FACTURA, itemsList, receptorDetails);
         
         // CREAR FACTURAS RECTIFICATIVAS
-        //Correcting.createCorrectingInvoiceSubstitutionComplete(20250079, NUM_FACTURA, itemsList, receptorDetails);
+        Correcting.createCorrectingInvoiceSubstitutionComplete(20250102, NUM_FACTURA, itemsList, receptorDetails);
 
         // RECUPERAR TOTAL FACTURA 
         //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
         //System.out.println(InvoicesManagement.getFullAmount(idFactura));
+        
         // FACTURA RECAPITULATIVA
         /*List<String> numerosFacturas = new ArrayList<>();
         int numFactura = 20250051;

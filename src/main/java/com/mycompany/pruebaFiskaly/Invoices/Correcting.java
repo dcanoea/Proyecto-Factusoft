@@ -64,18 +64,35 @@ public class Correcting {
                 String text = itemData.get("text");
                 String quantity = itemData.get("quantity");
                 String unitAmount = itemData.get("unit_amount");
+                String discount = itemData.get("discount");
                 String ivaRate = itemData.get("iva_rate");
 
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
-                double iva = Double.parseDouble(ivaRate);
-                double full = unit * qty * (1 + iva / 100);
+                double dct = Double.parseDouble(discount);
+
+                double iva;
+                double full;
+                double base = (unit - dct) * qty;
+
+                if (ivaRate.equalsIgnoreCase("exento")) {
+                    iva = 0.0;
+                    full = base;
+                } else {
+                    iva = Double.parseDouble(ivaRate);
+                    full = base * (1 + iva / 100);
+                }
                 totalAmount += full;
                 String fullAmount = String.format(Locale.US, "%.2f", full);
 
                 JSONObject category = new JSONObject();
-                category.put("type", "VAT");
-                category.put("rate", ivaRate);
+                if (ivaRate.equalsIgnoreCase("exento")) {
+                    category.put("type", "NO_VAT");
+                    category.put("cause", "TAXABLE_EXEMPT_1");
+                } else {
+                    category.put("type", "VAT");
+                    category.put("rate", ivaRate);
+                }
 
                 JSONObject system = new JSONObject();
                 system.put("type", "REGULAR");
@@ -85,6 +102,7 @@ public class Correcting {
                 item.put("text", text);
                 item.put("quantity", quantity);
                 item.put("unit_amount", unitAmount);
+                item.put("discount", discount);
                 item.put("full_amount", fullAmount);
                 item.put("system", system);
 
@@ -113,7 +131,6 @@ public class Correcting {
             data.put("number", invoice_number);
             data.put("series", invoice_series);
             data.put("text", "Factura RECTIFICATIVA");
-            //data.put("issued_at", ZonedDateTime.now(ZoneId.of("Europe/Madrid")).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
             data.put("items", items);
             data.put("full_amount", fullAmountTotal);
 
@@ -142,6 +159,8 @@ public class Correcting {
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
             System.out.println("Código de respuesta: " + statusCode);
+            System.out.println(responseBody.toString());
+            
             JSONObject json = new JSONObject(responseBody).getJSONObject("content");
             JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
             String qrBase64 = qr.getString("data");
@@ -154,7 +173,7 @@ public class Correcting {
         }
     }
 
-    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unit_amount, String iva_rate) {
+    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String discount, String unit_amount, String iva_rate) {
         // Validar que el IVA está entre los permitidos
         List<String> validIvaRates = Arrays.asList(
                 Config.IVA_GENERAL,
@@ -168,15 +187,16 @@ public class Correcting {
         }
 
         Map<String, String> item = new HashMap<>();
-        // Añadir nota fiscal si el IVA es exento
-        if (iva_rate.equals("0")) {
+        if (iva_rate.equals(Config.IVA_EXENTO)) {
             item.put("text", text + " (Exento según art. 20 Ley 37/1992 del IVA)");
+            item.put("iva_rate", "exento");
         } else {
             item.put("text", text);
+            item.put("iva_rate", iva_rate);
         }
         item.put("quantity", quantity);
+        item.put("discount", discount);
         item.put("unit_amount", unit_amount);
-        item.put("iva_rate", iva_rate);
 
         itemsList.add(item);
     }
@@ -222,9 +242,15 @@ public class Correcting {
         Map<String, List<Map<String, String>>> groupedByIVA = new HashMap<>();
         for (Map<String, String> item : itemsData) {
             String ivaRaw = item.getOrDefault("iva_rate", "21.0").trim();
-            String ivaRate = String.format(Locale.US, "%.1f", Double.parseDouble(ivaRaw));
+            String ivaRate;
+            if (ivaRaw.equalsIgnoreCase("exento")) {
+                ivaRate = "0.0";
+            } else {
+                ivaRate = String.format(Locale.US, "%.1f", Double.parseDouble(ivaRaw));
+            }
             groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
+
 
         List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0", "0.0");
         double totalConIVA = 0.0;
@@ -236,12 +262,12 @@ public class Correcting {
             }
 
             document.add(new Paragraph("IVA " + ivaRate + "%", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
-            PdfPTable table = new PdfPTable(4);
+            PdfPTable table = new PdfPTable(5);
             table.setWidthPercentage(100);
             table.setSpacingBefore(5f);
             table.setSpacingAfter(5f);
 
-            Stream.of("Descripción", "Precio unitario", "Unidades", "Base imponible")
+            Stream.of("Descripción", "Precio unitario", "Descuento", "Unidades", "Base imponible")
                     .forEach(headerTitle -> {
                         PdfPCell header = new PdfPCell(new Phrase(headerTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
                         header.setBorderWidth(1);
@@ -255,10 +281,12 @@ public class Correcting {
                 String text = item.get("text");
                 String unitAmount = item.get("unit_amount");
                 String quantity = item.get("quantity");
+                String discount = item.get("discount");
 
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
-                double base = unit * qty;
+                double dct = Double.parseDouble(discount);
+                double base = (unit - dct) * qty;
                 double iva = Double.parseDouble(ivaRate);
                 double cuota = base * iva / 100;
                 double total = base + cuota;
@@ -269,6 +297,7 @@ public class Correcting {
 
                 table.addCell(text);
                 table.addCell(String.format(Locale.US, "%.2f €", unit));
+                table.addCell(String.format(Locale.US, "%.2f €", dct));
                 table.addCell(quantity);
                 table.addCell(String.format(Locale.US, "%.2f €", base));
             }
