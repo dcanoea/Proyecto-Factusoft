@@ -59,12 +59,14 @@ public class Complete {
                 String text = itemData.get("text");
                 String quantity = itemData.get("quantity");
                 String unitAmount = itemData.get("unit_amount");
+                String discount = itemData.get("discount");
                 String ivaRate = itemData.get("iva_rate");
 
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
+                double dct = Double.parseDouble(discount);
                 double iva = Double.parseDouble(ivaRate);
-                double full = unit * qty * (1 + iva / 100);
+                double full = ((unit * qty) - dct) * (1 + iva / 100);
                 totalAmount += full;
                 String fullAmount = String.format(Locale.US, "%.2f", full);
 
@@ -80,6 +82,7 @@ public class Complete {
                 item.put("text", text);
                 item.put("quantity", quantity);
                 item.put("unit_amount", unitAmount);
+                item.put("discount", discount);
                 item.put("full_amount", fullAmount);
                 item.put("system", system);
 
@@ -139,7 +142,7 @@ public class Complete {
         }
     }
 
-    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unit_amount, String iva_rate) {
+    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String discount, String unit_amount, String iva_rate) {
         // Validar que el IVA está entre los permitidos
         List<String> validIvaRates = Arrays.asList(
                 Config.IVA_GENERAL,
@@ -160,6 +163,7 @@ public class Complete {
             item.put("text", text);
         }
         item.put("quantity", quantity);
+        item.put("discount", discount);
         item.put("unit_amount", unit_amount);
         item.put("iva_rate", iva_rate);
 
@@ -219,12 +223,12 @@ public class Complete {
             }
 
             document.add(new Paragraph("IVA " + ivaRate + "%", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
-            PdfPTable table = new PdfPTable(4);
+            PdfPTable table = new PdfPTable(5);
             table.setWidthPercentage(100);
             table.setSpacingBefore(5f);
             table.setSpacingAfter(5f);
 
-            Stream.of("Descripción", "Precio unitario", "Unidades", "Base imponible")
+            Stream.of("Descripción", "Precio unitario", "Descuento", "Unidades", "Base imponible")
                     .forEach(headerTitle -> {
                         PdfPCell header = new PdfPCell(new Phrase(headerTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
                         header.setBorderWidth(1);
@@ -238,10 +242,12 @@ public class Complete {
                 String text = item.get("text");
                 String unitAmount = item.get("unit_amount");
                 String quantity = item.get("quantity");
+                String discount = item.get("discount");
 
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
-                double base = unit * qty;
+                double dct = Double.parseDouble(discount);
+                double base = (unit * qty) - dct;
                 double iva = Double.parseDouble(ivaRate);
                 double cuota = base * iva / 100;
                 double total = base + cuota;
@@ -252,6 +258,7 @@ public class Complete {
 
                 table.addCell(text);
                 table.addCell(String.format(Locale.US, "%.2f €", unit));
+                table.addCell(String.format(Locale.US, "%.2f €", dct));
                 table.addCell(quantity);
                 table.addCell(String.format(Locale.US, "%.2f €", base));
             }

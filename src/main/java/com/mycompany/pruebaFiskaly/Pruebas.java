@@ -6,6 +6,7 @@ import com.mycompany.pruebaFiskaly.Invoices.InvoicesManagement;
 import com.mycompany.pruebaFiskaly.Invoices.Simplified;
 import com.mycompany.pruebaFiskaly.Invoices.Summary;
 import com.mycompany.pruebaFiskaly.Invoices.SummaryCOMPLETES;
+import static java.awt.SystemColor.text;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250081;
+    public static int NUM_FACTURA = 20250085;
 
     public static void main(String[] args) throws IOException {
 
@@ -42,11 +43,11 @@ public class Pruebas {
         
         // CREAR FACTURA COMPLETA
         List<Map<String, String>> itemsList = new ArrayList<>();
-        Complete.createItem(itemsList, "Prueba1", "1", "111", "0");
-        Complete.createItem(itemsList, "Prueba2", "2", "222", "4");
-        Complete.createItem(itemsList, "Pureba3", "3", "333", "10");      
+        Complete.createItem(itemsList, "Prueba1", "1", "0", "111", "0");
+        Complete.createItem(itemsList, "Prueba2", "2", "10", "222", "4");
+        Complete.createItem(itemsList, "Pureba3", "3", "20", "333", "10");      
         Map<String,String> receptorDetails = Complete.createReceptor("David Cano Escario", "18053094A", true, "Paseo Ramon y Cajal", "22006");
-        //Complete.createCompleteInvoice(NUM_FACTURA, itemsList, receptorDetails);
+        Complete.createCompleteInvoice(NUM_FACTURA, itemsList, receptorDetails);
         
         // CREAR FACTURAS RECTIFICATIVAS
         /*List<Map<String, String>> itemsList = new ArrayList<>();
@@ -54,7 +55,7 @@ public class Pruebas {
         Correcting.createItem(itemsList, "Curso de carretillero", "1", "357", "0");
         Correcting.createItem(itemsList, "Horas practicas", "3", "159", "10");
         Map<String,String> receptorDetails = Complete.createReceptor("David Cano Escario", "18053094A", true, "Paseo Ramon y Cajal", "22006");*/
-        Correcting.createCorrectingInvoiceSubstitutionComplete(20250079, NUM_FACTURA, itemsList, receptorDetails);
+        //Correcting.createCorrectingInvoiceSubstitutionComplete(20250079, NUM_FACTURA, itemsList, receptorDetails);
 
         // RECUPERAR TOTAL FACTURA 
         //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
