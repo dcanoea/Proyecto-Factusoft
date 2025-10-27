@@ -15,5 +15,7 @@ public class Config {
     public static final String IVA_GENERAL = "21";
     public static final String IVA_REDUCIDO = "10";
     public static final String IVA_SUPERREDUCIDO = "4";
-    public static final String IVA_EXENTO = "0";
+    public static final String IVA_EXENTO = "exento";
+    public static final String IVA_SUPLIDO = "suplido";
+    public static final String IVA_PRORRATA = "37";
 }

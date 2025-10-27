@@ -65,14 +65,30 @@ public class Complete {
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
                 double dct = Double.parseDouble(discount);
-                double iva = Double.parseDouble(ivaRate);
-                double full = ((unit * qty) - dct) * (1 + iva / 100);
+
+                double iva;
+                double full;
+                double base = (unit - dct) * qty;
+
+                if (ivaRate.equalsIgnoreCase("exento")) {
+                    iva = 0.0;
+                    full = base;
+                } else {
+                    iva = Double.parseDouble(ivaRate);
+                    full = base * (1 + iva / 100);
+                }
+
                 totalAmount += full;
                 String fullAmount = String.format(Locale.US, "%.2f", full);
 
                 JSONObject category = new JSONObject();
-                category.put("type", "VAT");
-                category.put("rate", ivaRate);
+                if (ivaRate.equalsIgnoreCase("exento")) {
+                    category.put("type", "NO_VAT");
+                    category.put("cause", "TAXABLE_EXEMPT_1");
+                } else {
+                    category.put("type", "VAT");
+                    category.put("rate", ivaRate);
+                }
 
                 JSONObject system = new JSONObject();
                 system.put("type", "REGULAR");
@@ -91,11 +107,11 @@ public class Complete {
 
             String fullAmountTotal = String.format(Locale.US, "%.2f", totalAmount);
 
-            // ======== RECEPTOR =========
+            // ========= RECEPTOR =========
             JSONObject id = new JSONObject();
             id.put("legal_name", receptorDetails.get("legal_name"));
             id.put("tax_number", receptorDetails.get("tax_number"));
-            id.put("registered", Boolean.parseBoolean(receptorDetails.get("registered")));// BOOLEAN
+            id.put("registered", Boolean.parseBoolean(receptorDetails.get("registered")));
 
             JSONObject recipient = new JSONObject();
             recipient.put("id", id);
@@ -105,7 +121,7 @@ public class Complete {
             JSONArray recipients = new JSONArray();
             recipients.put(recipient);
 
-            // ======== CONTENIDO DE DATA =========
+            // ========= DATA =========
             JSONObject data = new JSONObject();
             data.put("type", "SIMPLIFIED");
             data.put("number", invoice_number);
@@ -113,7 +129,7 @@ public class Complete {
             data.put("items", items);
             data.put("full_amount", fullAmountTotal);
 
-            // ======== CONTENIDO PRINCIPAL =========
+            // ========= CONTENT =========
             JSONObject content = new JSONObject();
             content.put("type", "COMPLETE");
             content.put("recipients", recipients);
@@ -124,17 +140,22 @@ public class Complete {
 
             put.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
 
-            // =========== PETICIÓN HTTP =================            
+            // ========= PETICIÓN =========
             HttpResponse response = client.execute(put);
             int statusCode = response.getStatusLine().getStatusCode();
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
             System.out.println("Código de respuesta: " + statusCode);
-            JSONObject json = new JSONObject(responseBody).getJSONObject("content");
-            JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
-            String qrBase64 = qr.getString("data");
 
-            generateCompleteInvoicePDF(receptorDetails, invoice_number, itemsList, fullAmountTotal, qrBase64);
+            JSONObject json = new JSONObject(responseBody).getJSONObject("content");
+            if (json.has("compliance")) {
+                JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
+                String qrBase64 = qr.getString("data");
+                generateCompleteInvoicePDF(receptorDetails, invoice_number, itemsList, fullAmountTotal, qrBase64);
+            } else {
+                System.err.println("La factura no fue aceptada por SIGN ES. No se generó QR.");
+                System.err.println("Respuesta: " + responseBody);
+            }
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura completa");
@@ -143,7 +164,6 @@ public class Complete {
     }
 
     public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String discount, String unit_amount, String iva_rate) {
-        // Validar que el IVA está entre los permitidos
         List<String> validIvaRates = Arrays.asList(
                 Config.IVA_GENERAL,
                 Config.IVA_REDUCIDO,
@@ -156,16 +176,16 @@ public class Complete {
         }
 
         Map<String, String> item = new HashMap<>();
-        // Añadir nota fiscal si el IVA es exento
-        if (iva_rate.equals("0")) {
+        if (iva_rate.equals(Config.IVA_EXENTO)) {
             item.put("text", text + " (Exento según art. 20 Ley 37/1992 del IVA)");
+            item.put("iva_rate", "exento");
         } else {
             item.put("text", text);
+            item.put("iva_rate", iva_rate);
         }
         item.put("quantity", quantity);
         item.put("discount", discount);
         item.put("unit_amount", unit_amount);
-        item.put("iva_rate", iva_rate);
 
         itemsList.add(item);
     }
@@ -209,7 +229,12 @@ public class Complete {
         Map<String, List<Map<String, String>>> groupedByIVA = new HashMap<>();
         for (Map<String, String> item : itemsData) {
             String ivaRaw = item.getOrDefault("iva_rate", "21.0").trim();
-            String ivaRate = String.format(Locale.US, "%.1f", Double.parseDouble(ivaRaw));
+            String ivaRate;
+            if (ivaRaw.equalsIgnoreCase("exento")) {
+                ivaRate = "0.0";
+            } else {
+                ivaRate = String.format(Locale.US, "%.1f", Double.parseDouble(ivaRaw));
+            }
             groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
 
@@ -247,7 +272,7 @@ public class Complete {
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
                 double dct = Double.parseDouble(discount);
-                double base = (unit * qty) - dct;
+                double base = (unit - dct) * qty;
                 double iva = Double.parseDouble(ivaRate);
                 double cuota = base * iva / 100;
                 double total = base + cuota;

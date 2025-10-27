@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250085;
+    public static int NUM_FACTURA = 20250100;
 
     public static void main(String[] args) throws IOException {
 
@@ -34,27 +34,23 @@ public class Pruebas {
 //-------------------------------------------------------------------------------------------------------------------------------
         //INVOICES
         // OBTENER DETALLES DE UNA FACTURA
-        //String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250072");
+        //String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250097");
         //InvoicesManagement.retrieveInvoice(invoiceid);
         
         // OBTENER ESTADO DE ERROR DE LA FACTURA Y SU DESCRIPCION
-        //String numFactura = "20250074";
-        //InvoicesManagement.getRegistrationDescription(numFactura, InvoicesManagement.getInvoiceIDByNumber(numFactura));
+        //InvoicesManagement.getRegistrationDescription("20250074", InvoicesManagement.getInvoiceIDByNumber("20250074"));
         
-        // CREAR FACTURA COMPLETA
         List<Map<String, String>> itemsList = new ArrayList<>();
-        Complete.createItem(itemsList, "Prueba1", "1", "0", "111", "0");
-        Complete.createItem(itemsList, "Prueba2", "2", "10", "222", "4");
-        Complete.createItem(itemsList, "Pureba3", "3", "20", "333", "10");      
+        Complete.createItem(itemsList, "Prueba1", "1", "0", "111", Config.IVA_EXENTO);
+        Complete.createItem(itemsList, "Prueba2", "2", "10", "222", Config.IVA_SUPERREDUCIDO);
+        Complete.createItem(itemsList, "Pureba3", "3", "20", "333", Config.IVA_GENERAL);
+        //Complete.createItem(itemsList, "Prueba4", "4", "5", "444", Config.IVA_SUPLIDO);
+        
         Map<String,String> receptorDetails = Complete.createReceptor("David Cano Escario", "18053094A", true, "Paseo Ramon y Cajal", "22006");
+        // CREAR FACTURA COMPLETA
         Complete.createCompleteInvoice(NUM_FACTURA, itemsList, receptorDetails);
         
         // CREAR FACTURAS RECTIFICATIVAS
-        /*List<Map<String, String>> itemsList = new ArrayList<>();
-        Correcting.createItem(itemsList, "Hora simulador", "5", "50", "21");
-        Correcting.createItem(itemsList, "Curso de carretillero", "1", "357", "0");
-        Correcting.createItem(itemsList, "Horas practicas", "3", "159", "10");
-        Map<String,String> receptorDetails = Complete.createReceptor("David Cano Escario", "18053094A", true, "Paseo Ramon y Cajal", "22006");*/
         //Correcting.createCorrectingInvoiceSubstitutionComplete(20250079, NUM_FACTURA, itemsList, receptorDetails);
 
         // RECUPERAR TOTAL FACTURA 
