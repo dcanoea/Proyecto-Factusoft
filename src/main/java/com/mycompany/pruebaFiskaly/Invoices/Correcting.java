@@ -18,9 +18,6 @@ import com.mycompany.pruebaFiskaly.Config;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -46,11 +43,12 @@ public class Correcting {
     public static void createCorrectingInvoiceSubstitutionComplete(int original_invoice_number_int, int new_invoice_number, List<Map<String, String>> itemsList, Map<String, String> receptorDetails) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
+            UUID invoice_id = UUID.randomUUID();
             String original_invoice_number = String.valueOf(original_invoice_number_int);
             String original_invoice_id = InvoicesManagement.getInvoiceIDByNumber(original_invoice_number);
-            UUID invoice_id = UUID.randomUUID();
+
             String invoice_number = String.valueOf(new_invoice_number);
-            String invoice_series = "R-2025";// Obligatorio en facturas rectificativas
+            String invoice_series = "2025";// Obligatorio en facturas rectificativas
             String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
             String token = Authentication.retrieveToken();
 
@@ -115,8 +113,7 @@ public class Correcting {
             data.put("number", invoice_number);
             data.put("series", invoice_series);
             data.put("text", "Factura RECTIFICATIVA");
-            data.put("issued_at", ZonedDateTime.now(ZoneId.of("Europe/Madrid"))
-                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+            //data.put("issued_at", ZonedDateTime.now(ZoneId.of("Europe/Madrid")).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
             data.put("items", items);
             data.put("full_amount", fullAmountTotal);
 
@@ -145,19 +142,11 @@ public class Correcting {
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
             System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Respuesta del servidor: " + responseBody);
-            JSONObject jsonPrint = new JSONObject(responseBody);
-            System.out.println(jsonPrint.toString(2));
+            JSONObject json = new JSONObject(responseBody).getJSONObject("content");
+            JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
+            String qrBase64 = qr.getString("data");
 
-            if (statusCode >= 200 && statusCode < 300) {
-                JSONObject json = new JSONObject(responseBody).getJSONObject("content");
-                JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
-                String qrBase64 = qr.getString("data");
-
-                generateCorrectingInvoicePDF(original_invoice_number, receptorDetails, invoice_number, itemsList, fullAmountTotal, qrBase64);
-            } else {
-                System.err.println("Error al crear la factura rectificativa (" + statusCode + ")");
-            }
+            generateCorrectingInvoicePDF(original_invoice_number, receptorDetails, invoice_number, itemsList, fullAmountTotal, qrBase64);
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura rectificativa");
@@ -166,16 +155,29 @@ public class Correcting {
     }
 
     public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unit_amount, String iva_rate) {
-        //Validar que el IVA está entre los permitidos
-        List<String> validIvaRates = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO, Config.IVA_SUPLIDO);
+        // Validar que el IVA está entre los permitidos
+        List<String> validIvaRates = Arrays.asList(
+                Config.IVA_GENERAL,
+                Config.IVA_REDUCIDO,
+                Config.IVA_SUPERREDUCIDO,
+                Config.IVA_EXENTO
+        );
+
         if (!validIvaRates.contains(iva_rate)) {
             throw new IllegalArgumentException("IVA no válido: " + iva_rate + ". Debe ser uno de: " + validIvaRates);
         }
+
         Map<String, String> item = new HashMap<>();
-        item.put("text", text);
+        // Añadir nota fiscal si el IVA es exento
+        if (iva_rate.equals("0")) {
+            item.put("text", text + " (Exento según art. 20 Ley 37/1992 del IVA)");
+        } else {
+            item.put("text", text);
+        }
         item.put("quantity", quantity);
         item.put("unit_amount", unit_amount);
         item.put("iva_rate", iva_rate);
+
         itemsList.add(item);
     }
 
@@ -189,17 +191,17 @@ public class Correcting {
         return receptorDetails;
     }
 
-    public static void generateCorrectingInvoicePDF(String original_invoice_number,Map<String, String> receptorDetails, String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
+    public static void generateCorrectingInvoicePDF(String original_invoice_number, Map<String, String> receptorDetails, String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        String fileName = "Factura_Completa_" + number + ".pdf";
+        String fileName = "Factura_Rectificativa_" + number + ".pdf";
 
         Document document = new Document(PageSize.A4, 50, 50, 50, 50);
         PdfWriter.getInstance(document, new FileOutputStream(desktopPath + fileName));
         document.open();
 
         // ======== CABECERA ========
-        Paragraph title = new Paragraph("FACTURA COMPLETA", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
+        Paragraph title = new Paragraph("FACTURA RECTIFICATIVA", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18));
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
         document.add(new Paragraph("Número: " + number));
@@ -224,7 +226,7 @@ public class Correcting {
             groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
 
-        List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0", "0.0", "0.0");
+        List<String> ivaOrder = Arrays.asList("21.0", "10.0", "4.0", "0.0");
         double totalConIVA = 0.0;
 
         for (String ivaRate : ivaOrder) {

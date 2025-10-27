@@ -246,7 +246,7 @@ public class Summary {
             groupedByIVA.computeIfAbsent(ivaRate, k -> new ArrayList<>()).add(item);
         }
 
-        List<String> ivaOrder = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO, Config.IVA_SUPLIDO);
+        List<String> ivaOrder = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO);
 
         double totalConIVA = 0.0;
 

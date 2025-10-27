@@ -1,11 +1,5 @@
 package com.mycompany.pruebaFiskaly;
 
-import com.itextpdf.text.pdf.parser.Path;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class Config {
 
     // URL de Fiskaly SIGN ES (en modo test)
@@ -22,5 +16,4 @@ public class Config {
     public static final String IVA_REDUCIDO = "10";
     public static final String IVA_SUPERREDUCIDO = "4";
     public static final String IVA_EXENTO = "0";
-    public static final String IVA_SUPLIDO = "0";
 }

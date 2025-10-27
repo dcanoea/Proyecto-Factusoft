@@ -39,8 +39,7 @@ import org.json.JSONObject;
 
 public class Complete {
 
-    // FALTA AÑADIR VALIDACIÓN NIF
-    // SE DEBE VALIDAR EL NIF, SINO LA FACTURA SE SUBE PERO EN ESTADO DE REVISIÓN
+    // FACTURA COMPLETA
     public static void createCompleteInvoice(int numFactura, List<Map<String, String>> itemsList, Map<String, String> receptorDetails) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
@@ -121,12 +120,13 @@ public class Complete {
             body.put("content", content);
 
             put.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
+
+            // =========== PETICIÓN HTTP =================            
             HttpResponse response = client.execute(put);
             int statusCode = response.getStatusLine().getStatusCode();
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
             System.out.println("Código de respuesta: " + statusCode);
-
             JSONObject json = new JSONObject(responseBody).getJSONObject("content");
             JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
             String qrBase64 = qr.getString("data");
@@ -145,8 +145,7 @@ public class Complete {
                 Config.IVA_GENERAL,
                 Config.IVA_REDUCIDO,
                 Config.IVA_SUPERREDUCIDO,
-                Config.IVA_EXENTO,
-                Config.IVA_SUPLIDO
+                Config.IVA_EXENTO
         );
 
         if (!validIvaRates.contains(iva_rate)) {
@@ -163,7 +162,7 @@ public class Complete {
         item.put("quantity", quantity);
         item.put("unit_amount", unit_amount);
         item.put("iva_rate", iva_rate);
-        
+
         itemsList.add(item);
     }
 
