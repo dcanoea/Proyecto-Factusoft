@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250110;
+    public static int NUM_FACTURA = 20250111;
 
     public static void main(String[] args) throws IOException {
 
@@ -47,16 +47,15 @@ public class Pruebas {
         
         List<JSONObject> suppliedItems = new ArrayList<>();
         JSONObject supplied = Complete.createSupplied("RECARGA TARJETA MUGI", "1", "50", "50");
-        System.out.println(supplied);
         suppliedItems.add(supplied);
         
         
         Map<String,String> receptorDetails = Complete.createReceptor("ARAGON FORMACION ACF S.L", "B22260863", true, "C/Comercio 28", "22000");
         // CREAR FACTURA COMPLETA
-        Complete.createCompleteInvoice(NUM_FACTURA, itemsList, suppliedItems, receptorDetails);
+        //Complete.createCompleteInvoice(NUM_FACTURA, itemsList, suppliedItems, receptorDetails);
         
         // CREAR FACTURAS RECTIFICATIVAS
-        //Correcting.createCorrectingInvoiceSubstitutionComplete(20250102, NUM_FACTURA, itemsList, receptorDetails);
+        //Correcting.createCorrectingInvoiceSubstitutionComplete(20250104, NUM_FACTURA, itemsList, suppliedItems, receptorDetails);
 
         // RECUPERAR TOTAL FACTURA 
         //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
