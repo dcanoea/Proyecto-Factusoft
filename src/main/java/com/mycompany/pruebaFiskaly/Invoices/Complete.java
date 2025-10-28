@@ -35,12 +35,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Complete {
 
     // FACTURA COMPLETA
-    public static void createCompleteInvoice(int numFactura, List<Map<String, String>> itemsList, Map<String, String> receptorDetails) {
+    public static void createCompleteInvoice(int numFactura, List<Map<String, String>> itemsList, List<JSONObject> suppliedItems, Map<String, String> receptorDetails) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
             UUID invoice_id = UUID.randomUUID();
@@ -55,6 +56,7 @@ public class Complete {
             JSONArray items = new JSONArray();
             double totalAmount = 0.0;
 
+            // Ítems normales y exentos
             for (Map<String, String> itemData : itemsList) {
                 String text = itemData.get("text");
                 String quantity = itemData.get("quantity");
@@ -65,11 +67,10 @@ public class Complete {
                 double unit = Double.parseDouble(unitAmount);
                 double qty = Double.parseDouble(quantity);
                 double dct = Double.parseDouble(discount);
+                double base = (unit - dct) * qty;
 
                 double iva;
                 double full;
-                double base = (unit - dct) * qty;
-
                 if (ivaRate.equalsIgnoreCase("exento")) {
                     iva = 0.0;
                     full = base;
@@ -103,6 +104,26 @@ public class Complete {
                 item.put("system", system);
 
                 items.put(item);
+            }
+
+            // Ítems suplidos (NO se suman a la base pero si al total de la factura)
+            for (JSONObject suplido : suppliedItems) {
+                items.put(suplido);
+                String suplidoFullStr = "0";
+                if (suplido.has("full_amount")) {
+                    Object fa = suplido.get("full_amount");
+                    if (fa != null) {
+                        suplidoFullStr = String.valueOf(fa);
+                    }
+                }
+                suplidoFullStr = suplidoFullStr.trim().replace(",", ".");
+                double suplidoFull = 0.0;
+                try {
+                    suplidoFull = Double.parseDouble(suplidoFullStr);
+                } catch (NumberFormatException e) {
+                    System.err.println("full_amount inválido en suplido: '" + suplidoFullStr + "'. Asumiendo 0.00");
+                }
+                totalAmount += suplidoFull;
             }
 
             String fullAmountTotal = String.format(Locale.US, "%.2f", totalAmount);
@@ -139,6 +160,7 @@ public class Complete {
             body.put("content", content);
 
             put.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
+            System.out.println(body.toString(5));
 
             // ========= PETICIÓN =========
             HttpResponse response = client.execute(put);
@@ -146,15 +168,19 @@ public class Complete {
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
             System.out.println("Código de respuesta: " + statusCode);
+            System.out.println("Respuesta completa del servidor:");
+            System.out.println(responseBody);
 
-            JSONObject json = new JSONObject(responseBody).getJSONObject("content");
-            if (json.has("compliance")) {
-                JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
-                String qrBase64 = qr.getString("data");
-                generateCompleteInvoicePDF(receptorDetails, invoice_number, itemsList, fullAmountTotal, qrBase64);
-            } else {
-                System.err.println("La factura no fue aceptada por SIGN ES. No se generó QR.");
-                System.err.println("Respuesta: " + responseBody);
+            try {
+                JSONObject json = new JSONObject(responseBody).getJSONObject("content");
+                if (json.has("compliance")) {
+                    JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
+                    String qrBase64 = qr.getString("data");
+                    generateCompleteInvoicePDF(receptorDetails, invoice_number, itemsList, suppliedItems, fullAmountTotal, qrBase64);
+                }
+            } catch (JSONException ex) {
+                System.err.println("Error al interpretar la respuesta JSON:");
+                ex.printStackTrace();
             }
 
         } catch (Exception e) {
@@ -190,6 +216,26 @@ public class Complete {
         itemsList.add(item);
     }
 
+    public static JSONObject createSupplied(String text, String quantity, String unit_amount, String full_amount) {
+        JSONObject category = new JSONObject();
+        category.put("type", "NO_VAT");
+        category.put("cause", "NON_TAXABLE_4");
+
+        JSONObject system = new JSONObject();
+        system.put("category", category);
+        system.put("type", "REGULAR");
+
+        JSONObject item = new JSONObject();
+        item.put("text", text);
+        item.put("quantity", quantity);
+        item.put("unit_amount", unit_amount);
+        item.put("full_amount", full_amount);
+        item.put("system", system);
+        //item.put("vat_type", "IVA");
+
+        return item;
+    }
+
     public static Map<String, String> createReceptor(String legal_name, String tax_number, boolean registered, String address_line, String postal_code) {
         Map<String, String> receptorDetails = new HashMap<>();
         receptorDetails.put("legal_name", legal_name);
@@ -200,7 +246,7 @@ public class Complete {
         return receptorDetails;
     }
 
-    public static void generateCompleteInvoicePDF(Map<String, String> receptorDetails, String number, List<Map<String, String>> itemsData, String fullAmount, String qrBase64) throws Exception {
+    public static void generateCompleteInvoicePDF(Map<String, String> receptorDetails, String number, List<Map<String, String>> itemsData, List<JSONObject> suppliedItems, String fullAmount, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         String fileName = "Factura_Completa_" + number + ".pdf";
@@ -252,6 +298,7 @@ public class Complete {
             table.setWidthPercentage(100);
             table.setSpacingBefore(5f);
             table.setSpacingAfter(5f);
+            table.setWidths(new float[]{4f, 2f, 2f, 1f, 2f});
 
             Stream.of("Descripción", "Precio unitario", "Descuento", "Unidades", "Base imponible")
                     .forEach(headerTitle -> {
@@ -281,11 +328,11 @@ public class Complete {
                 ivaTotal += cuota;
                 totalConIVA += total;
 
-                table.addCell(text);
-                table.addCell(String.format(Locale.US, "%.2f €", unit));
-                table.addCell(String.format(Locale.US, "%.2f €", dct));
-                table.addCell(quantity);
-                table.addCell(String.format(Locale.US, "%.2f €", base));
+                table.addCell(new PdfPCell(new Phrase(text)));
+                table.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f €", unit))));
+                table.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f €", dct))));
+                table.addCell(new PdfPCell(new Phrase(quantity)));
+                table.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f €", base))));
             }
 
             document.add(table);
@@ -298,8 +345,55 @@ public class Complete {
             document.add(Chunk.NEWLINE);
         }
 
-        // ======== TOTAL GENERAL ========
-        Paragraph total = new Paragraph("Importe total (IVA incluido): " + String.format(Locale.US, "%.2f €", totalConIVA),
+        // ======== TABLA DE SUPLIDOS (si existen) y cálculo de total final ========
+        double suplidosTotal = 0.0;
+        if (suppliedItems != null && !suppliedItems.isEmpty()) {
+            document.add(new Paragraph("Suplidos", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
+            PdfPTable supTable = new PdfPTable(4);
+            supTable.setWidthPercentage(100);
+            supTable.setSpacingBefore(5f);
+            supTable.setSpacingAfter(5f);
+            supTable.setWidths(new float[]{5f, 2f, 1f, 2f});
+
+            Stream.of("Descripción", "Precio unitario", "Unidades", "Importe")
+                    .forEach(headerTitle -> {
+                        PdfPCell header = new PdfPCell(new Phrase(headerTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
+                        header.setBorderWidth(1);
+                        supTable.addCell(header);
+                    });
+
+            for (JSONObject suplido : suppliedItems) {
+                String text = suplido.optString("text", "");
+                String unitAmount = suplido.optString("unit_amount", "0");
+                String quantity = suplido.optString("quantity", "1");
+                String fullAmountStr = suplido.optString("full_amount", "0").trim().replace(",", ".");
+                double fullAmountVal = 0.0;
+                try {
+                    fullAmountVal = Double.parseDouble(fullAmountStr);
+                } catch (NumberFormatException ex) {
+                    System.err.println("full_amount inválido en suplido: '" + fullAmountStr + "'. Usando 0.00");
+                }
+
+                suplidosTotal += fullAmountVal;
+
+                supTable.addCell(new PdfPCell(new Phrase(text)));
+                supTable.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f €", Double.parseDouble(unitAmount)))));
+                supTable.addCell(new PdfPCell(new Phrase(quantity)));
+                supTable.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f €", fullAmountVal))));
+            }
+
+            document.add(supTable);
+
+            Paragraph supSummary = new Paragraph("Total suplidos: " + String.format(Locale.US, "%.2f €", suplidosTotal),
+                    FontFactory.getFont(FontFactory.HELVETICA, 11));
+            supSummary.setAlignment(Element.ALIGN_RIGHT);
+            document.add(supSummary);
+            document.add(Chunk.NEWLINE);
+        }
+
+        // ======== TOTAL GENERAL INCLUYENDO SUPLIDOS ========
+        double finalTotal = totalConIVA + suplidosTotal;
+        Paragraph total = new Paragraph("Importe total (IVA incluido, con suplidos): " + String.format(Locale.US, "%.2f €", finalTotal),
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13));
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);
