@@ -17,7 +17,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250111;
+    public static int NUM_FACTURA = 20250120;
 
     public static void main(String[] args) throws IOException {
 
@@ -34,33 +34,37 @@ public class Pruebas {
 //-------------------------------------------------------------------------------------------------------------------------------
         //INVOICES
         // OBTENER DETALLES DE UNA FACTURA
-        //String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250109");
-        //InvoicesManagement.retrieveInvoice(invoiceid);
-        
+        String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250119");
+        InvoicesManagement.retrieveInvoice(invoiceid);
         // OBTENER ESTADO DE ERROR DE LA FACTURA Y SU DESCRIPCION
         //InvoicesManagement.getRegistrationDescription("20250074", InvoicesManagement.getInvoiceIDByNumber("20250074"));
-        
         List<Map<String, String>> itemsList = new ArrayList<>();
         Complete.createItem(itemsList, "Prueba1", "1", "0", "111", Config.IVA_EXENTO);
         Complete.createItem(itemsList, "Prueba2", "2", "10", "222", Config.IVA_SUPERREDUCIDO);
         Complete.createItem(itemsList, "Pureba3", "3", "20", "333", Config.IVA_GENERAL);
-        
+
+        List<JSONObject> globalDiscounts = new ArrayList<>();
+        JSONObject discount1 = Complete.createGlobalDiscount(Config.IVA_GENERAL, "1", "-50");
+        globalDiscounts.add(discount1);
+        JSONObject discount2 = Complete.createGlobalDiscount(Config.IVA_SUPERREDUCIDO, "1", "-50");
+        globalDiscounts.add(discount2);
+        JSONObject discount3 = Complete.createGlobalDiscount(Config.IVA_EXENTO, "1", "-50");
+        globalDiscounts.add(discount3);
+
         List<JSONObject> suppliedItems = new ArrayList<>();
-        JSONObject supplied = Complete.createSupplied("RECARGA TARJETA MUGI", "1", "50", "50");
-        suppliedItems.add(supplied);
-        
-        
-        Map<String,String> receptorDetails = Complete.createReceptor("ARAGON FORMACION ACF S.L", "B22260863", true, "C/Comercio 28", "22000");
+        //JSONObject supplied = Complete.createSupplied("RECARGA TARJETA MUGI", "1", "50", "50");
+        //suppliedItems.add(supplied);
+
+        Map<String, String> receptorDetails = Complete.createReceptor("ARAGON FORMACION ACF S.L", "B22260863", true, "C/Comercio 28", "22000");
+
         // CREAR FACTURA COMPLETA
-        //Complete.createCompleteInvoice(NUM_FACTURA, itemsList, suppliedItems, receptorDetails);
-        
+        Complete.createCompleteInvoice(NUM_FACTURA, itemsList, suppliedItems, globalDiscounts, receptorDetails);
+
         // CREAR FACTURAS RECTIFICATIVAS
         //Correcting.createCorrectingInvoiceSubstitutionComplete(20250104, NUM_FACTURA, itemsList, suppliedItems, receptorDetails);
-
         // RECUPERAR TOTAL FACTURA 
         //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
         //System.out.println(InvoicesManagement.getFullAmount(idFactura));
-        
         // FACTURA RECAPITULATIVA
         /*List<String> numerosFacturas = new ArrayList<>();
         int numFactura = 20250051;
@@ -70,9 +74,7 @@ public class Pruebas {
         }
         Summary.createSummaryInvoice(NUM_FACTURA, numerosFacturas);*/
         //SummaryCOMPLETES.createSummaryCompleteInvoice(NUM_FACTURA, numerosFacturas);
-        
         //MÉTODO CANCELAR FACTURA (FUNCIONA, PERO NO VEO CUANDO SE PUEDE USAR)
         //InvoicesManagement.cancelInvoice("20250063");
-       
     }
 }

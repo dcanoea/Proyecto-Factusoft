@@ -77,7 +77,7 @@ public class InvoicesManagement {
             } else {
                 System.err.println("No se encontró el contenido de la factura: " + invoice_id);
             }
-            System.out.println(json.toString(2));
+            System.out.println(json.toString(5));
 
         } catch (Exception e) {
             System.err.println("Error al recuperar la factura: " + invoice_id);
