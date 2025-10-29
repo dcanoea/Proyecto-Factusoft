@@ -29,12 +29,12 @@ import java.util.HashMap;
 
 public class Simplified {
 
-    public static void createSimplifiedInvoice(int invoiceNumber, List<Map<String, String>> itemsList) {
+    public static void createSimplifiedInvoice(String invoiceNumber, List<Map<String, String>> itemsList) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            UUID invoice_id = UUID.randomUUID();
+            String clientID = Clients.getFirstClientID();
+            UUID invoiceID = UUID.randomUUID();
             String invoice_number = String.valueOf(invoiceNumber);
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -113,17 +113,17 @@ public class Simplified {
         }
     }
 
-    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unit_amount, String iva_rate) {
+    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String unitAmount, String ivaRate) {
         //Validar que el IVA está entre los permitidos
         List<String> validIvaRates = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO);
-        if (!validIvaRates.contains(iva_rate)) {
-            throw new IllegalArgumentException("IVA no válido: " + iva_rate + ". Debe ser uno de: " + validIvaRates);
+        if (!validIvaRates.contains(ivaRate)) {
+            throw new IllegalArgumentException("IVA no válido: " + ivaRate + ". Debe ser uno de: " + validIvaRates);
         }
         Map<String, String> item = new HashMap<>();
         item.put("text", text);
         item.put("quantity", quantity);
-        item.put("unit_amount", unit_amount);
-        item.put("iva_rate", iva_rate);
+        item.put("unit_amount", unitAmount);
+        item.put("iva_rate", ivaRate);
         itemsList.add(item);
     }
 

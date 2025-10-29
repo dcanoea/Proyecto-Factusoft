@@ -15,7 +15,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.mycompany.pruebaFiskaly.Authentication;
 import com.mycompany.pruebaFiskaly.Clients;
 import com.mycompany.pruebaFiskaly.Config;
-import com.mycompany.pruebaFiskaly.Invoices.InvoicesManagement;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -115,7 +114,7 @@ public class SummaryCOMPLETES {
             }
 
             if (items.length() == 0) {
-                System.err.println("❌ No se encontraron ítems válidos. No se puede emitir la recapitulativa.");
+                System.err.println("No se encontraron ítems válidos. No se puede emitir la recapitulativa.");
                 return;
             }
 
@@ -175,8 +174,8 @@ public class SummaryCOMPLETES {
 
     public static JSONObject getRawInvoiceJson(String uuid) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + uuid;
+            String clientID = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + uuid;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);

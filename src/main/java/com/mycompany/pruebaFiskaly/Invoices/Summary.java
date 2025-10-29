@@ -43,10 +43,10 @@ public class Summary {
 
     public static void createSummaryInvoice(int invoiceNumber, List<String> numerosFactura) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            UUID invoice_id = UUID.randomUUID();
+            String clientID = Clients.getFirstClientID();
+            UUID invoiceID = UUID.randomUUID();
             String invoiceNumStr = String.valueOf(invoiceNumber);
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -89,7 +89,7 @@ public class Summary {
                     item.put("text", "Factura " + numero + ": " + text);
                     item.put("quantity", quantity);
                     item.put("unit_amount", String.format(Locale.US, "%.2f", unit));
-                    item.put("full_amount", String.format(Locale.US, "%.2f", total)); // ✅ obligatorio
+                    item.put("full_amount", String.format(Locale.US, "%.2f", total));
                     item.put("system", system);
 
                     items.put(item);
@@ -172,8 +172,8 @@ public class Summary {
 
     public static JSONArray getInvoiceItems(String uuid) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + uuid;
+            String clientID = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + uuid;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);

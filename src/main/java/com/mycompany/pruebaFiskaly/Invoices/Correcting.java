@@ -40,16 +40,16 @@ import org.json.JSONObject;
 public class Correcting {
 
     // FACTURA RECTIFICATIVA DE SUSTITUCIÓN DE FACTURA COMPLETA(reemplaza completamente a la factura original)
-    public static void createCorrectingInvoiceSubstitutionComplete(int original_invoice_number_int, int new_invoice_number, List<Map<String, String>> itemsList, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
+    public static void createCorrectingInvoiceSubstitutionComplete(int originalInvoiceNumberInt, int newInvoiceNumber, List<Map<String, String>> itemsList, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            UUID invoice_id = UUID.randomUUID();
-            String original_invoice_number = String.valueOf(original_invoice_number_int);
-            String original_invoice_id = InvoicesManagement.getInvoiceIDByNumber(original_invoice_number);
+            String clientID = Clients.getFirstClientID();
+            UUID invoiceID = UUID.randomUUID();
+            String originalInvoiceNumber = String.valueOf(originalInvoiceNumberInt);
+            String originalInvoiceID = InvoicesManagement.getInvoiceIDByNumber(originalInvoiceNumber);
 
-            String invoice_number = String.valueOf(new_invoice_number);
-            String invoice_series = "R2025";// Obligatorio en facturas rectificativas
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String invoiceNumber = String.valueOf(newInvoiceNumber);
+            String invoiceSeries = "R2025";// Obligatorio en facturas rectificativas
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -168,8 +168,8 @@ public class Correcting {
             // ======== SUBOBJETO DATA =========
             JSONObject data = new JSONObject();
             data.put("type", "SIMPLIFIED"); // Este campo debe ser SIMPLIFIED incluso en factura COMPLETE
-            data.put("number", invoice_number);
-            data.put("series", invoice_series);
+            data.put("number", invoiceNumber);
+            data.put("series", invoiceSeries);
             data.put("text", "Factura RECTIFICATIVA");
             data.put("items", items);
             data.put("full_amount", fullAmountTotal);
@@ -184,7 +184,7 @@ public class Correcting {
             JSONObject content = new JSONObject();
             content.put("type", "CORRECTING");
             content.put("method", "SUBSTITUTION");
-            content.put("id", original_invoice_id); // UUIDv4 válido de la factura original. Se obtiene mediante método Invoices_Management.get_Invoice_Id(numeroFactura);
+            content.put("id", originalInvoiceID); // UUIDv4 válido de la factura original. Se obtiene mediante método Invoices_Management.get_Invoice_Id(numeroFactura);
             content.put("invoice", invoice);
             content.put("code", "CORRECTION_1");
 
@@ -205,7 +205,7 @@ public class Correcting {
             JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
             String qrBase64 = qr.getString("data");
 
-            generateCorrectingInvoicePDF(original_invoice_number, receptorDetails, invoice_number, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
+            generateCorrectingInvoicePDF(originalInvoiceNumber, receptorDetails, invoiceNumber, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura rectificativa");
@@ -213,7 +213,7 @@ public class Correcting {
         }
     }
 
-    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String discount, String unit_amount, String iva_rate) {
+    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String discount, String unitAmount, String ivaRate) {
         // Validar que el IVA está entre los permitidos
         List<String> validIvaRates = Arrays.asList(
                 Config.IVA_GENERAL,
@@ -222,26 +222,26 @@ public class Correcting {
                 Config.IVA_EXENTO
         );
 
-        if (!validIvaRates.contains(iva_rate)) {
-            throw new IllegalArgumentException("IVA no válido: " + iva_rate + ". Debe ser uno de: " + validIvaRates);
+        if (!validIvaRates.contains(ivaRate)) {
+            throw new IllegalArgumentException("IVA no válido: " + ivaRate + ". Debe ser uno de: " + validIvaRates);
         }
 
         Map<String, String> item = new HashMap<>();
-        if (iva_rate.equals(Config.IVA_EXENTO)) {
+        if (ivaRate.equals(Config.IVA_EXENTO)) {
             item.put("text", text + " (Exento según art. 20 Ley 37/1992 del IVA)");
             item.put("iva_rate", "exento");
         } else {
             item.put("text", text);
-            item.put("iva_rate", iva_rate);
+            item.put("iva_rate", ivaRate);
         }
         item.put("quantity", quantity);
         item.put("discount", discount);
-        item.put("unit_amount", unit_amount);
+        item.put("unit_amount", unitAmount);
 
         itemsList.add(item);
     }
 
-    public static JSONObject createSupplied(String text, String quantity, String unit_amount, String full_amount) {
+    public static JSONObject createSupplied(String text, String quantity, String unitAmount, String fullAmount) {
         JSONObject category = new JSONObject();
         category.put("type", "NO_VAT");
         category.put("cause", "NON_TAXABLE_4");
@@ -253,16 +253,16 @@ public class Correcting {
         JSONObject item = new JSONObject();
         item.put("text", text);
         item.put("quantity", quantity);
-        item.put("unit_amount", unit_amount);
-        item.put("full_amount", full_amount);
+        item.put("unit_amount", unitAmount);
+        item.put("full_amount", fullAmount);
         item.put("system", system);
         //item.put("vat_type", "IVA");
 
         return item;
     }
 
-    public static JSONObject createGlobalDiscount(String iva, String quantity, String unit_amount) {
-        double unit = Double.parseDouble(unit_amount);
+    public static JSONObject createGlobalDiscount(String iva, String quantity, String unitAmount) {
+        double unit = Double.parseDouble(unitAmount);
         double qty = Double.parseDouble(quantity);
         double IVA;
         if (iva.equals(Config.IVA_EXENTO)) {
@@ -289,7 +289,7 @@ public class Correcting {
         JSONObject item = new JSONObject();
         item.put("text", "Descuento");
         item.put("quantity", quantity);
-        item.put("unit_amount", unit_amount);
+        item.put("unit_amount", unitAmount);
         item.put("full_amount", fullAmountTotal);
         item.put("system", system);
 
@@ -524,16 +524,16 @@ public class Correcting {
 
     /*
         //MÉTODO PARA CREAR FACTURAS RECTIFICATIVAS POR DIFERENCIA PARA FACTURAS COMPLETAS
-    public static void createCorrectingInvoiceDifferencesComplete(String original_invoice_number, String original_invoice_id) {
+    public static void createCorrectingInvoiceDifferencesComplete(String originalInvoiceNumber, String originalInvoiceID) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            UUID invoice_id = UUID.randomUUID();
-            String invoice_number = original_invoice_number + "R";
-            if (invoice_number.length() > 20) {
-                invoice_number = invoice_number.substring(0, 20);
+            String clientID = Clients.getFirstClientID();
+            UUID invoiceID = UUID.randomUUID();
+            String invoiceNumber = originalInvoiceNumber + "R";
+            if (invoiceNumber.length() > 20) {
+                invoiceNumber = invoiceNumber.substring(0, 20);
             }
-            String invoice_series = "R-2025";
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String invoiceSeries = "R-2025";
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -587,8 +587,8 @@ public class Correcting {
             // ======== SUBOBJETO DATA =========
             JSONObject data = new JSONObject();
             data.put("type", "SIMPLIFIED");
-            data.put("number", invoice_number);
-            data.put("series", invoice_series);
+            data.put("number", invoiceNumber);
+            data.put("series", invoiceSeries);
             data.put("text", "Rectificación por diferencia");
             data.put("issued_at", ZonedDateTime.now(ZoneId.of("Europe/Madrid"))
                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -606,7 +606,7 @@ public class Correcting {
             content.put("type", "CORRECTING");
             content.put("method", "DIFFERENCES");
             content.put("code", "CORRECTION_1");
-            content.put("id", original_invoice_id);
+            content.put("id", originalInvoiceID);
             content.put("invoice", invoice);
 
             JSONObject body = new JSONObject();
@@ -629,7 +629,7 @@ public class Correcting {
                 JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
                 String qrBase64 = qr.getString("data");
 
-                generateCorrectingInvoicePDF(invoice_number, "DIFFERENCES", "ARAGON FORMACION ACF S.L.",
+                generateCorrectingInvoicePDF(invoiceNumber, "DIFFERENCES", "ARAGON FORMACION ACF S.L.",
                         "B22260863", "Calle Mayor 123, Huesca", text, quantity, unitAmount, ivaRate, fullAmount, qrBase64);
             } else {
                 System.err.println("Error al crear la factura rectificativa (" + statusCode + ")");
@@ -643,13 +643,13 @@ public class Correcting {
      */
  /*
     // FACTURA RECTIFICATIVA DE SUSTITUCIÓN DE FACTURA SIMPLIFICADA(reemplaza completamente a la factura original)
-    public static void createCorrectingInvoiceSubstitutionSimplified(String original_invoice_number, String original_invoice_id) {
+    public static void createCorrectingInvoiceSubstitutionSimplified(String originalInvoiceNumber, String originalInvoiceID) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            UUID invoice_id = UUID.randomUUID();
-            String invoice_number = original_invoice_number + "R"; // Máximo 20 caracteres
-            String invoice_series = "R-2025"; // Obligatorio en facturas rectificativas
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String clientID = Clients.getFirstClientID();
+            UUID invoiceID = UUID.randomUUID();
+            String invoiceNumber = originalInvoiceNumber + "R"; // Máximo 20 caracteres
+            String invoiceSeries = "R-2025"; // Obligatorio en facturas rectificativas
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -689,8 +689,8 @@ public class Correcting {
             // ======== OBJETO INVOICE SIMPLIFICADO =========
             JSONObject invoice = new JSONObject();
             invoice.put("type", "SIMPLIFIED");
-            invoice.put("number", invoice_number);
-            invoice.put("series", invoice_series);
+            invoice.put("number", invoiceNumber);
+            invoice.put("series", invoiceSeries);
             invoice.put("text", "Factura RECTIFICATIVA");
             invoice.put("issued_at", ZonedDateTime.now(ZoneId.of("Europe/Madrid"))
                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -702,7 +702,7 @@ public class Correcting {
             content.put("type", "CORRECTING");
             content.put("method", "SUBSTITUTION");
             content.put("code", "CORRECTION_1");
-            content.put("id", original_invoice_id); // UUIDv4 válido de la factura original
+            content.put("id", originalInvoiceID); // UUIDv4 válido de la factura original
             content.put("invoice", invoice);
 
             JSONObject body = new JSONObject();
@@ -724,7 +724,7 @@ public class Correcting {
             JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
             String qrBase64 = qr.getString("data");
 
-            generateCorrectingInvoicePDF(invoice_number, "Factura RECTIFICATIVA", "CLIENTE SIMPLIFICADO",
+            generateCorrectingInvoicePDF(invoiceNumber, "Factura RECTIFICATIVA", "CLIENTE SIMPLIFICADO",
                     "N/A", "N/A", text, quantity, unitAmount, ivaRate, fullAmount, qrBase64);
 
         } catch (Exception e) {
@@ -734,13 +734,13 @@ public class Correcting {
     }*/
  /*
     //FACTURA RECTIFICATIVA DE DIFERENCIA DE FACTURA SIMPLIFICADA
-    public static void createCorrectingInvoiceDifferencesSimplified(String original_invoice_number, String original_invoice_id) {
+    public static void createCorrectingInvoiceDifferencesSimplified(String originalInvoiceNumber, String originalInvoiceID) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            UUID invoice_id = UUID.randomUUID();
-            String invoice_number = original_invoice_number + "R";
-            String invoice_series = "R-2025"; // Serie para rectificativas
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String clientID = Clients.getFirstClientID();
+            UUID invoiceID = UUID.randomUUID();
+            String invoiceNumber = originalInvoiceNumber + "R";
+            String invoiceSeries = "R-2025"; // Serie para rectificativas
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -778,8 +778,8 @@ public class Correcting {
 
             JSONObject invoice = new JSONObject();
             invoice.put("type", "SIMPLIFIED");
-            invoice.put("number", invoice_number);
-            invoice.put("series", invoice_series);
+            invoice.put("number", invoiceNumber);
+            invoice.put("series", invoiceSeries);
             invoice.put("text", "Rectificación por diferencia");
             invoice.put("issued_at", ZonedDateTime.now(ZoneId.of("Europe/Madrid"))
                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -790,7 +790,7 @@ public class Correcting {
             content.put("type", "CORRECTING");
             content.put("method", "DIFFERENCES");
             content.put("code", "CORRECTION_1");
-            content.put("id", original_invoice_id); // UUID de la factura original
+            content.put("id", originalInvoiceID); // UUID de la factura original
             content.put("invoice", invoice);
 
             JSONObject body = new JSONObject();
@@ -813,7 +813,7 @@ public class Correcting {
                 JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
                 String qrBase64 = qr.getString("data");
 
-                generateCorrectingInvoicePDF(invoice_number, "Factura RECTIFICATIVA (DIFERENCIA)", "CLIENTE SIMPLIFICADO",
+                generateCorrectingInvoicePDF(invoiceNumber, "Factura RECTIFICATIVA (DIFERENCIA)", "CLIENTE SIMPLIFICADO",
                         "N/A", "N/A", text, quantity, unitAmount, ivaRate, fullAmount, qrBase64);
             } else {
                 System.err.println("Error al crear la factura rectificativa (" + statusCode + ")");

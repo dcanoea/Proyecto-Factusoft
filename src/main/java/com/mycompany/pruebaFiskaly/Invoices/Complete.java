@@ -43,10 +43,10 @@ public class Complete {
     // FACTURA COMPLETA
     public static void createCompleteInvoice(int numFactura, List<Map<String, String>> itemsList, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            UUID invoice_id = UUID.randomUUID();
-            String invoice_number = String.valueOf(numFactura);
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String clientID = Clients.getFirstClientID();
+            UUID invoiceID = UUID.randomUUID();
+            String invoiceNumber = String.valueOf(numFactura);
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -165,7 +165,7 @@ public class Complete {
             // ========= DATA =========
             JSONObject data = new JSONObject();
             data.put("type", "SIMPLIFIED");
-            data.put("number", invoice_number);
+            data.put("number", invoiceNumber);
             data.put("text", "Factura COMPLETA");
             data.put("items", items);
             data.put("full_amount", fullAmountTotal);
@@ -196,7 +196,7 @@ public class Complete {
                 if (json.has("compliance")) {
                     JSONObject qr = json.getJSONObject("compliance").getJSONObject("code").getJSONObject("image");
                     String qrBase64 = qr.getString("data");
-                    generateCompleteInvoicePDF(receptorDetails, invoice_number, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
+                    generateCompleteInvoicePDF(receptorDetails, invoiceNumber, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
                 }
             } catch (JSONException ex) {
                 System.err.println("Error al interpretar la respuesta JSON:");
@@ -209,7 +209,7 @@ public class Complete {
         }
     }
 
-    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String discount, String unit_amount, String iva_rate) {
+    public static void createItem(List<Map<String, String>> itemsList, String text, String quantity, String discount, String unitAmount, String ivaRate) {
         List<String> validIvaRates = Arrays.asList(
                 Config.IVA_GENERAL,
                 Config.IVA_REDUCIDO,
@@ -217,26 +217,26 @@ public class Complete {
                 Config.IVA_EXENTO
         );
 
-        if (!validIvaRates.contains(iva_rate)) {
-            throw new IllegalArgumentException("IVA no válido: " + iva_rate + ". Debe ser uno de: " + validIvaRates);
+        if (!validIvaRates.contains(ivaRate)) {
+            throw new IllegalArgumentException("IVA no válido: " + ivaRate + ". Debe ser uno de: " + validIvaRates);
         }
 
         Map<String, String> item = new HashMap<>();
-        if (iva_rate.equals(Config.IVA_EXENTO)) {
+        if (ivaRate.equals(Config.IVA_EXENTO)) {
             item.put("text", text + " (Exento según art. 20 Ley 37/1992 del IVA)");
             item.put("iva_rate", "exento");
         } else {
             item.put("text", text);
-            item.put("iva_rate", iva_rate);
+            item.put("iva_rate", ivaRate);
         }
         item.put("quantity", quantity);
         item.put("discount", discount);
-        item.put("unit_amount", unit_amount);
+        item.put("unit_amount", unitAmount);
 
         itemsList.add(item);
     }
 
-    public static JSONObject createSupplied(String text, String quantity, String unit_amount, String full_amount) {
+    public static JSONObject createSupplied(String text, String quantity, String unitAmount, String fullAmount) {
         JSONObject category = new JSONObject();
         category.put("type", "NO_VAT");
         category.put("cause", "NON_TAXABLE_4");
@@ -248,16 +248,16 @@ public class Complete {
         JSONObject item = new JSONObject();
         item.put("text", text);
         item.put("quantity", quantity);
-        item.put("unit_amount", unit_amount);
-        item.put("full_amount", full_amount);
+        item.put("unit_amount", unitAmount);
+        item.put("full_amount", fullAmount);
         item.put("system", system);
         //item.put("vat_type", "IVA");
 
         return item;
     }
 
-    public static JSONObject createGlobalDiscount(String iva, String quantity, String unit_amount) {
-        double unit = Double.parseDouble(unit_amount);
+    public static JSONObject createGlobalDiscount(String iva, String quantity, String unitAmount) {
+        double unit = Double.parseDouble(unitAmount);
         double qty = Double.parseDouble(quantity);
         double IVA;
         if (iva.equals(Config.IVA_EXENTO)) {
@@ -284,20 +284,20 @@ public class Complete {
         JSONObject item = new JSONObject();
         item.put("text", "Descuento");
         item.put("quantity", quantity);
-        item.put("unit_amount", unit_amount);
+        item.put("unit_amount", unitAmount);
         item.put("full_amount", fullAmountTotal);
         item.put("system", system);
 
         return item;
     }
 
-    public static Map<String, String> createReceptor(String legal_name, String tax_number, boolean registered, String address_line, String postal_code) {
+    public static Map<String, String> createReceptor(String legalName, String taxNumber, boolean registered, String addressLine, String postalCode) {
         Map<String, String> receptorDetails = new HashMap<>();
-        receptorDetails.put("legal_name", legal_name);
-        receptorDetails.put("tax_number", tax_number);
+        receptorDetails.put("legal_name", legalName);
+        receptorDetails.put("tax_number", taxNumber);
         receptorDetails.put("registered", String.valueOf(registered));//BOOLEANO
-        receptorDetails.put("address_line", address_line);
-        receptorDetails.put("postal_code", postal_code);
+        receptorDetails.put("address_line", addressLine);
+        receptorDetails.put("postal_code", postalCode);
         return receptorDetails;
     }
 

@@ -30,8 +30,8 @@ public class InvoicesManagement {
     // Este endpoint obtiene una lista de las facturas emitidas desde un dispositivo cliente.
     public static void listInvoices() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices";
+            String clientID = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices";
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
@@ -54,12 +54,12 @@ public class InvoicesManagement {
     }
 
     // Obtiene los detalles de una factura
-    public static JSONObject retrieveInvoice(String invoice_id) {
+    public static JSONObject retrieveInvoice(String invoiceID) {
         JSONObject factura = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String clientID = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -75,24 +75,24 @@ public class InvoicesManagement {
             if (json.has("content")) {
                 factura = json.getJSONObject("content");
             } else {
-                System.err.println("No se encontró el contenido de la factura: " + invoice_id);
+                System.err.println("No se encontró el contenido de la factura: " + invoiceID);
             }
             System.out.println(json.toString(5));
 
         } catch (Exception e) {
-            System.err.println("Error al recuperar la factura: " + invoice_id);
+            System.err.println("Error al recuperar la factura: " + invoiceID);
             e.printStackTrace();
         }
         return factura;
     }
 
     // OBTIENE Nº DE FACTURA MEDIANTE ID DE FACTURA
-    public static String getInvoiceNumberByID(String invoice_id) {
+    public static String getInvoiceNumberByID(String invoiceID) {
         String invoiceNumber = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
             String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -106,7 +106,7 @@ public class InvoicesManagement {
 
             JSONObject json = new JSONObject(responseBody);
             if (!json.has("content")) {
-                System.err.println("No se encontró el contenido de la factura: " + invoice_id);
+                System.err.println("No se encontró el contenido de la factura: " + invoiceID);
                 return null;
             }
 
@@ -125,7 +125,7 @@ public class InvoicesManagement {
             invoiceNumber = innerJson.path("data").path("number").asText();
 
         } catch (Exception e) {
-            System.err.println("Error al recuperar el número de factura: " + invoice_id);
+            System.err.println("Error al recuperar el número de factura: " + invoiceID);
             e.printStackTrace();
         }
         return invoiceNumber;
@@ -133,7 +133,7 @@ public class InvoicesManagement {
 
     // Obtiene id factura filtrando por nº de factura
     public static String getInvoiceIDByNumber(String number) {
-        String invoice_id = null;
+        String invoiceID = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/invoices?number=" + number;
             String token = Authentication.retrieveToken();
@@ -151,22 +151,22 @@ public class InvoicesManagement {
 
             JSONArray results = json.getJSONArray("results");
             JSONObject content = results.getJSONObject(0).getJSONObject("content");
-            invoice_id = content.getString("id");
+            invoiceID = content.getString("id");
 
         } catch (Exception e) {
             System.out.println("Error al recuperar la factura");
             e.printStackTrace();
         }
-        return invoice_id;
+        return invoiceID;
     }
 
     // Obtiene la base imponible de una factura
-    public static String getBaseAmount(String invoice_id) {
-        String full_amount = null;
+    public static String getBaseAmount(String invoiceID) {
+        String fullAmount = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String clientID = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -182,7 +182,7 @@ public class InvoicesManagement {
             if (json.has("content")) {
                 json.getJSONObject("content");
             } else {
-                System.err.println("No se encontró el contenido de la factura: " + invoice_id);
+                System.err.println("No se encontró el contenido de la factura: " + invoiceID);
             }
 
             ObjectMapper mapper = new ObjectMapper();
@@ -195,22 +195,22 @@ public class InvoicesManagement {
             // Parsear ese string como JSON
             JsonNode innerJson = mapper.readTree(innerJsonString);
 
-            // Extraer el valor de "full_amount"
-            full_amount = innerJson.path("full_amount").asText();
+            // Extraer el valor de "fullAmount"
+            fullAmount = innerJson.path("full_amount").asText();
 
         } catch (Exception e) {
-            System.err.println("Error al recuperar la factura: " + invoice_id);
+            System.err.println("Error al recuperar la factura: " + invoiceID);
             e.printStackTrace();
         }
-        return full_amount;
+        return fullAmount;
     }
 
     // Obtiene el estado de registro y descripcion de una factura (para gestionar posibles correcciones)
     public static void getRegistrationDescription(String invoiceNumber, String invoiceID) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoiceID;
+            String clientID = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -256,10 +256,10 @@ public class InvoicesManagement {
 
     public static void cancelInvoice(String invoiceNumber) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String invoice_id = getInvoiceIDByNumber(invoiceNumber);
+            String invoiceID = getInvoiceIDByNumber(invoiceNumber);
             String token = Authentication.retrieveToken();
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoice_id;
+            String clientID = Clients.getFirstClientID();
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
 
             HttpPatch patch = new HttpPatch(url);
             patch.setHeader("Authorization", "Bearer " + token);
