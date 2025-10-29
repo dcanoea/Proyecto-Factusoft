@@ -43,14 +43,15 @@ public class Correcting {
     public static void createCorrectingInvoiceSubstitutionComplete(int originalInvoiceNumberInt, int newInvoiceNumber, List<Map<String, String>> itemsList, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String clientID = Clients.getFirstClientID();
+            String token = Authentication.retrieveToken();
             UUID invoiceID = UUID.randomUUID();
+            String invoiceNumber = String.valueOf(newInvoiceNumber);
+            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
+            
             String originalInvoiceNumber = String.valueOf(originalInvoiceNumberInt);
             String originalInvoiceID = InvoicesManagement.getInvoiceIDByNumber(originalInvoiceNumber);
 
-            String invoiceNumber = String.valueOf(newInvoiceNumber);
             String invoiceSeries = "R2025";// Obligatorio en facturas rectificativas
-            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
-            String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
             put.setHeader("Content-Type", "application/json");
