@@ -40,7 +40,7 @@ public class Correcting {
             JSONArray recipients = InvoiceHelpers.getRecipient(receptorDetails);
             JSONObject data = InvoiceHelpers.getDataCorrectingInvoice(invoiceNumber, items, fullAmountTotal);
             JSONObject invoice = InvoiceHelpers.getInvoice(data, recipients);
-            JSONObject content = InvoiceHelpers.getContentCorrectingSubstitution(invoiceNumber, invoice);
+            JSONObject content = InvoiceHelpers.getContentCorrectingSubstitution(originalInvoiceNumber, invoice);
             JSONObject body = InvoiceHelpers.getBody(content);
 
             // ========= PETICIÓN API=========
