@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 public class Complete {
 
-    public static void createCompleteInvoice(String numFactura, List<JSONObject> itemsList, List<JSONObject> suppliedItems,
+    public static void createCompleteInvoice(String invoiceNumber, List<JSONObject> itemsList, List<JSONObject> suppliedItems,
             List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
 
         // Cliente HTTP reutilizable para enviar la petición PUT de la factura.
@@ -39,7 +39,7 @@ public class Complete {
 
             // ======== CONSTRUCCIÓN JSON =========
             JSONArray recipients = InvoiceHelpers.getRecipient(receptorDetails);
-            JSONObject data = InvoiceHelpers.getData(numFactura, items, fullAmountTotal);
+            JSONObject data = InvoiceHelpers.getDataCompleteInvoice(invoiceNumber, items, fullAmountTotal);
             JSONObject content = InvoiceHelpers.getContent(recipients, data);
             JSONObject body = InvoiceHelpers.getBody(content);
 
@@ -53,7 +53,7 @@ public class Complete {
             String qrBase64 = InvoiceHelpers.getQR(responseBody);
 
             // ========= GENERAR PDF DE FACTURA =========
-            PdfTools.generateCompleteInvoicePDF(receptorDetails, numFactura, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
+            PdfTools.generateCompleteInvoicePDF(receptorDetails, invoiceNumber, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura completa");

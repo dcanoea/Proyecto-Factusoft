@@ -30,6 +30,8 @@ import org.json.JSONObject;
  */
 public class InvoiceHelpers {
 
+    public static String invoiceSeries = "R2025";// Obligatorio en facturas rectificativas
+
     public static JSONObject getCategory(String ivaRate) throws JSONException {
         // Tipo IVA
         JSONObject category = new JSONObject();
@@ -163,12 +165,24 @@ public class InvoiceHelpers {
         return recipients;
     }
 
-    public static JSONObject getData(String invoiceNumber, JSONArray items, String fullAmountTotal) throws JSONException {
+    public static JSONObject getDataCompleteInvoice(String invoiceNumber, JSONArray items, String fullAmountTotal) throws JSONException {
         // ========= DATA =========
         JSONObject data = new JSONObject();
         data.put("type", "SIMPLIFIED");
         data.put("number", invoiceNumber);
         data.put("text", "Factura COMPLETA");
+        data.put("items", items);
+        data.put("full_amount", fullAmountTotal);
+        return data;
+    }
+
+    public static JSONObject getDataCorrectingInvoice(String invoiceNumber, JSONArray items, String fullAmountTotal) throws JSONException {
+        // ======== SUBOBJETO DATA =========
+        JSONObject data = new JSONObject();
+        data.put("type", "SIMPLIFIED"); // Este campo debe ser SIMPLIFIED incluso en factura COMPLETE
+        data.put("number", invoiceNumber);
+        data.put("series", invoiceSeries);
+        data.put("text", "Factura RECTIFICATIVA");
         data.put("items", items);
         data.put("full_amount", fullAmountTotal);
         return data;
@@ -296,5 +310,25 @@ public class InvoiceHelpers {
         JSONObject body = new JSONObject();
         body.put("content", content);
         return body;
+    }
+
+    public static JSONObject getContentCorrectingSubstitution(String invoiceNumber, JSONObject invoice) throws JSONException {
+        // ======== CONTENIDO PRINCIPAL =========
+        JSONObject content = new JSONObject();
+        content.put("type", "CORRECTING");
+        content.put("method", "SUBSTITUTION");
+        content.put("id", InvoicesManagement.getInvoiceIDByNumber(invoiceNumber)); // UUIDv4 válido de la factura original.
+        content.put("invoice", invoice);
+        content.put("code", "CORRECTION_1");
+        return content;
+    }
+
+    public static JSONObject getInvoice(JSONObject data, JSONArray recipients) throws JSONException {
+        // ======== OBJETO INVOICE =========
+        JSONObject invoice = new JSONObject();
+        invoice.put("type", "COMPLETE");
+        invoice.put("data", data);
+        invoice.put("recipients", recipients);
+        return invoice;
     }
 }

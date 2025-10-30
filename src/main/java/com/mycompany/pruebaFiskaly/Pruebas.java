@@ -18,7 +18,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250128;
+    public static int NUM_FACTURA = 20250134;
 
     public static void main(String[] args) throws IOException {
 
@@ -59,10 +59,11 @@ public class Pruebas {
         Map<String, String> receptorDetails = InvoiceHelpers.createReceptor("ARAGON FORMACION ACF S.L", "B22260863", true, "C/Comercio 28", "22000");
 
         // CREAR FACTURA COMPLETA
-        Complete.createCompleteInvoice(String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
+        //Complete.createCompleteInvoice(String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
 
         // CREAR FACTURAS RECTIFICATIVAS
-        //Correcting.createCorrectingInvoiceSubstitutionComplete(20250120, NUM_FACTURA, itemsList, suppliedItems, globalDiscounts, receptorDetails);
+        Correcting.createCorrectingInvoiceSubstitutionComplete("20250129", String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
+        
         // RECUPERAR TOTAL FACTURA 
         //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
         //System.out.println(InvoicesManagement.getFullAmount(idFactura));
