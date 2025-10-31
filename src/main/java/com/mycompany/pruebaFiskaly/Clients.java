@@ -15,6 +15,7 @@ import org.json.JSONObject;
 //CLIENTE IDENTIFICA DE FORMA ÚNICA UN DISPOSITIVO TPV, APLICACIÓN U OTRO DISPOSITIVO UTILIZADO PARA EMITIR FACTURAS
 public class Clients {
 
+    // Crea un UUID único que referencia a un equipo/sistema/TPV/POS donde se hacen facturas
     public static void createClient() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             UUID uuid = UUID.randomUUID();
@@ -37,11 +38,12 @@ public class Clients {
             System.out.println("Respuesta del servidor: " + responseBody);
 
         } catch (Exception e) {
-            System.out.println("Error al crear el signer");
+            System.out.println("Error al crear el client");
             e.printStackTrace();
         }
     }
 
+    // Lista todos los clients
     public static String listClients() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/clients";
@@ -69,6 +71,7 @@ public class Clients {
         }
     }
 
+    // Recupera el ID del primer client (pago por client, suele haber uno)
     public static String getFirstClientID() {
         String responseBody = listClients();
         if (responseBody == null) {

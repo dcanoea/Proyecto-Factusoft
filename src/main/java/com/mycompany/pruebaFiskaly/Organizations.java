@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 public class Organizations {
 
+    // Recupera las organizaciones (distintas sedes) de la empresa
     public static void listOrganizations() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_MANAGEMENT_URL + "/organizations";
@@ -34,10 +35,11 @@ public class Organizations {
         }
     }
 
-    public static void retrieveOrganization(String idCliente) {
+    // Devuelve organization asociada a un client
+    public static void retrieveOrganization(String clientID) {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_MANAGEMENT_URL + "/organizations/" + idCliente;
+            String url = Config.BASE_MANAGEMENT_URL + "/organizations/" + clientID;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);

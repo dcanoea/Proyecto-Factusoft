@@ -254,6 +254,7 @@ public class InvoicesManagement {
         }
     }
 
+    // Cancela una factura, en los términos que se permita. (LO GESTIONA LA PROPIA API)
     public static void cancelInvoice(String invoiceNumber) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String invoiceID = getInvoiceIDByNumber(invoiceNumber);

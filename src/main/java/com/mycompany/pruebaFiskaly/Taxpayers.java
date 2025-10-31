@@ -13,34 +13,8 @@ import org.json.JSONObject;
 
 public class Taxpayers {
 
-    public static void retrieveTaxpayer() {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/taxpayer";
-            String token = Authentication.retrieveToken();
-
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Content-Type", "application/json");
-            get.setHeader("Authorization", "Bearer " + token);
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Datos del contribuyente:");
-            System.out.println(responseBody);
-
-        } catch (Exception e) {
-            System.out.println("Error al recuperar el contribuyente");
-            e.printStackTrace();
-        }
-    }
-
-    public static void createTaxpayer(
-            String legal_name,
-            String tax_number,
-            String territory
-    ) {
+    // Crear contribuyente (persona o empresa que emite facturas)
+    public static void createTaxpayer(String legal_name, String tax_number, String territory) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/taxpayer";
             String token = Authentication.retrieveToken();
@@ -80,30 +54,36 @@ public class Taxpayers {
         }
     }
 
+    // Recupera contribuyente
+    public static void retrieveTaxpayer() {
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            String url = Config.BASE_URL + "/taxpayer";
+            String token = Authentication.retrieveToken();
+
+            HttpGet get = new HttpGet(url);
+            get.setHeader("Content-Type", "application/json");
+            get.setHeader("Authorization", "Bearer " + token);
+
+            HttpResponse response = client.execute(get);
+            int statusCode = response.getStatusLine().getStatusCode();
+            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+
+            System.out.println("Código de respuesta: " + statusCode);
+            System.out.println("Datos del contribuyente:");
+            System.out.println(responseBody);
+
+        } catch (Exception e) {
+            System.out.println("Error al recuperar el contribuyente");
+            e.printStackTrace();
+        }
+    }
+
     // MÉTODO PARA ACTUALIZAR CONTRIBUYENTE. SI SE PASA UN PARAMETRO NULL O "" LO IGNORA
-    public static void updateTaxpayer(
-            boolean deactivate,
-            String legal_name,
-            String tax_number,
-            String municipality,
-            String city,
-            String street,
-            String postal_code,
-            String number,
-            String country_code,
-            String email,
-            String type,
-            String phone,
-            String website,
-            String contact_person,
-            String vat_number,
-            String registration_number,
-            String fiscal_year,
-            String industry,
-            String language,
-            String timezone,
-            String notes
-    ) {
+    public static void updateTaxpayer(boolean deactivate, String legal_name, String tax_number, String municipality,
+            String city, String street, String postal_code, String number, String country_code, String email, String type,
+            String phone, String website, String contact_person, String vat_number, String registration_number,
+            String fiscal_year, String industry, String language, String timezone, String notes) {
+
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/taxpayer";
             String token = Authentication.retrieveToken();

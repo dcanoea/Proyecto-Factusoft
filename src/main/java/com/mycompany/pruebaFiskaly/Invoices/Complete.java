@@ -1,6 +1,5 @@
 package com.mycompany.pruebaFiskaly.Invoices;
 
-import static com.mycompany.pruebaFiskaly.Invoices.InvoiceHelpers.getSystem;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -10,6 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import static com.mycompany.pruebaFiskaly.Invoices.InvoiceHelpers.setSystem;
 
 public class Complete {
 
@@ -24,24 +24,24 @@ public class Complete {
             // ======== ITEMS (LINEAS DE FACTURA) =========
             JSONArray items = new JSONArray();
             for (JSONObject itemData : itemsList) {
-                double itemTotalAmount = InvoiceHelpers.getItem(itemData, items);
+                double itemTotalAmount = InvoiceHelpers.setItem(itemData, items);
                 totalAmount += itemTotalAmount;
             }
 
             // ======== ITEMS SUPLIDOS =========
-            totalAmount = InvoiceHelpers.getSuppliedItems(suppliedItems, items, totalAmount);
+            totalAmount = InvoiceHelpers.setSuppliedItems(suppliedItems, items, totalAmount);
 
             // ======== ITEMS DESCUENTOS GLOBALES =========
-            totalAmount = InvoiceHelpers.getGlobalDiscounts(globalDiscounts, items, totalAmount);
+            totalAmount = InvoiceHelpers.setGlobalDiscounts(globalDiscounts, items, totalAmount);
 
             // REDONDEO MONTO TOTAL PARA EVITAR ERRORES DE VALIDACIÓN
             String fullAmountTotal = String.format(Locale.US, "%.2f", totalAmount);
 
             // ======== CONSTRUCCIÓN JSON =========
-            JSONArray recipients = InvoiceHelpers.getRecipient(receptorDetails);
-            JSONObject data = InvoiceHelpers.getDataCompleteInvoice(invoiceNumber, items, fullAmountTotal);
-            JSONObject content = InvoiceHelpers.getContent(recipients, data);
-            JSONObject body = InvoiceHelpers.getBody(content);
+            JSONArray recipients = InvoiceHelpers.setRecipient(receptorDetails);
+            JSONObject data = InvoiceHelpers.setDataCompleteInvoice(invoiceNumber, items, fullAmountTotal);
+            JSONObject content = InvoiceHelpers.setContent(recipients, data);
+            JSONObject body = InvoiceHelpers.setBody(content);
 
             // ========= PETICIÓN API=========
             HttpPut put = InvoiceHelpers.putRequest(body);
@@ -50,7 +50,7 @@ public class Complete {
             String responseBody = InvoiceHelpers.requestAPI(client, put);
 
             // ========= RECUPERAR QR DE LA RESPUESTA =========
-            String qrBase64 = InvoiceHelpers.getQR(responseBody);
+            String qrBase64 = InvoiceHelpers.setQR(responseBody);
 
             // ========= GENERAR PDF DE FACTURA =========
             PdfTools.generateCompleteInvoicePDF(receptorDetails, invoiceNumber, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);

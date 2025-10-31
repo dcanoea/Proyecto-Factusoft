@@ -17,6 +17,7 @@ import org.json.JSONObject;
 
 public class Validation {
 
+    // MÉTODO PARA VALIDAR NIF/CIF EN AEAT (AMBITO FISCAL ESPAÑOL)
     // AEAT no tiene entorno de pruebas, verificar en modo LIVE para confirmar las respuestas de la API
     public static String validateAEAT(String nif) {
         String validation = null;
@@ -89,6 +90,7 @@ public class Validation {
         return validation;
     }
 
+    // MÉTODO PARA VALIDAR NIF/CIF EN VIES (OPERADORES INTRACOMUNITARIOS EN LA UE)
     public static boolean validateVIES(String country_code, String nif) {
         try {
             // Construye la URL del endpoint de validación TIN
@@ -161,6 +163,7 @@ public class Validation {
         return false;
     }
 
+    // MÉTODO PARA VALIDAR CIF/NIF EN MASA DE LA BBDD DE LA EMPRESA
     public static ArrayList<Cliente> validarListaNIF(JSONObject inputJson) {
         ArrayList<Cliente> clientesNoValidados = new ArrayList<>();
 

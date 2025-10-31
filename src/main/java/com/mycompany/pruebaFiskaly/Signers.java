@@ -22,6 +22,8 @@ import org.json.JSONObject;
  */
 public class Signers {
 
+    // Representa un dispositivo que firma las facturas. 
+    //Fiskaly usa por defecto su propio certificado electrónico como colaborador.
     public static void createSigner() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             UUID uuid = UUID.randomUUID();
@@ -48,7 +50,8 @@ public class Signers {
             e.printStackTrace();
         }
     }
-
+    
+    // Lista Firmantes
     public static String listSigners() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/signers";
@@ -75,7 +78,8 @@ public class Signers {
             return null;
         }
     }
-
+    
+    // Recupera el primer firmante (sólo existe uno)
     public static String getFirstSignerID() {
         String responseBody = listSigners();
         if (responseBody == null) {

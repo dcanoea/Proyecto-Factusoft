@@ -18,7 +18,7 @@ import org.json.JSONObject;
 
 public class Pruebas {
 
-    public static int NUM_FACTURA = 20250135;
+    public static int NUM_FACTURA = 20250149;
 
     public static void main(String[] args) throws IOException {
 
@@ -45,7 +45,7 @@ public class Pruebas {
         itemsList.add(InvoiceHelpers.createItem("Prueba3", "3", "20", "333", Config.IVA_GENERAL));
         itemsList.add(InvoiceHelpers.createItem("Prueba4", "4", "15", "333", Config.IVA_SUPERREDUCIDO));
         itemsList.add(InvoiceHelpers.createItem("Prueba5", "5", "0", "333", Config.IVA_GENERAL));
-        itemsList.add(InvoiceHelpers.createItem("Prueba6", "6", "5", "333", Config.IVA_EXENTO));
+        itemsList.add(InvoiceHelpers.createItem("Prueba6", "6", "-5", "-333", Config.IVA_EXENTO));
 
         List<JSONObject> globalDiscounts = new ArrayList<>();
         globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_GENERAL, "1", "-50"));
@@ -62,8 +62,9 @@ public class Pruebas {
         //Complete.createCompleteInvoice(String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
 
         // CREAR FACTURAS RECTIFICATIVAS
-        Correcting.createCorrectingInvoiceSubstitutionComplete("20250134", String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
-
+        //Correcting.createCorrectingInvoiceSubstitutionComplete("20250147", String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
+        Correcting.createCorrectingInvoiceDifferencesComplete("20250148", String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
+        
         // RECUPERAR TOTAL FACTURA 
         //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
         //System.out.println(InvoicesManagement.getFullAmount(idFactura));
