@@ -35,7 +35,7 @@ import org.json.JSONObject;
  */
 public class PdfTools {
 
-    public static void generateCompleteInvoicePDF(Map<String, String> receptorDetails, String number, List<JSONObject> itemsData, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, String fullAmount, String qrBase64) throws Exception {
+    public static void generateCompleteInvoicePDF(Map<String, String> receptorDetails, String number, List<JSONObject> itemsData, List<JSONObject> globalDiscounts, String fullAmount, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         String fileName = "Factura_Completa_" + number + ".pdf";
@@ -123,43 +123,6 @@ public class PdfTools {
             document.add(Chunk.NEWLINE);
         }
 
-        // ======== TABLA DE SUPLIDOS ========
-        double suplidosTotal = 0.0;
-        if (suppliedItems != null && !suppliedItems.isEmpty()) {
-            document.add(new Paragraph("Suplidos", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
-            PdfPTable supTable = new PdfPTable(4);
-            supTable.setWidthPercentage(100);
-            supTable.setSpacingBefore(5.0F);
-            supTable.setSpacingAfter(5.0F);
-            supTable.setWidths(new float[]{5.0F, 2.0F, 1.0F, 2.0F});
-            Stream.of("Descripci\u00f3n", "Precio unitario", "Unidades", "Importe").forEach(headerTitle -> {
-                PdfPCell header = new PdfPCell(new Phrase(headerTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
-                header.setBorderWidth(1);
-                supTable.addCell(header);
-            });
-            for (JSONObject suplido : suppliedItems) {
-                String text = suplido.optString("text", "");
-                String unitAmount = suplido.optString("unit_amount", "0");
-                String quantity = suplido.optString("quantity", "1");
-                String fullAmountStr = suplido.optString("full_amount", "0").trim().replace(",", ".");
-                double fullAmountVal = 0.0;
-                try {
-                    fullAmountVal = Double.parseDouble(fullAmountStr);
-                } catch (NumberFormatException ex) {
-                    System.err.println("full_amount inv\u00e1lido en suplido: '" + fullAmountStr + "'. Usando 0.00");
-                }
-                suplidosTotal += fullAmountVal;
-                supTable.addCell(new PdfPCell(new Phrase(text)));
-                supTable.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f \u20ac", Double.parseDouble(unitAmount)))));
-                supTable.addCell(new PdfPCell(new Phrase(quantity)));
-                supTable.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f \u20ac", fullAmountVal))));
-            }
-            document.add(supTable);
-            Paragraph supSummary = new Paragraph("Total suplidos: " + String.format(Locale.US, "%.2f \u20ac", suplidosTotal), FontFactory.getFont(FontFactory.HELVETICA, 11));
-            supSummary.setAlignment(Element.ALIGN_RIGHT);
-            document.add(supSummary);
-            document.add(Chunk.NEWLINE);
-        }
         // ======== TABLA DE DESCUENTOS GLOBALES (si existen) ========
         double descuentosGlobalesTotal = 0.0;
         if (globalDiscounts != null && !globalDiscounts.isEmpty()) {
@@ -205,7 +168,7 @@ public class PdfTools {
             document.add(Chunk.NEWLINE);
         }
         // ======== TOTAL GENERAL INCLUYENDO SUPLIDOS Y DESCUENTOS ========
-        double finalTotal = totalConIVA + suplidosTotal + descuentosGlobalesTotal; //suma el descuento ya que viene en negativo
+        double finalTotal = totalConIVA + descuentosGlobalesTotal; //suma el descuento ya que viene en negativo
         Paragraph total = new Paragraph("Importe total (IVA incluido, con suplidos y descuentos): " + String.format(Locale.US, "%.2f \u20ac", finalTotal), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13));
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);
@@ -225,7 +188,7 @@ public class PdfTools {
         System.out.println("PDF de factura completa guardado en: " + desktopPath + fileName);
     }
 
-    public static void generateCorrectingInvoicePDF(String original_invoice_number, Map<String, String> receptorDetails, String number, List<JSONObject> itemsData, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, String fullAmountTotal, String qrBase64) throws Exception {
+    public static void generateCorrectingInvoicePDF(String original_invoice_number, Map<String, String> receptorDetails, String number, List<JSONObject> itemsData, List<JSONObject> globalDiscounts, String fullAmountTotal, String qrBase64) throws Exception {
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         String fileName = "Factura_Rectificativa_" + number + ".pdf";
@@ -312,43 +275,7 @@ public class PdfTools {
             document.add(ivaSummary);
             document.add(Chunk.NEWLINE);
         }
-        // ======== TABLA DE SUPLIDOS ========
-        double suplidosTotal = 0.0;
-        if (suppliedItems != null && !suppliedItems.isEmpty()) {
-            document.add(new Paragraph("Suplidos", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
-            PdfPTable supTable = new PdfPTable(4);
-            supTable.setWidthPercentage(100);
-            supTable.setSpacingBefore(5.0F);
-            supTable.setSpacingAfter(5.0F);
-            supTable.setWidths(new float[]{5.0F, 2.0F, 1.0F, 2.0F});
-            Stream.of("Descripci\u00f3n", "Precio unitario", "Unidades", "Importe").forEach(headerTitle -> {
-                PdfPCell header = new PdfPCell(new Phrase(headerTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11)));
-                header.setBorderWidth(1);
-                supTable.addCell(header);
-            });
-            for (JSONObject suplido : suppliedItems) {
-                String text = suplido.optString("text", "");
-                String unitAmount = suplido.optString("unit_amount", "0");
-                String quantity = suplido.optString("quantity", "1");
-                String fullAmountStr = suplido.optString("full_amount", "0").trim().replace(",", ".");
-                double fullAmountVal = 0.0;
-                try {
-                    fullAmountVal = Double.parseDouble(fullAmountStr);
-                } catch (NumberFormatException ex) {
-                    System.err.println("full_amount inv\u00e1lido en suplido: '" + fullAmountStr + "'. Usando 0.00");
-                }
-                suplidosTotal += fullAmountVal;
-                supTable.addCell(new PdfPCell(new Phrase(text)));
-                supTable.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f \u20ac", Double.parseDouble(unitAmount)))));
-                supTable.addCell(new PdfPCell(new Phrase(quantity)));
-                supTable.addCell(new PdfPCell(new Phrase(String.format(Locale.US, "%.2f \u20ac", fullAmountVal))));
-            }
-            document.add(supTable);
-            Paragraph supSummary = new Paragraph("Total suplidos: " + String.format(Locale.US, "%.2f \u20ac", suplidosTotal), FontFactory.getFont(FontFactory.HELVETICA, 11));
-            supSummary.setAlignment(Element.ALIGN_RIGHT);
-            document.add(supSummary);
-            document.add(Chunk.NEWLINE);
-        }
+        
         // ======== TABLA DE DESCUENTOS GLOBALES (si existen) ========
         double descuentosGlobalesTotal = 0.0;
         if (globalDiscounts != null && !globalDiscounts.isEmpty()) {
@@ -394,7 +321,7 @@ public class PdfTools {
             document.add(Chunk.NEWLINE);
         }
         // ======== TOTAL GENERAL INCLUYENDO SUPLIDOS Y DESCUENTOS ========
-        double finalTotal = totalConIVA + suplidosTotal + descuentosGlobalesTotal; //suma el descuento ya que viene en negativo
+        double finalTotal = totalConIVA + descuentosGlobalesTotal; //suma el descuento ya que viene en negativo
         Paragraph total = new Paragraph("Importe total (IVA incluido, con suplidos y descuentos): " + String.format(Locale.US, "%.2f \u20ac", finalTotal), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13));
         total.setAlignment(Element.ALIGN_RIGHT);
         document.add(total);

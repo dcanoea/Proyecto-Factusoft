@@ -23,24 +23,31 @@ public class Pruebas {
 
     public static void main(String[] args) throws IOException {
 
-//-------------------------------------------------------------------------------------------------------------------------------
+        //<editor-fold desc="Validacion">
         //Validation.Java
         //VALIDACIÓN NIF AEAT
         /*System.out.println(Validation.validateAEAT("T00000001"));
         System.out.println(Validation.validateAEAT("T00000002"));
         System.out.println(Validation.validateAEAT("T00000003"));
-        System.out.println(Validation.validateAEAT("T00000004"));*/
-        //VALIDACIÓN NIF VIES
+        System.out.println(Validation.validateAEAT("T00000004"));*/ //VALIDACIÓN NIF VIES
         //System.out.println(Validation.validateVIES("ES", "B44752210"));
         //System.out.println(Validation.validateVIES("ES", "B4433333210"));   
-//-------------------------------------------------------------------------------------------------------------------------------
+        //</editor-fold>
+        //<editor-fold desc="Detalles y errores factura">
         //INVOICES
         // OBTENER DETALLES DE UNA FACTURA
         //String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250119");
         //InvoicesManagement.retrieveInvoice(invoiceid);
         // OBTENER ESTADO DE ERROR DE LA FACTURA Y SU DESCRIPCION
         //InvoicesManagement.getRegistrationDescription("20250150", InvoicesManagement.getInvoiceIDByNumber("20250074"));
-        List<JSONObject> itemsList = new ArrayList<>();
+        // RECUPERAR TOTAL FACTURA 
+        //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
+        //System.out.println(InvoicesManagement.getFullAmount(idFactura));
+        //</editor-fold>
+        //<editor-fold desc="Items factura">
+        Map<String, String> receptorDetails = InvoiceHelpers.createReceptor("ACF INNOVE", "B22260863", true, "C/Comercio 28", "22000");
+
+        List< JSONObject> itemsList = new ArrayList<>();
         itemsList.add(InvoiceHelpers.createItem("Prueba1", "1", "0", "111", Config.IVA_EXENTO));
         itemsList.add(InvoiceHelpers.createItem("Prueba2", "2", "10", "222", Config.IVA_SUPERREDUCIDO));
         itemsList.add(InvoiceHelpers.createItem("Prueba3", "3", "20", "333", Config.IVA_GENERAL));
@@ -52,22 +59,19 @@ public class Pruebas {
         globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_GENERAL, "1", "-50"));
         globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_SUPERREDUCIDO, "1", "-50"));
         globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_EXENTO, "1", "-50"));
-
-        List<JSONObject> suppliedItems = new ArrayList<>();
-        //JSONObject supplied = Complete.createSupplied("RECARGA TARJETA MUGI", "1", "50", "50");
-        //suppliedItems.add(supplied);
-
-        Map<String, String> receptorDetails = InvoiceHelpers.createReceptor("ACF INNOVE", "B22260863", true, "C/Comercio 28", "22000");
-
+        //</editor-fold>
+        //<editor-fold desc="Creación facturas">
+        //<editor-fold desc="Factura Completa">
         // CREAR FACTURA COMPLETA
-        Complete.createCompleteInvoice(String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
+        Complete.createCompleteInvoice(String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
+        //</editor-fold>
+        //<editor-fold desc="Factura Rectificativa">
         // CREAR FACTURAS RECTIFICATIVAS
-        //Correcting.createCorrectingInvoiceSubstitutionComplete("20250147", String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
-        //Correcting.createCorrectingInvoiceDifferencesComplete("20250148", String.valueOf(NUM_FACTURA), itemsList, suppliedItems, globalDiscounts, receptorDetails);
-        // RECUPERAR TOTAL FACTURA 
-        //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
-        //System.out.println(InvoicesManagement.getFullAmount(idFactura));
-        // FACTURA RECAPITULATIVA
+        Correcting.createCorrectingInvoiceSubstitutionComplete("20250147", String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
+        Correcting.createCorrectingInvoiceDifferencesComplete("20250148", String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
+        //</editor-fold>
+        //<editor-fold desc="Factura Recapitulativa">
+        // CREAR FACTURA RECAPITULATIVA
         /*List<String> numerosFacturas = new ArrayList<>();
         int numFactura = 20250051;
         for (int i = 0; i < 10; i++) {
@@ -76,15 +80,11 @@ public class Pruebas {
         }
         Summary.createSummaryInvoice(NUM_FACTURA, numerosFacturas);*/
         //SummaryCOMPLETES.createSummaryCompleteInvoice(NUM_FACTURA, numerosFacturas);
+        //</editor-fold>
+        //<editor-fold desc="Cancelar facturas">
         //MÉTODO CANCELAR FACTURA (FUNCIONA, PERO NO VEO CUANDO SE PUEDE USAR)
         //InvoicesManagement.cancelInvoice("20250063");
-        /*int count = 0;
-        ArrayList<Cliente> noValidados = Validation.validarListaNif();
-        noValidados.sort((c1, c2) -> c1.getNIF().compareToIgnoreCase(c2.getNIF()));
-        for(Cliente c : noValidados){
-            System.out.println(c);
-            count++;
-        }
-        System.out.println(count);*/
+        //</editor-fold>
+        //</editor-fold>
     }
 }

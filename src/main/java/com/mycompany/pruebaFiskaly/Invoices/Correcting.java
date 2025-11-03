@@ -13,7 +13,7 @@ import org.json.JSONObject;
 public class Correcting {
 
     // FACTURA RECTIFICATIVA DE SUSTITUCIÓN DE FACTURA COMPLETA(reemplaza completamente a la factura original)
-    public static void createCorrectingInvoiceSubstitutionComplete(String originalInvoiceNumber, String invoiceNumber, List<JSONObject> itemsList, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
+    public static void createCorrectingInvoiceSubstitutionComplete(String originalInvoiceNumber, String invoiceNumber, List<JSONObject> itemsList, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
 
         // Cliente HTTP reutilizable para enviar la petición PUT de la factura.
         CloseableHttpClient client = HttpClients.createDefault();
@@ -26,9 +26,6 @@ public class Correcting {
                 double itemTotalAmount = InvoiceHelpers.setItem(itemData, items);
                 totalAmount += itemTotalAmount;
             }
-
-            // ======== ITEMS SUPLIDOS =========
-            totalAmount = InvoiceHelpers.setSuppliedItems(suppliedItems, items, totalAmount);
 
             // ======== ITEMS DESCUENTOS GLOBALES =========
             totalAmount = InvoiceHelpers.setGlobalDiscounts(globalDiscounts, items, totalAmount);
@@ -53,7 +50,7 @@ public class Correcting {
             String qrBase64 = InvoiceHelpers.setQR(responseBody);
 
             // ========= GENERAR PDF DE FACTURA =========
-            PdfTools.generateCorrectingInvoicePDF(originalInvoiceNumber, receptorDetails, invoiceNumber, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
+            PdfTools.generateCorrectingInvoicePDF(originalInvoiceNumber, receptorDetails, invoiceNumber, itemsList, globalDiscounts, fullAmountTotal, qrBase64);
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura completa");
@@ -69,7 +66,7 @@ public class Correcting {
     }
 
     //MÉTODO PARA CREAR FACTURAS RECTIFICATIVAS POR DIFERENCIA PARA FACTURAS COMPLETAS (Declara una diferencia sin cancelar la factura original)
-    public static void createCorrectingInvoiceDifferencesComplete(String originalInvoiceNumber, String invoiceNumber, List<JSONObject> itemsList, List<JSONObject> suppliedItems, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
+    public static void createCorrectingInvoiceDifferencesComplete(String originalInvoiceNumber, String invoiceNumber, List<JSONObject> itemsList, List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
         // Cliente HTTP reutilizable para enviar la petición PUT de la factura.
         CloseableHttpClient client = HttpClients.createDefault();
         try {
@@ -81,9 +78,6 @@ public class Correcting {
                 double itemTotalAmount = InvoiceHelpers.setItem(itemData, items);
                 totalAmount += itemTotalAmount;
             }
-
-            // ======== ITEMS SUPLIDOS =========
-            totalAmount = InvoiceHelpers.setSuppliedItems(suppliedItems, items, totalAmount);
 
             // ======== ITEMS DESCUENTOS GLOBALES =========
             totalAmount = InvoiceHelpers.setGlobalDiscounts(globalDiscounts, items, totalAmount);
@@ -108,7 +102,7 @@ public class Correcting {
             String qrBase64 = InvoiceHelpers.setQR(responseBody);
 
             // ========= GENERAR PDF DE FACTURA =========
-            PdfTools.generateCorrectingInvoicePDF(originalInvoiceNumber, receptorDetails, invoiceNumber, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
+            PdfTools.generateCorrectingInvoicePDF(originalInvoiceNumber, receptorDetails, invoiceNumber, itemsList, globalDiscounts, fullAmountTotal, qrBase64);
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura completa");

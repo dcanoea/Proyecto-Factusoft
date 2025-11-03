@@ -9,11 +9,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import static com.mycompany.pruebaFiskaly.Invoices.InvoiceHelpers.setSystem;
 
 public class Complete {
 
-    public static void createCompleteInvoice(String invoiceNumber, List<JSONObject> itemsList, List<JSONObject> suppliedItems,
+    public static void createCompleteInvoice(String invoiceNumber, List<JSONObject> itemsList,
             List<JSONObject> globalDiscounts, Map<String, String> receptorDetails) {
 
         // Cliente HTTP reutilizable para enviar la petición PUT de la factura.
@@ -27,9 +26,6 @@ public class Complete {
                 double itemTotalAmount = InvoiceHelpers.setItem(itemData, items);
                 totalAmount += itemTotalAmount;
             }
-
-            // ======== ITEMS SUPLIDOS =========
-            totalAmount = InvoiceHelpers.setSuppliedItems(suppliedItems, items, totalAmount);
 
             // ======== ITEMS DESCUENTOS GLOBALES =========
             totalAmount = InvoiceHelpers.setGlobalDiscounts(globalDiscounts, items, totalAmount);
@@ -53,7 +49,7 @@ public class Complete {
             String qrBase64 = InvoiceHelpers.setQR(responseBody);
 
             // ========= GENERAR PDF DE FACTURA =========
-            PdfTools.generateCompleteInvoicePDF(receptorDetails, invoiceNumber, itemsList, suppliedItems, globalDiscounts, fullAmountTotal, qrBase64);
+            PdfTools.generateCompleteInvoicePDF(receptorDetails, invoiceNumber, itemsList, globalDiscounts, fullAmountTotal, qrBase64);
 
         } catch (Exception e) {
             System.err.println("Error al crear la factura completa");

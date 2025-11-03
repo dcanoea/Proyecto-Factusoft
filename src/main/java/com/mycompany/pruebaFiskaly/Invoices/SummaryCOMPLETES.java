@@ -39,7 +39,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class SummaryCOMPLETES {
-
     public static void createSummaryCompleteInvoice(int invoiceNumber, List<String> numerosFactura) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String client_id = Clients.getFirstClientID();
@@ -356,5 +355,4 @@ public class SummaryCOMPLETES {
         document.close();
         System.out.println("✅ PDF guardado en: " + desktopPath + fileName);
     }
-
 }
