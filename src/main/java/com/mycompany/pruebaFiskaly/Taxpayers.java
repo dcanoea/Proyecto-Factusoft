@@ -55,7 +55,7 @@ public class Taxpayers {
     }
 
     // Recupera contribuyente
-    public static void retrieveTaxpayer() {
+    public static JSONObject retrieveTaxpayer() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + "/taxpayer";
             String token = Authentication.retrieveToken();
@@ -65,16 +65,14 @@ public class Taxpayers {
             get.setHeader("Authorization", "Bearer " + token);
 
             HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
             String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
-            System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Datos del contribuyente:");
-            System.out.println(responseBody);
+            return new JSONObject(responseBody);
 
         } catch (Exception e) {
             System.out.println("Error al recuperar el contribuyente");
             e.printStackTrace();
+            return null;
         }
     }
 

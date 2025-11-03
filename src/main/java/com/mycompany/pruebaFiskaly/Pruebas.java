@@ -26,12 +26,18 @@ public class Pruebas {
         //<editor-fold desc="Validacion">
         //Validation.Java
         //VALIDACIÓN NIF AEAT
-        /*System.out.println(Validation.validateAEAT("T00000001"));
-        System.out.println(Validation.validateAEAT("T00000002"));
-        System.out.println(Validation.validateAEAT("T00000003"));
-        System.out.println(Validation.validateAEAT("T00000004"));*/ //VALIDACIÓN NIF VIES
-        //System.out.println(Validation.validateVIES("ES", "B44752210"));
-        //System.out.println(Validation.validateVIES("ES", "B4433333210"));   
+        //System.out.println(Validation.validateAEAT("T00000001"));//INVALID_SIMILAR
+        //System.out.println(Validation.validateAEAT("T00000002"));//VALID
+        //System.out.println(Validation.validateAEAT("T00000003"));//VALID_REVOKED
+        //System.out.println(Validation.validateAEAT("T00000004"));//VALID_REMOVED
+        //VALIDACIÓN NIF VIES
+        //System.out.println(Validation.validateVIES("ES", "B44752210"));//true
+        //System.out.println(Validation.validateVIES("ES", "B4433333210"));//false   
+        //VALIDACIÓN NIF POR DÍGITO DE CONTROL
+        //System.out.println(Validation.validateTaxID("18053094A"));//true
+        //System.out.println(Validation.validateTaxID("B22114532"));//true
+        //System.out.println(Validation.validateTaxID("123456789A"));//false
+        //System.out.println(Validation.validateTaxID("B1234567890"));//false
         //</editor-fold>
         //<editor-fold desc="Detalles y errores factura">
         //INVOICES
@@ -63,12 +69,12 @@ public class Pruebas {
         //<editor-fold desc="Creación facturas">
         //<editor-fold desc="Factura Completa">
         // CREAR FACTURA COMPLETA
-        Complete.createCompleteInvoice(String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
+        //Complete.createCompleteInvoice(String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
         //</editor-fold>
         //<editor-fold desc="Factura Rectificativa">
         // CREAR FACTURAS RECTIFICATIVAS
-        Correcting.createCorrectingInvoiceSubstitutionComplete("20250147", String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
-        Correcting.createCorrectingInvoiceDifferencesComplete("20250148", String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
+        //Correcting.createCorrectingInvoiceSubstitutionComplete("20250147", String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
+        //Correcting.createCorrectingInvoiceDifferencesComplete("20250148", String.valueOf(NUM_FACTURA), itemsList, globalDiscounts, receptorDetails);
         //</editor-fold>
         //<editor-fold desc="Factura Recapitulativa">
         // CREAR FACTURA RECAPITULATIVA
@@ -86,5 +92,7 @@ public class Pruebas {
         //InvoicesManagement.cancelInvoice("20250063");
         //</editor-fold>
         //</editor-fold>
+        
+        Taxpayers.retrieveTaxpayer();
     }
 }
