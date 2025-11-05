@@ -1,0 +1,145 @@
+{
+    "content": {
+        "data": {
+            "number": "20250158",
+            "text": "Factura COMPLETA",
+            "type": "SIMPLIFIED",
+            "items": [
+                {
+                    "quantity": "1",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "cause": "TAXABLE_EXEMPT_1",
+                            "type": "NO_VAT"
+                        }
+                    },
+                    "discount": "0",
+                    "text": "Prueba1 (Exento seg�n art. 20 Ley 37/1992 del IVA)",
+                    "unit_amount": "111",
+                    "full_amount": "111.00"
+                },
+                {
+                    "quantity": "2",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "rate": "4",
+                            "type": "VAT"
+                        }
+                    },
+                    "discount": "10",
+                    "text": "Prueba2",
+                    "unit_amount": "222",
+                    "full_amount": "440.96"
+                },
+                {
+                    "quantity": "3",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "rate": "21",
+                            "type": "VAT"
+                        }
+                    },
+                    "discount": "20",
+                    "text": "Prueba3",
+                    "unit_amount": "333",
+                    "full_amount": "1136.19"
+                },
+                {
+                    "quantity": "4",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "rate": "4",
+                            "type": "VAT"
+                        }
+                    },
+                    "discount": "15",
+                    "text": "Prueba4",
+                    "unit_amount": "333",
+                    "full_amount": "1322.88"
+                },
+                {
+                    "quantity": "5",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "rate": "21",
+                            "type": "VAT"
+                        }
+                    },
+                    "discount": "0",
+                    "text": "Prueba5",
+                    "unit_amount": "333",
+                    "full_amount": "2014.65"
+                },
+                {
+                    "quantity": "6",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "cause": "TAXABLE_EXEMPT_1",
+                            "type": "NO_VAT"
+                        }
+                    },
+                    "discount": "5",
+                    "text": "Prueba6 (Exento seg�n art. 20 Ley 37/1992 del IVA)",
+                    "unit_amount": "333",
+                    "full_amount": "1968.00"
+                },
+                {
+                    "quantity": "1",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "rate": "21",
+                            "type": "VAT"
+                        }
+                    },
+                    "text": "Descuento",
+                    "unit_amount": "-50",
+                    "full_amount": "-60.50"
+                },
+                {
+                    "quantity": "1",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "rate": "4",
+                            "type": "VAT"
+                        }
+                    },
+                    "text": "Descuento",
+                    "unit_amount": "-50",
+                    "full_amount": "-52.00"
+                },
+                {
+                    "quantity": "1",
+                    "system": {
+                        "type": "REGULAR",
+                        "category": {
+                            "cause": "TAXABLE_EXEMPT_1",
+                            "type": "NO_VAT"
+                        }
+                    },
+                    "text": "Descuento",
+                    "unit_amount": "-50",
+                    "full_amount": "-50.00"
+                }
+            ],
+            "full_amount": "6831.18"
+        },
+        "recipients": [{
+                "address_line": "C/Comercio 28",
+                "id": {
+                    "tax_number": "B22260863",
+                    "registered": true,
+                    "legal_name": "ACF INNOVE"
+                },
+                "postal_code": "22000"
+            }],
+        "type": "COMPLETE"
+    }
+}

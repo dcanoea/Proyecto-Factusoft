@@ -4,10 +4,14 @@ import com.mycompany.pruebaFiskaly.Invoices.Complete;
 import com.mycompany.pruebaFiskaly.Invoices.Correcting;
 import com.mycompany.pruebaFiskaly.Invoices.InvoiceHelpers;
 import com.mycompany.pruebaFiskaly.Invoices.InvoicesManagement;
+import com.mycompany.pruebaFiskaly.Invoices.POJO.CategoryDTO;
+import com.mycompany.pruebaFiskaly.Invoices.POJO.SystemDTO;
 import com.mycompany.pruebaFiskaly.Invoices.Simplified;
 import com.mycompany.pruebaFiskaly.Invoices.Summary;
 import com.mycompany.pruebaFiskaly.Invoices.SummaryCOMPLETES;
 import com.mycompany.pruebaFiskaly.Validation.Cliente;
+import com.mycompany.pruebaFiskaly.Invoices.*;
+import com.mycompany.pruebaFiskaly.Invoices.POJO.JsonUtil;
 import static java.awt.SystemColor.text;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +57,7 @@ public class Pruebas {
         //<editor-fold desc="Items factura">
         Map<String, String> receptorDetails = InvoiceHelpers.createReceptor("ACF INNOVE", "B22260863", true, "C/Comercio 28", "22000");
 
-        List< JSONObject> itemsList = new ArrayList<>();
+        /*List< JSONObject> itemsList = new ArrayList<>();
         itemsList.add(InvoiceHelpers.createItem("Prueba1", "1", "0", "111", Config.IVA_EXENTO));
         itemsList.add(InvoiceHelpers.createItem("Prueba2", "2", "10", "222", Config.IVA_SUPERREDUCIDO));
         itemsList.add(InvoiceHelpers.createItem("Prueba3", "3", "20", "333", Config.IVA_GENERAL));
@@ -64,7 +68,7 @@ public class Pruebas {
         List<JSONObject> globalDiscounts = new ArrayList<>();
         globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_GENERAL, "1", "-50"));
         globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_SUPERREDUCIDO, "1", "-50"));
-        globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_EXENTO, "1", "-50"));
+        globalDiscounts.add(InvoiceHelpers.createGlobalDiscount(Config.IVA_EXENTO, "1", "-50"));*/
         //</editor-fold>
         //<editor-fold desc="Creación facturas">
         //<editor-fold desc="Factura Completa">
@@ -93,6 +97,10 @@ public class Pruebas {
         //</editor-fold>
         //</editor-fold>
         
-        Taxpayers.retrieveTaxpayer();
+        CategoryDTO pruebaCategory = new CategoryDTO(CategoryDTO.Cause.TAXABLE_EXEMPT_2);
+        SystemDTO pruebaSystem = new SystemDTO(SystemDTO.Type.OTHER_TAX_IVA, pruebaCategory);
+        
+        System.out.println(JsonUtil.toJson(pruebaSystem));
+        
     }
 }

@@ -7,6 +7,8 @@ package com.mycompany.pruebaFiskaly.Invoices;
 import com.mycompany.pruebaFiskaly.Authentication;
 import com.mycompany.pruebaFiskaly.Clients;
 import com.mycompany.pruebaFiskaly.Config;
+import com.mycompany.pruebaFiskaly.Invoices.POJO.ItemDTO;
+import com.mycompany.pruebaFiskaly.Invoices.POJO.SystemDTO;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -31,42 +33,11 @@ public class InvoiceHelpers {
     // </editor-fold>
 
     // <editor-fold desc="Obtención datos para factura">
-    public static JSONObject createItem(String text, String quantity, String discount, String unitAmount, String ivaRate) {
-        List<String> validIvaRates = Arrays.asList(Config.IVA_GENERAL, Config.IVA_REDUCIDO, Config.IVA_SUPERREDUCIDO, Config.IVA_EXENTO);
-        if (!validIvaRates.contains(ivaRate)) {
-            throw new IllegalArgumentException("IVA no v\u00e1lido: " + ivaRate + ". Debe ser uno de: " + validIvaRates);
-        }
-        JSONObject item = new JSONObject();
-        if (ivaRate.equals(Config.IVA_EXENTO)) {
-            item.put("text", text + " (Exento seg\u00fan art. 20 Ley 37/1992 del IVA)");
-            item.put("iva_rate", "exento");
-        } else {
-            item.put("text", text);
-            item.put("iva_rate", ivaRate);
-        }
-        item.put("quantity", quantity);
-        item.put("discount", discount);
-        item.put("unit_amount", unitAmount);
-
+    public static ItemDTO createItem(String quantity, SystemDTO system, String discount, String text, String unitAmount, String fullAmount) {
+        ItemDTO item = new ItemDTO(quantity, system, discount, text, unitAmount, fullAmount);
         return item;
     }
 
-    public static JSONObject createSupplied(String text, String quantity, String unitAmount, String fullAmount) {
-        JSONObject category = new JSONObject();
-        category.put("type", "NO_VAT");
-        category.put("cause", "NON_TAXABLE_4");
-        JSONObject system = new JSONObject();
-        system.put("category", category);
-        system.put("type", "REGULAR");
-        JSONObject item = new JSONObject();
-        item.put("text", text);
-        item.put("quantity", quantity);
-        item.put("unit_amount", unitAmount);
-        item.put("full_amount", fullAmount);
-        item.put("system", system);
-        //item.put("vat_type", "IVA");
-        return item;
-    }
 
     public static JSONObject createGlobalDiscount(String iva, String quantity, String unitAmount) {
         double unit = Double.parseDouble(unitAmount);

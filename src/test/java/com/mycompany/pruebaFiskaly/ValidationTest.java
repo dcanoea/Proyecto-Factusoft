@@ -79,7 +79,7 @@ public class ValidationTest {
     public void testValidateVIES() {
         System.out.println("validateVIES");
         assertFalse(Validation.validateVIES("ES", "18053554B"));
-        assertEquals(true, Validation.validateVIES("ES", "B44752210"));
+        assertEquals(true, Validation.validateVIES("ES", "B22260863"));
         assertEquals(false, Validation.validateVIES("ES", "B4433333210"));
         assertEquals(false, Validation.validateVIES("", ""));
         assertEquals(false, Validation.validateVIES(null, null));
