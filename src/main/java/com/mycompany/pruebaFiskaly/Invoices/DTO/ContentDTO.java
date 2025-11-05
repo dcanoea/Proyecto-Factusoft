@@ -7,7 +7,7 @@ import java.util.List;
 public class ContentDTO {
 
     public DataDTO data;
-    public RecipientDTO recipients;
+    public List<RecipientDTO> recipients;
     public String type;
 
  
@@ -18,10 +18,10 @@ public class ContentDTO {
     public ContentDTO() {
     }
 
-    public ContentDTO(DataDTO data, RecipientDTO recipient) {
+    public ContentDTO(DataDTO data, List<RecipientDTO> recipients) {
         super();
         this.data = data;
-        this.recipients = recipient;
+        this.recipients = recipients;
         this.type = "COMPLETE";
     }
 
