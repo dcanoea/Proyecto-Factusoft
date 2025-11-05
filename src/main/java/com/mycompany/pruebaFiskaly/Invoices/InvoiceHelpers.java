@@ -7,8 +7,8 @@ package com.mycompany.pruebaFiskaly.Invoices;
 import com.mycompany.pruebaFiskaly.Authentication;
 import com.mycompany.pruebaFiskaly.Clients;
 import com.mycompany.pruebaFiskaly.Config;
-import com.mycompany.pruebaFiskaly.Invoices.POJO.ItemDTO;
-import com.mycompany.pruebaFiskaly.Invoices.POJO.SystemDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ItemDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.SystemDTO;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -33,12 +33,6 @@ public class InvoiceHelpers {
     // </editor-fold>
 
     // <editor-fold desc="Obtención datos para factura">
-    public static ItemDTO createItem(String quantity, SystemDTO system, String discount, String text, String unitAmount, String fullAmount) {
-        ItemDTO item = new ItemDTO(quantity, system, discount, text, unitAmount, fullAmount);
-        return item;
-    }
-
-
     public static JSONObject createGlobalDiscount(String iva, String quantity, String unitAmount) {
         double unit = Double.parseDouble(unitAmount);
         double qty = Double.parseDouble(quantity);

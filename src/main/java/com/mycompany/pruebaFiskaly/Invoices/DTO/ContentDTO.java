@@ -1,5 +1,5 @@
 
-package com.mycompany.pruebaFiskaly.Invoices.POJO;
+package com.mycompany.pruebaFiskaly.Invoices.DTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +7,10 @@ import java.util.List;
 public class ContentDTO {
 
     public DataDTO data;
-    public List<RecipientDTO> recipients = new ArrayList<RecipientDTO>();
+    public RecipientDTO recipients;
     public String type;
 
+ 
     /**
      * No args constructor for use in serialization
      * 
@@ -17,11 +18,11 @@ public class ContentDTO {
     public ContentDTO() {
     }
 
-    public ContentDTO(DataDTO data, List<RecipientDTO> recipients, String type) {
+    public ContentDTO(DataDTO data, RecipientDTO recipient) {
         super();
         this.data = data;
-        this.recipients = recipients;
-        this.type = type;
+        this.recipients = recipient;
+        this.type = "COMPLETE";
     }
 
 }

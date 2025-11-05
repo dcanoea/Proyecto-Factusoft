@@ -4,14 +4,15 @@ import com.mycompany.pruebaFiskaly.Invoices.Complete;
 import com.mycompany.pruebaFiskaly.Invoices.Correcting;
 import com.mycompany.pruebaFiskaly.Invoices.InvoiceHelpers;
 import com.mycompany.pruebaFiskaly.Invoices.InvoicesManagement;
-import com.mycompany.pruebaFiskaly.Invoices.POJO.CategoryDTO;
-import com.mycompany.pruebaFiskaly.Invoices.POJO.SystemDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.CategoryDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.SystemDTO;
 import com.mycompany.pruebaFiskaly.Invoices.Simplified;
 import com.mycompany.pruebaFiskaly.Invoices.Summary;
 import com.mycompany.pruebaFiskaly.Invoices.SummaryCOMPLETES;
 import com.mycompany.pruebaFiskaly.Validation.Cliente;
 import com.mycompany.pruebaFiskaly.Invoices.*;
-import com.mycompany.pruebaFiskaly.Invoices.POJO.JsonUtil;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ItemDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.JsonUtil;
 import static java.awt.SystemColor.text;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -96,11 +97,7 @@ public class Pruebas {
         //InvoicesManagement.cancelInvoice("20250063");
         //</editor-fold>
         //</editor-fold>
-        
-        CategoryDTO pruebaCategory = new CategoryDTO(CategoryDTO.Cause.TAXABLE_EXEMPT_2);
-        SystemDTO pruebaSystem = new SystemDTO(SystemDTO.Type.OTHER_TAX_IVA, pruebaCategory);
-        
-        System.out.println(JsonUtil.toJson(pruebaSystem));
+       
         
     }
 }

@@ -1,5 +1,5 @@
 
-package com.mycompany.pruebaFiskaly.Invoices.POJO;
+package com.mycompany.pruebaFiskaly.Invoices.DTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
