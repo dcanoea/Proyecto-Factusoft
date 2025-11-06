@@ -98,7 +98,7 @@ public class Validation {
         String validation = null;
         try {
             // Crea un objeto URL con la dirección base (Config.BASE_URL) más el endpoint /validation/tin
-            URL url = new URL(Config.BASE_URL + "/validation/tin");
+            URL url = new URL(Config.BASE_URL + Config.VALIDATION_TIN);
 
             // Obtiene el token desde Authentication.Recuperar_token
             String token = Authentication.retrieveToken();
@@ -169,7 +169,7 @@ public class Validation {
     public static boolean validateVIES(String country_code, String nif) {
         try {
             // Construye la URL del endpoint de validación TIN
-            URL url = new URL(Config.BASE_URL + "/validation/tin");
+            URL url = new URL(Config.BASE_URL + Config.VALIDATION_TIN);
             // Recupera el token de autenticación para la API
             String token = Authentication.retrieveToken();
             // Abre la conexión HTTP

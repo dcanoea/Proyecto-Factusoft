@@ -16,7 +16,7 @@ public class Taxpayers {
     // Crear contribuyente (persona o empresa que emite facturas)
     public static void createTaxpayer(String legal_name, String tax_number, String territory) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/taxpayer";
+            String url = Config.BASE_URL + Config.TAXPAYER;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -57,7 +57,7 @@ public class Taxpayers {
     // Recupera contribuyente
     public static JSONObject retrieveTaxpayer() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/taxpayer";
+            String url = Config.BASE_URL + Config.TAXPAYER;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
@@ -83,7 +83,7 @@ public class Taxpayers {
             String fiscal_year, String industry, String language, String timezone, String notes) {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/taxpayer";
+            String url = Config.BASE_URL + Config.TAXPAYER;
             String token = Authentication.retrieveToken();
 
             HttpPatch patch = new HttpPatch(url);

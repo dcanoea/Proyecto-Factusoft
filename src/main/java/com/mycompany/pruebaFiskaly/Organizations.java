@@ -14,7 +14,7 @@ public class Organizations {
     // Recupera las organizaciones (distintas sedes) de la empresa
     public static String listOrganizations() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_MANAGEMENT_URL + "/organizations";
+            String url = Config.BASE_MANAGEMENT_URL + Config.ORGANIZATIONS;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
@@ -57,32 +57,4 @@ public class Organizations {
         return null;
     }
 
-    // Devuelve organization asociada
-    public static String retrieveOrganization() {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_MANAGEMENT_URL + "/organizations/" + Organizations.getFirstOrganizationID();
-            String token = Authentication.retrieveToken();
-
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Content-Type", "application/json");
-            get.setHeader("Authorization", "Bearer " + token);
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Respuesta del servidor:");
-            JSONObject json = new JSONObject(responseBody);
-            System.out.println(json.toString(2)); // Indentación de 2 espacios
-
-            return responseBody;
-
-        } catch (Exception ex) {
-            System.out.println("Error al listar clientes");
-            ex.printStackTrace();
-            return null;
-        }
-    }
 }

@@ -62,20 +62,4 @@ public class OrganizationsTest {
         assertFalse(organizationID.isEmpty(), "El ID de la organización no debe estar vacío");
         System.out.println("Primer organization ID: " + organizationID);
     }
-
-    /**
-     * Test of retrieveOrganization method, of class Organizations.
-     */
-    @Test
-    public void testRetrieveOrganization() {
-        System.out.println("retrieveOrganization");
-        String response = Organizations.retrieveOrganization();
-        assertNotNull(response, "La respuesta de retrieveOrganization no debe ser nula");
-
-        JSONObject json = new JSONObject(response);
-        assertTrue(json.has("_id"), "La organización debe tener un campo '_id'");
-        assertTrue(json.has("name"), "La organización debe tener un campo 'name'");
-        assertTrue(json.has("vat_id"), "La organización debe tener un campo 'vat_id'");
-        System.out.println("Organización: " + json.getString("name"));
-    }
 }

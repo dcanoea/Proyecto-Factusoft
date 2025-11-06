@@ -15,7 +15,7 @@ public class Authentication {
     // DEVUELVE TOKEN DE AUTENTICACIÓN
     public static String retrieveToken() throws IOException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/auth";
+            String url = Config.BASE_URL + Config.AUTH;
 
             HttpPost post = new HttpPost(url);
             post.setHeader("Content-Type", "application/json");

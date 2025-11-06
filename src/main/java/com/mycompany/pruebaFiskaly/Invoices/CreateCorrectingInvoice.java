@@ -1,5 +1,6 @@
 package com.mycompany.pruebaFiskaly.Invoices;
 
+import com.mycompany.pruebaFiskaly.Config;
 import com.mycompany.pruebaFiskaly.ConnectionAPI;
 import com.mycompany.pruebaFiskaly.Invoices.DTO.CorrectingDTO;
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class CreateCorrectingInvoice {
             String body = JsonUtil.toJson(correcting);
 
             // ======== Llamada a la API ========
-            HttpPut put = ConnectionAPI.putRequest(body);
+            HttpPut put = ConnectionAPI.putRequest(Config.CREATE_INVOICE, body);
             String responseBody = ConnectionAPI.requestAPI(client, put);
 
             // ======== Extraemos QR de la respuesta ========

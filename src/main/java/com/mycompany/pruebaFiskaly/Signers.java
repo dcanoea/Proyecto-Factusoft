@@ -19,7 +19,7 @@ public class Signers {
     public static void createSigner() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             UUID uuid = UUID.randomUUID();
-            String url = Config.BASE_URL + "/signers/" + uuid.toString();
+            String url = Config.BASE_URL + Config.CREATE_SIGNER;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -46,7 +46,7 @@ public class Signers {
     // Lista Firmantes
     public static String listSigners() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/signers";
+            String url = Config.BASE_URL + Config.SIGNERS;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);

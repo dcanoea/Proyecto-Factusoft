@@ -23,7 +23,7 @@ public class InvoicesManagement {
     public static void listInvoices() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices";
+            String url = Config.BASE_URL + Config.INVOICES;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
@@ -51,7 +51,7 @@ public class InvoicesManagement {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
             String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
+            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -83,8 +83,7 @@ public class InvoicesManagement {
         String invoiceNumber = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
-            String client_id = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + client_id + "/invoices/" + invoiceID;
+            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -158,7 +157,7 @@ public class InvoicesManagement {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
             String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
+            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -202,7 +201,7 @@ public class InvoicesManagement {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
             String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
+            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -252,7 +251,7 @@ public class InvoicesManagement {
             String invoiceID = getInvoiceIDByNumber(invoiceNumber);
             String token = Authentication.retrieveToken();
             String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
+            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
 
             HttpPatch patch = new HttpPatch(url);
             patch.setHeader("Authorization", "Bearer " + token);

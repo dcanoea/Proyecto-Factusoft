@@ -18,8 +18,7 @@ public class Clients {
     // Crea un UUID único que referencia a un equipo/sistema/TPV/POS donde se hacen facturas
     public static void createClient() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            UUID uuid = UUID.randomUUID();
-            String url = Config.BASE_URL + "/clients/" + uuid.toString();
+            String url = Config.BASE_URL + Config.CREATE_CLIENT;
             String token = Authentication.retrieveToken();
 
             HttpPut put = new HttpPut(url);
@@ -46,7 +45,7 @@ public class Clients {
     // Lista todos los clients
     public static String listClients() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/clients";
+            String url = Config.BASE_URL + Config.CLIENTS;
             String token = Authentication.retrieveToken();
 
             HttpGet get = new HttpGet(url);
@@ -61,7 +60,7 @@ public class Clients {
             System.out.println("Respuesta del servidor:");
             JSONObject json = new JSONObject(responseBody);
             System.out.println(json.toString(2)); // Indentación de 2 espacios
-            
+
             return responseBody;
 
         } catch (Exception e) {

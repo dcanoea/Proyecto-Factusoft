@@ -12,12 +12,10 @@ import org.json.JSONException;
 
 public class ConnectionAPI {
 
-    public static HttpPut putRequest(String body) throws IOException, JSONException {
+    public static HttpPut putRequest(String endPoint, String body) throws IOException, JSONException {
         // ========= PETICIÓN API=========
-        String clientID = Clients.getFirstClientID();
         String token = Authentication.retrieveToken();
-        UUID invoiceID = UUID.randomUUID();
-        String url = Config.BASE_URL + "/clients/" + clientID + "/invoices/" + invoiceID;
+        String url = Config.BASE_URL + endPoint;
         HttpPut put = new HttpPut(url);
         put.setHeader("Content-Type", "application/json");
         put.setHeader("Authorization", "Bearer " + token);
