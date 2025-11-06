@@ -4,7 +4,7 @@ package com.mycompany.pruebaFiskaly.Invoices.DTO;
 
 public class CompleteDTO {
 
-    public ContentDTO content;
+    public ContentCompleteDTO content;
 
     /**
      * No args constructor for use in serialization
@@ -13,7 +13,7 @@ public class CompleteDTO {
     public CompleteDTO() {
     }
 
-    public CompleteDTO(ContentDTO content) {
+    public CompleteDTO(ContentCompleteDTO content) {
         super();
         this.content = content;
     }

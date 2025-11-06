@@ -4,10 +4,10 @@ package com.mycompany.pruebaFiskaly.Invoices.DTO;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContentDTO {
+public class ContentCompleteDTO {
 
     public DataDTO data;
-    public List<RecipientDTO> recipients;
+    public List<RecipientsDTO> recipients;
     public String type;
 
  
@@ -15,10 +15,10 @@ public class ContentDTO {
      * No args constructor for use in serialization
      * 
      */
-    public ContentDTO() {
+    public ContentCompleteDTO() {
     }
 
-    public ContentDTO(DataDTO data, List<RecipientDTO> recipients) {
+    public ContentCompleteDTO(DataDTO data, List<RecipientsDTO> recipients) {
         super();
         this.data = data;
         this.recipients = recipients;

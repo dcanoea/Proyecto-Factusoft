@@ -13,6 +13,8 @@ public class ItemDTO {
     public String text;
     @JsonProperty("unit_amount")
     public String unitAmount;
+    @JsonProperty("vat_type")
+    public VatType vatype;
 
     public String getFullAmount() {
         return fullAmount;
@@ -20,6 +22,9 @@ public class ItemDTO {
     @JsonProperty("full_amount")
     public String fullAmount;
 
+    public enum VatType {
+        IVA, OTHER
+    }
     /**
      * No args constructor for use in serialization
      *
@@ -27,12 +32,13 @@ public class ItemDTO {
     public ItemDTO() {
     }
 
-    public ItemDTO(String quantity, SystemDTO system, String discount, String text, String unitAmount) {
+    public ItemDTO(String quantity, SystemDTO system, String discount, String text, String unitAmount, VatType vatType) {
         this.quantity = quantity;
         this.system = system;
         this.discount = discount;
         this.text = text;
         this.unitAmount = unitAmount;
+        this.vatype = vatType;
 
         // Calculo del importe total
         try {

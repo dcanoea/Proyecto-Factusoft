@@ -16,7 +16,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -34,6 +33,7 @@ public class ConnectionAPI {
         put.setHeader("Content-Type", "application/json");
         put.setHeader("Authorization", "Bearer " + token);
         put.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
+        System.out.println("Body envíado a la API");
         System.out.println(body);
         return put;
     }

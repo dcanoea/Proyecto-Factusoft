@@ -47,10 +47,10 @@ public class Pruebas {
         //<editor-fold desc="Detalles y errores factura">
         //INVOICES
         // OBTENER DETALLES DE UNA FACTURA
-        //String invoiceid = InvoicesManagement.getInvoiceIDByNumber("20250119");
+        String invoiceid = InvoicesManagement.getInvoiceIDByNumber("4");
         //InvoicesManagement.retrieveInvoice(invoiceid);
         // OBTENER ESTADO DE ERROR DE LA FACTURA Y SU DESCRIPCION
-        //InvoicesManagement.getRegistrationDescription("20250150", InvoicesManagement.getInvoiceIDByNumber("20250074"));
+        InvoicesManagement.getRegistrationDescription("4", InvoicesManagement.getInvoiceIDByNumber("4"));
         // RECUPERAR TOTAL FACTURA 
         //String idFactura = InvoicesManagement.getInvoiceIDByNumber("S-2025-009"); //7891d62c-7eba-40e2-a058-405d8a2b4718
         //System.out.println(InvoicesManagement.getFullAmount(idFactura));

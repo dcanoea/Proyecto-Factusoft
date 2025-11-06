@@ -9,7 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONException;
 
-public class CreateInvoiceDTO {
+public class CreateCompleteInvoiceDTO {
 
     public static void createInvoice(CompleteDTO complete) {
         CloseableHttpClient client = HttpClients.createDefault();
@@ -33,14 +33,14 @@ public class CreateInvoiceDTO {
             System.out.println("Factura completa generada con éxito.");
 
         } catch (IOException | JSONException e) {
-            Logger.getLogger(CreateInvoiceDTO.class.getName()).log(Level.SEVERE, "Error al crear la factura", e);
+            Logger.getLogger(CreateCompleteInvoiceDTO.class.getName()).log(Level.SEVERE, "Error al crear la factura", e);
         } catch (Exception e) {
-            Logger.getLogger(CreateInvoiceDTO.class.getName()).log(Level.SEVERE, "Error general", e);
+            Logger.getLogger(CreateCompleteInvoiceDTO.class.getName()).log(Level.SEVERE, "Error general", e);
         } finally {
             try {
                 client.close();
             } catch (IOException e) {
-                Logger.getLogger(CreateInvoiceDTO.class.getName()).log(Level.SEVERE, "Error al cerrar cliente HTTP", e);
+                Logger.getLogger(CreateCompleteInvoiceDTO.class.getName()).log(Level.SEVERE, "Error al cerrar cliente HTTP", e);
             }
         }
     }
