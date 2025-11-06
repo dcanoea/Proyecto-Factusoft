@@ -5,7 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Locale;
 
-public class DataDTO {
+public class DataCompleteDTO {
 
     @JsonProperty("number")
     public String invoiceNumber;
@@ -19,10 +19,10 @@ public class DataDTO {
      * No args constructor for use in serialization
      *
      */
-    public DataDTO() {
+    public DataCompleteDTO() {
     }
 
-    public DataDTO(String invoiceNumber, String text, List<ItemDTO> items) {
+    public DataCompleteDTO(String invoiceNumber, String text, List<ItemDTO> items) {
         super();
         this.invoiceNumber = invoiceNumber;
         this.text = text;

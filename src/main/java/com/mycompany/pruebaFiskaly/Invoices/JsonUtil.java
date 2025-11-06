@@ -1,8 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.mycompany.pruebaFiskaly.Invoices.DTO;
+package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,10 +6,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.io.IOException;
 
-/**
- *
- * @author user
- */
 public class JsonUtil {
 
     private static final ObjectMapper mapper = new ObjectMapper()

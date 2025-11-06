@@ -1,12 +1,8 @@
 package com.mycompany.pruebaFiskaly.Invoices.DTO;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mycompany.pruebaFiskaly.Authentication;
 import com.mycompany.pruebaFiskaly.Config;
-import com.mycompany.pruebaFiskaly.Invoices.InvoicesManagement;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;

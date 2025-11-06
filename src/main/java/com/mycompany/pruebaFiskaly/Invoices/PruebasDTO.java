@@ -1,23 +1,20 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
-package com.mycompany.pruebaFiskaly.Invoices.DTO;
+package com.mycompany.pruebaFiskaly.Invoices;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.CategoryDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.CompleteDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ContentCompleteDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ContentCorrectingDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.CorrectingDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.DataCorrectingDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.DataCompleteDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.IdDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.InvoiceDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ItemDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.RecipientsDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.SystemDTO;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/**
- *
- * @author user
- */
 public class PruebasDTO {
-
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
 
         //String numFactura = "20251113"; //completas
@@ -56,7 +53,7 @@ public class PruebasDTO {
         ItemDTO item5 = new ItemDTO("10", pruebaSystem, "0", "Clases camion", "-60", ItemDTO.VatType.IVA);
         items.add(item5);
         //DATA
-        DataDTO data = new DataDTO(numFactura, "Factura Completa", items);
+        DataCompleteDTO data = new DataCompleteDTO(numFactura, "Factura Completa", items);
         //RECEPTOR FACTURA
         ArrayList<RecipientsDTO> receptors = new ArrayList<>();
         IdDTO idReceptor = new IdDTO("B22260863", Boolean.TRUE, "ARAGON FORMACION ACF S.L.");
@@ -74,7 +71,7 @@ public class PruebasDTO {
         ContentCorrectingDTO contentCorrecting = new ContentCorrectingDTO(ContentCorrectingDTO.Method.SUBSTITUTION, 
                 ContentCorrectingDTO.Code.CORRECTION_1, "0002", invoice);
         CorrectingDTO correcting = new CorrectingDTO(contentCorrecting);
-        CreateCorrectingInvoiceDTO.createCorrectingInvoice(correcting);
+        CreateCorrectingInvoice.createCorrectingInvoice(correcting);
     }
 
 }

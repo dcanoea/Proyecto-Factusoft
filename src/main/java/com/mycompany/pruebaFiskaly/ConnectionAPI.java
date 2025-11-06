@@ -1,12 +1,5 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.mycompany.pruebaFiskaly.Invoices.DTO;
+package com.mycompany.pruebaFiskaly;
 
-import com.mycompany.pruebaFiskaly.Authentication;
-import com.mycompany.pruebaFiskaly.Clients;
-import com.mycompany.pruebaFiskaly.Config;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -17,10 +10,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 
-/**
- *
- * @author user
- */
 public class ConnectionAPI {
 
     public static HttpPut putRequest(String body) throws IOException, JSONException {

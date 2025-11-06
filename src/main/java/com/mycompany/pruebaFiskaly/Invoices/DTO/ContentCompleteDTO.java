@@ -1,12 +1,11 @@
 
 package com.mycompany.pruebaFiskaly.Invoices.DTO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ContentCompleteDTO {
 
-    public DataDTO data;
+    public DataCompleteDTO data;
     public List<RecipientsDTO> recipients;
     public String type;
 
@@ -18,7 +17,7 @@ public class ContentCompleteDTO {
     public ContentCompleteDTO() {
     }
 
-    public ContentCompleteDTO(DataDTO data, List<RecipientsDTO> recipients) {
+    public ContentCompleteDTO(DataCompleteDTO data, List<RecipientsDTO> recipients) {
         super();
         this.data = data;
         this.recipients = recipients;

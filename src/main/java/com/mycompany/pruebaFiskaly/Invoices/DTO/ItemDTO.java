@@ -15,16 +15,13 @@ public class ItemDTO {
     public String unitAmount;
     @JsonProperty("vat_type")
     public VatType vatype;
-
-    public String getFullAmount() {
-        return fullAmount;
-    }
     @JsonProperty("full_amount")
     public String fullAmount;
 
     public enum VatType {
         IVA, OTHER
     }
+
     /**
      * No args constructor for use in serialization
      *
@@ -61,5 +58,9 @@ public class ItemDTO {
         } catch (NumberFormatException e) {
             this.fullAmount = "0.00"; // fallback seguro
         }
+    }
+
+    public String getFullAmount() {
+        return fullAmount;
     }
 }

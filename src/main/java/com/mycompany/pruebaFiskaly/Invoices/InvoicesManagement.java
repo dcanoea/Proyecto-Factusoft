@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,10 +17,6 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/**
- *
- * @author user
- */
 public class InvoicesManagement {
 
     // Este endpoint obtiene una lista de las facturas emitidas desde un dispositivo cliente.
