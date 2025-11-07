@@ -51,7 +51,7 @@ public class InvoicesManagement {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
             String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
+            String url = Config.BASE_URL + Config.INVOICES + "/" + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);
@@ -83,7 +83,7 @@ public class InvoicesManagement {
         String invoiceNumber = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String token = Authentication.retrieveToken();
-            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
+            String url = Config.BASE_URL + Config.INVOICES + "/" + invoiceID;
 
             HttpGet get = new HttpGet(url);
             get.setHeader("Authorization", "Bearer " + token);

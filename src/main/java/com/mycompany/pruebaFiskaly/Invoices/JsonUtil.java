@@ -1,6 +1,7 @@
 package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
@@ -9,7 +10,8 @@ import java.io.IOException;
 public class JsonUtil {
 
     private static final ObjectMapper mapper = new ObjectMapper()
-            .enable(SerializationFeature.INDENT_OUTPUT);
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     // Serializar a String JSON
     public static String toJson(Object obj) throws JsonProcessingException {

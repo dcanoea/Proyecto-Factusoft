@@ -14,7 +14,8 @@ public class Config {
     public static final String API_KEY = "test_dz8evcra8g5lccbn2xt6a2kj8_acfmanaged";
     public static final String API_SECRET = "NhWMs0VpVe228dqr4CJUY8LKjyDofTqj08vCoxRzaWT";
 
-    public static String clientID = Clients.getFirstClientID();
+    public static String clientID = "ce46883c-5425-4a85-bf15-f04141ba13e5";	
+;
     public static UUID random_UUID = UUID.randomUUID();
 
     // Endpoints API

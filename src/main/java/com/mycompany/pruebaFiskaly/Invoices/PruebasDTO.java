@@ -17,15 +17,15 @@ import java.util.ArrayList;
 public class PruebasDTO {
     public static void main(String[] args) {
 
-        //String numFactura = "20251113"; //completas
-        String numFactura = "0003"; //rectificativas
+        String numFactura = "20251115"; //completas
+        //String numFactura = "0003"; //rectificativas
         
 
         ArrayList<ItemDTO> items = new ArrayList<>();
         // item 1
         CategoryDTO pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_21);
         SystemDTO pruebaSystem = new SystemDTO(SystemDTO.Type.REGULAR, pruebaCategory);
-        ItemDTO item1 = new ItemDTO("1", pruebaSystem, "-10", "Curso B", "-250", ItemDTO.VatType.IVA);
+        ItemDTO item1 = new ItemDTO("1", pruebaSystem, "10", "Curso B", "250", ItemDTO.VatType.IVA);
         items.add(item1);
         /*// item 2   NO FUNCIONA (CONSULTAR GESTORÍA PARA IMPLEMENTAR UN MÉTODO O OTRO (OTHER_TAX_IVA O REGULAR)
         pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_0);
@@ -35,22 +35,22 @@ public class PruebasDTO {
         // item 2
         pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_0);
         pruebaSystem = new SystemDTO(SystemDTO.Type.REGULAR, pruebaCategory);
-        ItemDTO item2 = new ItemDTO("1", pruebaSystem, "-20", "Curso C", "-350", ItemDTO.VatType.IVA);
+        ItemDTO item2 = new ItemDTO("1", pruebaSystem, "20", "Curso C", "350", ItemDTO.VatType.IVA);
         items.add(item2);
         // item 3
         pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_4);
         pruebaSystem = new SystemDTO(SystemDTO.Type.REGULAR, pruebaCategory);
-        ItemDTO item3 = new ItemDTO("1", pruebaSystem, "0", "Libro C", "-35", ItemDTO.VatType.IVA);
+        ItemDTO item3 = new ItemDTO("1", pruebaSystem, "0", "Libro C", "35", ItemDTO.VatType.IVA);
         items.add(item3);
         // item 4 descuento global
         pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_21);
         pruebaSystem = new SystemDTO(SystemDTO.Type.REGULAR, pruebaCategory);
-        ItemDTO item4 = new ItemDTO("1", pruebaSystem, "0", "Descuento", "50", ItemDTO.VatType.IVA);
+        ItemDTO item4 = new ItemDTO("1", pruebaSystem, "0", "Descuento", "-50", ItemDTO.VatType.IVA);
         items.add(item4);
         // item 5 
         pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_10);
         pruebaSystem = new SystemDTO(SystemDTO.Type.REGULAR, pruebaCategory);
-        ItemDTO item5 = new ItemDTO("10", pruebaSystem, "0", "Clases camion", "-60", ItemDTO.VatType.IVA);
+        ItemDTO item5 = new ItemDTO("10", pruebaSystem, "0", "Clases camion", "60", ItemDTO.VatType.IVA);
         items.add(item5);
         //DATA
         DataCompleteDTO data = new DataCompleteDTO(numFactura, "Factura Completa", items);
@@ -63,7 +63,7 @@ public class PruebasDTO {
         ContentCompleteDTO content = new ContentCompleteDTO(data, receptors);
         //CREACION JSON FACTURA
         CompleteDTO completa = new CompleteDTO(content);
-        //CreateCompleteInvoiceDTO.createInvoice(completa);
+        CreateCompleteInvoice.createInvoice(completa);
         
         //FACTURA RECTIFICATIVA
         DataCorrectingDTO dataCorrecting = new DataCorrectingDTO(numFactura, "Factura Abono", items);
@@ -71,7 +71,7 @@ public class PruebasDTO {
         ContentCorrectingDTO contentCorrecting = new ContentCorrectingDTO(ContentCorrectingDTO.Method.SUBSTITUTION, 
                 ContentCorrectingDTO.Code.CORRECTION_1, "0002", invoice);
         CorrectingDTO correcting = new CorrectingDTO(contentCorrecting);
-        CreateCorrectingInvoice.createCorrectingInvoice(correcting);
+        //CreateCorrectingInvoice.createCorrectingInvoice(correcting);
     }
 
 }

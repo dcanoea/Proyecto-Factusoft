@@ -1,10 +1,14 @@
 package com.mycompany.pruebaFiskaly;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -25,14 +29,31 @@ public class ConnectionAPI {
         return put;
     }
 
-    public static String requestAPI(CloseableHttpClient client, HttpPut put) throws IOException {
+    public static HttpGet getRequest(String endPoint) throws IOException, JSONException {
+        // ========= PETICIÓN API=========
+        String token = Authentication.retrieveToken();
+        String url = Config.BASE_URL + endPoint;
+        HttpGet get = new HttpGet(url);
+        get.setHeader("Content-Type", "application/json");
+        get.setHeader("Authorization", "Bearer " + token);
+        return get;
+    }
+
+    public static String requestAPI(CloseableHttpClient client, HttpUriRequest request) throws IOException {
         // ========= RESPUESTA API=========
-        HttpResponse response = client.execute(put);
+        HttpResponse response = client.execute(request);
         int statusCode = response.getStatusLine().getStatusCode();
         String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
         System.out.println("C\u00f3digo de respuesta: " + statusCode);
         System.out.println("Respuesta completa del servidor:");
-        System.out.println(responseBody);
+        
+        //Formatear impresión por consola del JSON
+        ObjectMapper mapper = new ObjectMapper();
+        Object json = mapper.readValue(responseBody, Object.class);
+        ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+        String prettyJson = writer.writeValueAsString(json);
+        System.out.println(prettyJson);
+        
         return responseBody;
     }
 }

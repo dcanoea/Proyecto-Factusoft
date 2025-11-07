@@ -45,28 +45,12 @@ public class Clients {
     // Lista todos los clients
     public static String listClients() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + Config.CLIENTS;
-            String token = Authentication.retrieveToken();
+            HttpGet get = ConnectionAPI.getRequest(Config.CLIENTS);
 
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Content-Type", "application/json");
-            get.setHeader("Authorization", "Bearer " + token);
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Respuesta del servidor:");
-            JSONObject json = new JSONObject(responseBody);
-            System.out.println(json.toString(2)); // Indentación de 2 espacios
-
-            return responseBody;
+            return ConnectionAPI.requestAPI(client, get);
 
         } catch (Exception e) {
-            System.out.println("Error al recuperar los clients");
-            e.printStackTrace();
-            return null;
+            return "Error al recuperar los clients";
         }
     }
 
