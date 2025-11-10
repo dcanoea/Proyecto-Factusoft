@@ -23,23 +23,10 @@ public class InvoicesManagement {
     // Este endpoint obtiene una lista de las facturas emitidas desde un dispositivo cliente.
     public static void listInvoices() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + Config.INVOICES;
-            String token = Authentication.retrieveToken();
-
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Content-Type", "application/json");
-            get.setHeader("Authorization", "Bearer " + token);
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Respuesta del servidor:");
-            JSONObject json = new JSONObject(responseBody);
-            System.out.println(json.toString(2)); // Indentación de 2 espacios
-
+            HttpGet get = ConnectionAPI.getRequest(Config.INVOICES);
+ 
+            System.out.println(ConnectionAPI.requestAPI(client, get));
+            
         } catch (Exception e) {
             System.out.println("Error al recuperar los clients");
             e.printStackTrace();
@@ -50,19 +37,9 @@ public class InvoicesManagement {
     public static JSONObject retrieveInvoice(String invoiceID) {
         JSONObject factura = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String token = Authentication.retrieveToken();
-            String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + Config.INVOICES + "/" + invoiceID;
+            HttpGet get = ConnectionAPI.getRequest(Config.INVOICES + "/" + invoiceID);
 
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Authorization", "Bearer " + token);
-            get.setHeader("Content-Type", "application/json");
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
+            String responseBody = ConnectionAPI.requestAPI(client, get);
 
             JSONObject json = new JSONObject(responseBody);
             if (json.has("content")) {
@@ -83,19 +60,10 @@ public class InvoicesManagement {
     public static String getInvoiceNumberByID(String invoiceID) {
         String invoiceNumber = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String token = Authentication.retrieveToken();
-            String url = Config.BASE_URL + Config.INVOICES + "/" + invoiceID;
+            HttpGet get = ConnectionAPI.getRequest(Config.INVOICES + "/" + invoiceID);
 
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Authorization", "Bearer " + token);
-            get.setHeader("Content-Type", "application/json");
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
-
+            String responseBody = ConnectionAPI.requestAPI(client, get);
+            
             JSONObject json = new JSONObject(responseBody);
             if (!json.has("content")) {
                 System.err.println("No se encontró el contenido de la factura: " + invoiceID);
@@ -127,18 +95,10 @@ public class InvoicesManagement {
     public static String getInvoiceIDByNumber(String number) {
         String invoiceID = null;
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + "/invoices?number=" + number;
-            String token = Authentication.retrieveToken();
+            HttpGet get = ConnectionAPI.getRequest("/invoices?number=" + number);
 
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Content-Type", "application/json");
-            get.setHeader("Authorization", "Bearer " + token);
+            String responseBody = ConnectionAPI.requestAPI(client, get);
 
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
             JSONObject json = new JSONObject(responseBody);
 
             JSONArray results = json.getJSONArray("results");
@@ -156,19 +116,9 @@ public class InvoicesManagement {
     public static void getRegistrationDescription(String invoiceNumber) {
         String invoiceID = getInvoiceIDByNumber(invoiceNumber);
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String token = Authentication.retrieveToken();
-            String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + Config.INVOICES + "/" + invoiceID;
+            HttpGet get = ConnectionAPI.getRequest(Config.INVOICES + "/" + invoiceID);
 
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Authorization", "Bearer " + token);
-            get.setHeader("Content-Type", "application/json");
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
+            String responseBody = ConnectionAPI.requestAPI(client, get);
 
             JSONObject json = new JSONObject(responseBody);
             if (!json.has("content")) {
@@ -228,34 +178,6 @@ public class InvoicesManagement {
         } catch (Exception e) {
             System.err.println("Error al recuperar la factura: " + invoiceID);
             return null;
-        }
-    }
-
-    // Cancela una factura, en los términos que se permita. (LO GESTIONA LA PROPIA API)
-    public static void cancelInvoice(String invoiceNumber) {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String invoiceID = getInvoiceIDByNumber(invoiceNumber);
-            String token = Authentication.retrieveToken();
-            String clientID = Clients.getFirstClientID();
-            String url = Config.BASE_URL + Config.INVOICES + invoiceID;
-
-            HttpPatch patch = new HttpPatch(url);
-            patch.setHeader("Authorization", "Bearer " + token);
-            patch.setHeader("Content-Type", "application/json");
-            StringEntity entity = new StringEntity("{}", ContentType.APPLICATION_JSON);
-            patch.setEntity(entity);
-
-            HttpResponse response = client.execute(patch);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Respuesta del servidor: " + responseBody);
-            JSONObject jsonPrint = new JSONObject(responseBody);
-            System.out.println(jsonPrint.toString(2));
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

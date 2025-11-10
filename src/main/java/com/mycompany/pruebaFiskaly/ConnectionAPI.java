@@ -43,7 +43,7 @@ public class ConnectionAPI {
         HttpResponse response = client.execute(request);
         int statusCode = response.getStatusLine().getStatusCode();
         String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-        System.out.println("C\u00f3digo de respuesta: " + statusCode);
+        System.out.println("Código de respuesta: " + statusCode);
         System.out.println("Respuesta completa del servidor:");
         
         //Formatear impresión por consola del JSON
