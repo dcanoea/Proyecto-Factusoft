@@ -22,14 +22,4 @@ public class JsonUtil {
     public static <T> T fromJson(String json, Class<T> clazz) throws JsonProcessingException {
         return mapper.readValue(json, clazz);
     }
-
-    // Guardar objeto como archivo JSON
-    public static void toJsonFile(Object obj, String filePath) throws IOException {
-        mapper.writeValue(new File(filePath), obj);
-    }
-
-    // Leer objeto desde archivo JSON
-    public static <T> T fromJsonFile(String filePath, Class<T> clazz) throws IOException {
-        return mapper.readValue(new File(filePath), clazz);
-    }
 }

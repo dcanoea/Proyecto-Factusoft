@@ -1,29 +1,35 @@
-{"content": {
-  "transmission": {
-    "cancellation": "NOT_CANCELLED",
-    "registration": "REGISTERED"
-  },
-  "data": "{\"data\": {\"text\": \"Factura COMPLETA por formaci�n ADR\", \"type\": \"SIMPLIFIED\", \"items\": [{\"text\": \"Curso ADR\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"21.0\", \"type\": \"VAT\"}}, \"quantity\": \"1.00\", \"full_amount\": \"255.00\", \"unit_amount\": \"210.74\"}, {\"text\": \"Manual ADR\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"10.0\", \"type\": \"VAT\"}}, \"quantity\": \"1.00\", \"full_amount\": \"38.50\", \"unit_amount\": \"35.00\"}], \"number\": \"20250059\", \"full_amount\": \"293.50\"}, \"type\": \"COMPLETE\", \"recipients\": [{\"id\": {\"legal_name\": \"ARAGON FORMACION ACF S.L.\", \"registered\": true, \"tax_number\": \"B22260863\"}, \"postal_code\": \"22001\", \"address_line\": \"Calle Mayor 123, Huesca\"}]}",
-  "compliance": {
-    "code": {
-      "image": {
-        "data": "iVBORw0KGgoAAAANSUhEUgAAAC0AAAAtEAAAAABP4WEFAAACZ0lEQVR4nKRX2c6uMAikxvd/ZU6+8COz0Ktj4lK1FIZh6RN0ZOL1d9R9vvdo/pkry3rx1Tm4RI/OaTHn1Lvf0/w1V5b11K0noYjRsEYjbv5jhViWADIT6ic2drTvryhSJZnon2mIY4mve58M2ihjWLMDxkydwuCULQqSO5M+/M9JWuuL1mi8vmk30KBQ0xh569pv+jDT487vTUzmHhyom4dTUKA9aHS7rZ7Z4GaKeqQdigAWZIfXRP+zuPhYU8jjdfwhXroZjLii8ZxRFOn59k6EoXDMDBgsjOzYPCE/2r/6qy81Qm7mb+pkhrKCDeRwQLsUHodroTsT0VmxLbgqw6+Up/OW7WFHR7iDRYRbwQBsFty0jjjoJE6h6CSnZXOcZ2v2WbPILnDzh88GrNVBygln0LagQia02Uim7rpzhxd8cqkQWPcm/XiIIPJhrcZinLNhM/0+Xgh6Ib58c9BuMwSKe9iyQPaORmU9QwYOyWax5uBJUIz0+KklUjndCkNYVpyFPNQw6J66dae0iWL91L4qdi0WpTxY27Rwdc72RiaE/dhXfaUjUytihJfQXgiB8CzD4+fz51emWvsyryGoZ+UH8wSXhBzC4ZprOd1yBydWpOKL5MIWEinHrSXTjCEKLL6Zur6KSOmwfbylNfK0C9gAcIz3HPTHEDywO2L23vOetw6/4/X2nBuXtA2T0w/VGjWWHdhoqAHOAdVBtvP6nDfCoy1t0xbLRkhbT804rzoJxZ2DemPrtVWYY34TjzsB7y1YUjnW03ZgygZFHRniW7u26A+QbWupeVwzOmYUtmiS2L8AAAD//7G8j8VKCD4jAAAAAElFTkSuQmCC",
-        "format": "image/png",
-        "measurements": {
-          "unit": "px",
-          "width": 45,
-          "height": 45
+{
+    "content": {
+        "transmission": {
+            "cancellation": "NOT_CANCELLED",
+            "registration": "REGISTERED"
+        },
+        "data": "{\"data\": {\"text\": \"Factura Completa\", \"type\": \"SIMPLIFIED\", \"items\": [{\"text\": \"Curso B\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"21\", \"type\": \"VAT\"}}, \"discount\": \"10\", \"quantity\": \"1\", \"vat_type\": \"IVA\", \"full_amount\": \"290.40\", \"unit_amount\": \"250\"}, {\"text\": \"Curso C\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"type\": \"NO_VAT\", \"cause\": \"TAXABLE_EXEMPT_1\"}}, \"discount\": \"20\", \"quantity\": \"1\", \"vat_type\": \"IVA\", \"full_amount\": \"330.00\", \"unit_amount\": \"350\"}, {\"text\": \"Libro C\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"4\", \"type\": \"VAT\"}}, \"quantity\": \"1\", \"vat_type\": \"IVA\", \"full_amount\": \"36.40\", \"unit_amount\": \"35\"}, {\"text\": \"Descuento\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"21\", \"type\": \"VAT\"}}, \"quantity\": \"1\", \"vat_type\": \"IVA\", \"full_amount\": \"-60.50\", \"unit_amount\": \"-50\"}, {\"text\": \"Clases camion\", \"system\": {\"type\": \"REGULAR\", \"category\": {\"rate\": \"10\", \"type\": \"VAT\"}}, \"quantity\": \"10\", \"vat_type\": \"IVA\", \"full_amount\": \"660.00\", \"unit_amount\": \"60\"}], \"number\": \"20251115\", \"full_amount\": \"1256.30\"}, \"type\": \"COMPLETE\", \"recipients\": [{\"id\": {\"legal_name\": \"ARAGON FORMACION ACF S.L.\", \"registered\": true, \"tax_number\": \"B22260863\"}, \"postal_code\": \"22006\", \"address_line\": \"C/ Comercio 28\"}]}",
+        "compliance": {
+            "code": {
+                "image": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAAC0AAAAtEAAAAABP4WEFAAACfElEQVR4nKRX3dKrMAhMHN//lXOmRbp/eG4+Z2w1JgQWWMi15DrnnPrv37prnO/+xSq813Xz0N4q1qd/vu99zufGU4/q/L1vF1nP9dbPWFhPJa6Fqq6Qda+4agneWNte3KOs5QCIX22uL2rBaY9rTqJ9v88CRRNu2htgfH5V95QlH/5yi9a5izsV5vaYfgPKIUvN0f0njc7pOMd8jGDO5jADgqyfas2RwDGuNn2tUePhPIhzYT0T4xqs2DCAgGma9my43g7Hb+U8TVFX5vAvKfRrm6LImHnqM5ozJDpfMPXwWhJqirI+Taky7A4nYhSxobmYcYO1ZrZqxPY4+Xr6sNU142Jq5EhweuIM7HioN+VDrLhYoJNpRwqnNEc9f+d5D6e7wZ5dzsvpE3Up8ncIMfW8v42xYHz9SPR44HDiGjjx3gqSYK9d5RStI42cov9WTbjmLCp59/8qBGLD8xQYZ6X8KeDEstY7TeGr8nWufzjkjZszeVT7rOKar0PXkfTugjjxs1T088UmqaA0tLOvKrmnSI+2lAvlM7NxmffLHoDS75k+T/Apdyzhsjkcf9Vvp43osSKh003OzNPmnF49RwDB4h3dp4ac2sNv5Y1IGdVKNVVvaFtTwt3qncyg5V4rzJSVyZH15Qb4Wsg4shlBjE9bVvg9m504NnC7MKf6spZBwcG4OOfEKWUNPZ+Lc2J7PDWxHXcZ2dO5kPXC13ado82X2xImCz/q7DiPZDHa1r2usQ9JreME5kIZKgUimZFXnnMFJuY2cNnkYqjlzn7OjZNw7/aYxRkiLyDIyziBeUPWqbGkN8QZN8+LE7gU9Cda8jN227pCn/4FAAD//3g7BvqIGbGMAAAAAElFTkSuQmCC",
+                    "format": "image/png",
+                    "measurements": {
+                        "unit": "px",
+                        "width": 45,
+                        "height": 45
+                    }
+                },
+                "type": "QR_CODE"
+            },
+            "text": "QR tributario:|VERI*FACTU",
+            "url": "https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=B22260863&numserie=20251115&fecha=07-11-2025&importe=1256.30"
+        },
+        "client": {
+            "id": "141d226f-0b03-4831-992f-b4c8b9626dc2"
+        },
+        "id": "11c53b7b-9d5e-4626-a479-5eea527eed33",
+        "state": "ISSUED",
+        "validations": [],
+        "issued_at": "07-11-2025 09:16:14",
+        "signer": {
+            "id": "69aabc4f-5bae-45b0-a54a-4c09b74fc2b6"
         }
-      },
-      "type": "QR_CODE"
-    },
-    "text": "QR tributario:|VERI*FACTU",
-    "url": "https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=B22260863&numserie=20250059&fecha=23-10-2025&importe=293.50"
-  },
-  "client": {"id": "ce46883c-5425-4a85-bf15-f04141ba13e5"},
-  "id": "0be89080-f3ee-4166-9d3c-4e8760f9fb1e",
-  "state": "ISSUED",
-  "validations": [],
-  "issued_at": "23-10-2025 13:56:09",
-  "signer": {"id": "0ad13b28-87e1-4573-b7e6-fb40ae584303"}
-}}
+    }
+}
