@@ -57,15 +57,9 @@ public class Taxpayers {
     // Recupera contribuyente
     public static JSONObject retrieveTaxpayer() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + Config.TAXPAYER;
-            String token = Authentication.retrieveToken();
-
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Content-Type", "application/json");
-            get.setHeader("Authorization", "Bearer " + token);
-
-            HttpResponse response = client.execute(get);
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+            HttpGet get = ConnectionAPI.getRequest(Config.TAXPAYER);
+            
+            String responseBody = ConnectionAPI.requestAPI(client, get);
 
             return new JSONObject(responseBody);
 

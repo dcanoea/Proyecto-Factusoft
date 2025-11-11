@@ -14,7 +14,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Validation {
@@ -96,146 +100,70 @@ public class Validation {
     // AEAT no tiene entorno de pruebas, verificar en modo LIVE para confirmar las respuestas de la API
     public static String validateAEAT(String nif) {
         String validation = null;
-        try {
-            // Crea un objeto URL con la dirección base (Config.BASE_URL) más el endpoint /validation/tin
-            URL url = new URL(Config.BASE_URL + Config.VALIDATION_TIN);
-
-            // Obtiene el token desde Authentication.Recuperar_token
-            String token = Authentication.retrieveToken();
-
-            // Abre una conexión HTTP con la URL especificada
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-            // Establece el método HTTP como POST
-            connection.setRequestMethod("POST");
-
-            // Agrega el encabezado de autorización
-            connection.setRequestProperty("Authorization", "Bearer " + token);
-
-            // Indica que el cuerpo de la solicitud será JSON
-            connection.setRequestProperty("Content-Type", "application/json");
-
-            // Habilita el envío de datos en el cuerpo de la solicitud
-            connection.setDoOutput(true);
-
-            // Construye el cuerpo JSON con las credenciales necesarias (api_key y api_secret)
-            String jsonInputString = String.format(
+        try (CloseableHttpClient client = org.apache.http.impl.client.HttpClients.createDefault()) {
+            // Construye el cuerpo JSON que espera la API AEAT
+            String jsonBody = String.format(
                     "{\"content\": {\"type\": \"AEAT\", \"entries\": [{\"tin\": \"%s\"}]}}",
                     nif
             );
 
-            // Abre el flujo de salida para enviar el cuerpo de la solicitud
-            OutputStream os = connection.getOutputStream();
-            os.write(jsonInputString.getBytes("utf-8")); // Escribe el JSON en formato UTF-8
-            os.flush(); // Fuerza el envío de los datos
-            os.close(); // Cierra el flujo de salida
+            HttpPost request = ConnectionAPI.postRequest(Config.VALIDATION_TIN);
 
-            // Intenta obtener el flujo de entrada con la respuesta del servidor
-            InputStream responseStream;
-            try {
-                responseStream = connection.getInputStream(); // Si la respuesta es exitosa
-            } catch (IOException e) {
-                responseStream = connection.getErrorStream(); // Si hay error
-            }
+            // Añade el cuerpo a la petición
+            request.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
 
-            // Lee la respuesta del servidor línea por línea
-            BufferedReader in = new BufferedReader(new InputStreamReader(responseStream, "utf-8"));
-            StringBuilder response = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine); // Acumula cada línea en el StringBuilder
-            }
-            in.close(); // Cierra el lector
+            // Envía la solicitud y obtiene la respuesta como String
+            String responseBody = ConnectionAPI.requestAPI(client, request);
 
-            // Extrae el valor de validación del JSON de respuesta usando búsqueda de texto
-            String marker = "\"result\":\""; // Patrón que precede al valor del token
-            int start = response.indexOf(marker); // Busca la posición inicial del patrón
+            // Extrae el campo "result" del JSON de respuesta
+            String marker = "\"result\":\"";
+            int start = responseBody.indexOf(marker);
             if (start != -1) {
-                start += marker.length(); // Avanza hasta el inicio del valor
-                int end = response.indexOf("\"", start); // Busca el cierre de comillas
+                start += marker.length();
+                int end = responseBody.indexOf("\"", start);
                 if (end != -1) {
-                    validation = response.substring(start, end); // Extrae el token
+                    validation = responseBody.substring(start, end);
                 }
             }
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Validation.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Validation.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException | JSONException e) {
+            Logger.getLogger(Validation.class.getName()).log(Level.SEVERE, null, e);
         }
+
         return validation;
     }
 
     // MÉTODO PARA VALIDAR NIF/CIF EN VIES (OPERADORES INTRACOMUNITARIOS EN LA UE)
-    public static boolean validateVIES(String country_code, String nif) {
-        try {
-            // Construye la URL del endpoint de validación TIN
-            URL url = new URL(Config.BASE_URL + Config.VALIDATION_TIN);
-            // Recupera el token de autenticación para la API
-            String token = Authentication.retrieveToken();
-            // Abre la conexión HTTP
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            // Define el método HTTP como POST
-            connection.setRequestMethod("POST");
-            // Añade el encabezado de autorización con el token Bearer
-            connection.setRequestProperty("Authorization", "Bearer " + token);
-            // Indica que el contenido enviado será JSON
-            connection.setRequestProperty("Content-Type", "application/json");
-            // Permite enviar datos en el cuerpo de la solicitud
-            connection.setDoOutput(true);
-
-            // Normaliza el NIF y el código de país (mayúsculas y sin espacios)
-            String jsonInputString = String.format(
+    public static String validateVIES(String country_code, String nif) {
+        String validation = null;
+        try (CloseableHttpClient client = org.apache.http.impl.client.HttpClients.createDefault()) {
+            // Cuerpo para la petición a la API
+            String jsonBody = String.format(
                     "{\"content\": {\"type\": \"VIES\", \"tin\": \"%s\", \"country_code\": \"%s\"}}",
                     nif.trim().toUpperCase(), country_code.trim().toUpperCase()
             );
 
-            // Escribe el cuerpo JSON en el flujo de salida
-            try (OutputStream os = connection.getOutputStream()) {
-                os.write(jsonInputString.getBytes(StandardCharsets.UTF_8));
-                os.flush(); // Fuerza el envío
-            }
+            HttpPost request = ConnectionAPI.postRequest(Config.VALIDATION_TIN);
 
-            // Intenta obtener el flujo de respuesta (si hay error, usa el flujo de error)
-            InputStream responseStream;
-            try {
-                responseStream = connection.getInputStream(); // Respuesta OK
-            } catch (IOException e) {
-                responseStream = connection.getErrorStream(); // Respuesta con error
-            }
+            // Añade el cuerpo a la petición
+            request.setEntity(new StringEntity(jsonBody, StandardCharsets.UTF_8));
 
-            // Lee la respuesta del servidor línea por línea
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(responseStream, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = in.readLine()) != null) {
-                    response.append(line); // Acumula el contenido
+            // Envía la solicitud y obtiene la respuesta como String
+            String responseBody = ConnectionAPI.requestAPI(client, request);
+
+            // Extrae el campo "result" del JSON de respuesta
+            String marker = "\"result\":\"";
+            int start = responseBody.indexOf(marker);
+            if (start != -1) {
+                start += marker.length();
+                int end = responseBody.indexOf("\"", start);
+                if (end != -1) {
+                    validation = responseBody.substring(start, end);
                 }
             }
-
-            // Parsea la respuesta JSON
-            JSONObject jsonResponse = new JSONObject(response.toString());
-
-            // Extrae el array "results" del JSON
-            JSONArray resultsArray = jsonResponse.optJSONArray("results");
-
-            // Si hay al menos un resultado, accede al objeto "content"
-            if (resultsArray != null && resultsArray.length() > 0) {
-                JSONObject content = resultsArray.getJSONObject(0).optJSONObject("content");
-
-                // Extrae el campo "result" dentro de "content"
-                String result = content != null ? content.optString("result", "") : "";
-
-                // Devuelve true si el resultado es "VALID"
-                return "VALID".equals(result);
-            }
-
-        } catch (Exception e) {
-            // Imprime cualquier excepción que ocurra
-            e.printStackTrace();
+        } catch (IOException | JSONException e) {
+            Logger.getLogger(Validation.class.getName()).log(Level.SEVERE, null, e);
         }
-
-        // Si algo falla o no hay resultado, devuelve false
-        return false;
+        return validation;
     }
 
     // MÉTODO PARA VALIDAR CIF/NIF EN MASA DE LA BBDD DE LA EMPRESA

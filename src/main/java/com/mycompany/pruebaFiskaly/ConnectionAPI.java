@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
@@ -38,6 +39,16 @@ public class ConnectionAPI {
         return get;
     }
 
+    public static HttpPost postRequest(String endPoint) throws IOException, JSONException {
+        // ========= PETICIÓN API=========
+        String token = Authentication.retrieveToken();
+        String url = Config.BASE_URL + endPoint;
+        HttpPost post = new HttpPost(url);
+        post.setHeader("Content-Type", "application/json");
+        post.setHeader("Authorization", "Bearer " + token);
+        return post;
+    }
+
     public static String requestAPI(CloseableHttpClient client, HttpUriRequest request) throws IOException {
         // ========= RESPUESTA API=========
         HttpResponse response = client.execute(request);
@@ -45,14 +56,14 @@ public class ConnectionAPI {
         String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
         System.out.println("Código de respuesta: " + statusCode);
         System.out.println("Respuesta completa del servidor:");
-        
+
         //Formatear impresión por consola del JSON
         ObjectMapper mapper = new ObjectMapper();
         Object json = mapper.readValue(responseBody, Object.class);
         ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
         String prettyJson = writer.writeValueAsString(json);
         System.out.println(prettyJson);
-        
+
         return responseBody;
     }
 }

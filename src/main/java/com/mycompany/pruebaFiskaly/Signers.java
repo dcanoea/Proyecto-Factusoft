@@ -42,25 +42,13 @@ public class Signers {
             e.printStackTrace();
         }
     }
-    
+
     // Lista Firmantes
     public static String listSigners() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            String url = Config.BASE_URL + Config.SIGNERS;
-            String token = Authentication.retrieveToken();
+            HttpGet get = ConnectionAPI.getRequest(Config.SIGNERS);
 
-            HttpGet get = new HttpGet(url);
-            get.setHeader("Content-Type", "application/json");
-            get.setHeader("Authorization", "Bearer " + token);
-
-            HttpResponse response = client.execute(get);
-            int statusCode = response.getStatusLine().getStatusCode();
-            String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-            System.out.println("Código de respuesta: " + statusCode);
-            System.out.println("Respuesta del servidor:");
-            JSONObject json = new JSONObject(responseBody);
-            System.out.println(json.toString(2)); // Indentación de 2 espacios
+            String responseBody = ConnectionAPI.requestAPI(client, get);
 
             return responseBody;
 
@@ -70,7 +58,7 @@ public class Signers {
             return null;
         }
     }
-    
+
     // Recupera el primer firmante (sólo existe uno)
     public static String getFirstSignerID() {
         String responseBody = listSigners();

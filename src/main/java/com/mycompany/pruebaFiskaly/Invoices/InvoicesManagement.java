@@ -2,19 +2,11 @@ package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mycompany.pruebaFiskaly.Authentication;
-import com.mycompany.pruebaFiskaly.Clients;
 import com.mycompany.pruebaFiskaly.Config;
 import com.mycompany.pruebaFiskaly.ConnectionAPI;
-import java.nio.charset.StandardCharsets;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
