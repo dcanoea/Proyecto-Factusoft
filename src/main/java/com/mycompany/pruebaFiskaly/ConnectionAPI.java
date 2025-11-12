@@ -15,6 +15,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 
 public class ConnectionAPI {
+    
+    private static int statusCode; // almacena el código de respuesta de la API
 
     public static HttpPut putRequest(String endPoint, String body) throws IOException, JSONException {
         // ========= PETICIÓN API=========
@@ -52,7 +54,7 @@ public class ConnectionAPI {
     public static String requestAPI(CloseableHttpClient client, HttpUriRequest request) throws IOException {
         // ========= RESPUESTA API=========
         HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
+        statusCode = response.getStatusLine().getStatusCode();
         String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
         System.out.println("Código de respuesta: " + statusCode);
         System.out.println("Respuesta completa del servidor:");
@@ -66,4 +68,9 @@ public class ConnectionAPI {
 
         return responseBody;
     }
+    
+    public static int getStatusCode() {
+        return statusCode;
+    }
+
 }

@@ -75,4 +75,17 @@ public class CategoryDTO {
         this.cause = cause;
     }
 
+    public Cause getCause() {
+        return cause;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public Rate getRate() {
+        return rate;
+    }
+
+    
 }

@@ -52,4 +52,30 @@ public class DataDTO {
         this(invoiceNumber, text, items);
         this.series = series;
     }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public List<ItemDTO> getItems() {
+        return items;
+    }
+
+    public String getFullAmount() {
+        return fullAmount;
+    }
+
+    public String getSeries() {
+        return series;
+    }
+    
+    
 }

@@ -27,4 +27,13 @@ public class SystemDTO {
         this.category = category;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public CategoryDTO getCategory() {
+        return category;
+    }
+
+    
 }

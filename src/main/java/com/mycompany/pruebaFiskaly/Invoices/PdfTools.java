@@ -174,7 +174,7 @@ public class PdfTools {
                 FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 10, BaseColor.GRAY)));
 
         document.close();
-        System.out.println("✅ PDF de factura completa guardado en: " + desktopPath + fileName);
+        System.out.println("PDF de factura completa guardado en: " + desktopPath + fileName);
     }
 
     public static void generateCorrectingInvoicePDF(ContentCorrectingDTO content, String qrBase64) throws Exception {

@@ -13,7 +13,7 @@ import org.json.JSONException;
 
 public class CreateCompleteInvoice {
 
-    public static void createInvoice(ContentCompleteDTO content) {
+    public static int createInvoice(ContentCompleteDTO content) {
         CloseableHttpClient client = HttpClients.createDefault();
 
         try {
@@ -46,5 +46,6 @@ public class CreateCompleteInvoice {
                 Logger.getLogger(CreateCompleteInvoice.class.getName()).log(Level.SEVERE, "Error al cerrar cliente HTTP", e);
             }
         }
+        return ConnectionAPI.getStatusCode();
     }
 }
