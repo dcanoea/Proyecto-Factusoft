@@ -2,7 +2,7 @@ package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.mycompany.pruebaFiskaly.Config;
 import com.mycompany.pruebaFiskaly.ConnectionAPI;
-import com.mycompany.pruebaFiskaly.Invoices.DTO.CorrectingDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ContentCorrectingDTO;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,12 +13,15 @@ import org.json.JSONException;
 
 public class CreateCorrectingInvoice {
 
-    public static void createCorrectingInvoice(CorrectingDTO correcting) {
+    public static void createCorrectingInvoice(ContentCorrectingDTO content) {
         CloseableHttpClient client = HttpClients.createDefault();
 
         try {
             // ======== Convertimos DTO en JSON ========
-            String body = JsonUtil.toJson(correcting);
+            String jsonContent = JsonUtil.toJson(content);
+
+            // ======== Envolvemos en "content" ========
+            String body = "{ \"content\": " + jsonContent + " }";
 
             // ======== Llamada a la API ========
             HttpPut put = ConnectionAPI.putRequest(Config.CREATE_INVOICE, body);
@@ -28,7 +31,7 @@ public class CreateCorrectingInvoice {
             String qrBase64 = PdfTools.setQR(responseBody);
 
             // ======= Generamos el PDF ========
-            PdfTools.generateCorrectingInvoicePDF(correcting, qrBase64);
+            PdfTools.generateCorrectingInvoicePDF(content, qrBase64);
 
             System.out.println("Factura rectificativa generada con éxito.");
 

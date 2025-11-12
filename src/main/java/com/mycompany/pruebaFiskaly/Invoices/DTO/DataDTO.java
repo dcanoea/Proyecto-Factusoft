@@ -1,31 +1,32 @@
 package com.mycompany.pruebaFiskaly.Invoices.DTO;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Locale;
 
-public class DataCorrectingDTO {
+public class DataDTO {
 
-    public String number;
-    public String series;
+    @JsonProperty("number")
+    public String invoiceNumber;
     public String text;
     public String type;
     public List<ItemDTO> items = new ArrayList<ItemDTO>();
     @JsonProperty("full_amount")
     public String fullAmount;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String series;
 
     /**
      * No args constructor for use in serialization
      *
      */
-    public DataCorrectingDTO() {
+    public DataDTO() {
     }
 
-    public DataCorrectingDTO(String number, String text, List<ItemDTO> items) {
-        super();
-        this.number = number;
-        this.series = "R2025"; //Serie es obligatoria para facturas rectificativas
+    public DataDTO(String invoiceNumber, String text, List<ItemDTO> items) {
+        this.invoiceNumber = invoiceNumber;
         this.text = text;
         this.type = "SIMPLIFIED"; // SIMPLIFIED incluso para facturas completas
         this.items = items;
@@ -45,5 +46,10 @@ public class DataCorrectingDTO {
 
         // Guardar total con 2 decimales y . como separador decimal (requerido por la API Fiskaly)
         this.fullAmount = String.format(Locale.US, "%.2f", total);
+    }
+
+    public DataDTO(String invoiceNumber, String text, List<ItemDTO> items, String series) {
+        this(invoiceNumber, text, items);
+        this.series = series;
     }
 }

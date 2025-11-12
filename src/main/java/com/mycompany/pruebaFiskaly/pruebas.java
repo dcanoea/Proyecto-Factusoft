@@ -22,7 +22,7 @@ public class pruebas {
         //System.out.println(InvoicesManagement.getInvoiceNumberByID("11c53b7b-9d5e-4626-a479-5eea527eed33")); // 20251115
         //InvoicesManagement.getRegistrationDescription(InvoicesManagement.getInvoiceNumberByID("fa5087fd-530d-44f9-9bee-9d0160db139d"));
         
-        System.out.println(Validation.validateVIES("ES","B22260863"));
+        //System.out.println(Validation.validateVIES("ES","B22260863"));
 
     }
 

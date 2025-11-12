@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ContentCompleteDTO {
 
-    public DataCompleteDTO data;
+    public DataDTO data;
     public List<RecipientsDTO> recipients;
     public String type;
 
@@ -17,7 +17,7 @@ public class ContentCompleteDTO {
     public ContentCompleteDTO() {
     }
 
-    public ContentCompleteDTO(DataCompleteDTO data, List<RecipientsDTO> recipients) {
+    public ContentCompleteDTO(DataDTO data, List<RecipientsDTO> recipients) {
         super();
         this.data = data;
         this.recipients = recipients;

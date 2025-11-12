@@ -12,8 +12,8 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.mycompany.pruebaFiskaly.Invoices.DTO.CompleteDTO;
-import com.mycompany.pruebaFiskaly.Invoices.DTO.CorrectingDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ContentCompleteDTO;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ContentCorrectingDTO;
 import com.mycompany.pruebaFiskaly.Invoices.DTO.ItemDTO;
 import com.mycompany.pruebaFiskaly.Invoices.DTO.RecipientsDTO;
 import java.io.FileOutputStream;
@@ -39,11 +39,11 @@ public class PdfTools {
         return qrBase64;
     }
 
-    public static void generateCompleteInvoicePDF(CompleteDTO complete, String qrBase64) throws Exception {
+    public static void generateCompleteInvoicePDF(ContentCompleteDTO content, String qrBase64) throws Exception {
         // ======== CONFIGURACIÓN BÁSICA ========
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        String number = complete.content.data.invoiceNumber;
+        String number = content.data.invoiceNumber;
         String fileName = "Factura_Completa_" + number + ".pdf";
 
         Document document = new Document(PageSize.A4, 50, 50, 50, 50);
@@ -59,8 +59,8 @@ public class PdfTools {
         document.add(Chunk.NEWLINE);
 
         // ======== DATOS DEL CLIENTE ========
-        if (complete.content.recipients != null && !complete.content.recipients.isEmpty()) {
-            RecipientsDTO recipient = complete.content.recipients.get(0);
+        if (content.recipients != null && !content.recipients.isEmpty()) {
+            RecipientsDTO recipient = content.recipients.get(0);
             Paragraph clientHeader = new Paragraph("Datos del Cliente", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
             document.add(clientHeader);
             document.add(new Paragraph(recipient.id.legalName));
@@ -71,7 +71,7 @@ public class PdfTools {
 
         // ======== AGRUPAR ÍTEMS POR IVA ========
         Map<String, List<ItemDTO>> groupedByIVA = new HashMap<>();
-        for (ItemDTO item : complete.content.data.items) {
+        for (ItemDTO item : content.data.items) {
             String ivaRate = "0";
             try {
                 if (item.system != null && item.system.category != null && item.system.category.rate != null) {
@@ -149,7 +149,7 @@ public class PdfTools {
         }
 
         // ======== TOTAL FACTURA ========
-        double fullAmount = safeParseDouble(complete.content.data.fullAmount);
+        double fullAmount = safeParseDouble(content.data.fullAmount);
         Paragraph total = new Paragraph(
                 "Importe total (IVA incluido): " + String.format(Locale.US, "%.2f €", fullAmount),
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13)
@@ -177,11 +177,11 @@ public class PdfTools {
         System.out.println("✅ PDF de factura completa guardado en: " + desktopPath + fileName);
     }
 
-    public static void generateCorrectingInvoicePDF(CorrectingDTO correcting, String qrBase64) throws Exception {
+    public static void generateCorrectingInvoicePDF(ContentCorrectingDTO content, String qrBase64) throws Exception {
         // ======== CONFIGURACIÓN BÁSICA ========
         String desktopPath = System.getProperty("user.home") + "/Desktop/";
         String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        String number = correcting.content.invoice.data.number;
+        String number = content.invoice.data.invoiceNumber;
         String fileName = "Factura_Rectificativa_" + number + ".pdf";
 
         Document document = new Document(PageSize.A4, 50, 50, 50, 50);
@@ -194,12 +194,12 @@ public class PdfTools {
         document.add(title);
         document.add(new Paragraph("Número: " + number));
         document.add(new Paragraph("Fecha: " + date));
-        document.add(new Paragraph("Rectifica a factura : " + InvoicesManagement.getInvoiceNumberByID(correcting.content.getId())));
+        document.add(new Paragraph("Rectifica a factura : " + InvoicesManagement.getInvoiceNumberByID(content.getId())));
         document.add(Chunk.NEWLINE);
 
         // ======== DATOS DEL CLIENTE ========
-        if (correcting.content.invoice.recipients != null && !correcting.content.invoice.recipients.isEmpty()) {
-            RecipientsDTO recipient = correcting.content.invoice.recipients.get(0);
+        if (content.invoice.recipients != null && content.invoice.recipients.isEmpty()) {
+            RecipientsDTO recipient = content.invoice.recipients.get(0);
             Paragraph clientHeader = new Paragraph("Datos del Cliente", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
             document.add(clientHeader);
             document.add(new Paragraph(recipient.id.legalName));
@@ -210,7 +210,7 @@ public class PdfTools {
 
         // ======== AGRUPAR ÍTEMS POR IVA ========
         Map<String, List<ItemDTO>> groupedByIVA = new HashMap<>();
-        for (ItemDTO item : correcting.content.invoice.data.items) {
+        for (ItemDTO item : content.invoice.data.items) {
             String ivaRate = "0";
             try {
                 if (item.system != null && item.system.category != null && item.system.category.rate != null) {
@@ -288,7 +288,7 @@ public class PdfTools {
         }
 
         // ======== TOTAL FACTURA ========
-        double fullAmount = safeParseDouble(correcting.content.invoice.data.fullAmount);
+        double fullAmount = safeParseDouble(content.invoice.data.fullAmount);
         Paragraph total = new Paragraph(
                 "Importe total (IVA incluido): " + String.format(Locale.US, "%.2f €", fullAmount),
                 FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13)

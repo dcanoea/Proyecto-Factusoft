@@ -1,8 +1,8 @@
 package com.mycompany.pruebaFiskaly.Invoices;
 
 import com.mycompany.pruebaFiskaly.Config;
-import com.mycompany.pruebaFiskaly.Invoices.DTO.CompleteDTO;
 import com.mycompany.pruebaFiskaly.ConnectionAPI;
+import com.mycompany.pruebaFiskaly.Invoices.DTO.ContentCompleteDTO;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,13 +13,16 @@ import org.json.JSONException;
 
 public class CreateCompleteInvoice {
 
-    public static void createInvoice(CompleteDTO complete) {
+    public static void createInvoice(ContentCompleteDTO content) {
         CloseableHttpClient client = HttpClients.createDefault();
 
         try {
             // ======== Convertimos DTO en JSON ========
-            String body = JsonUtil.toJson(complete);
+            String jsonContent = JsonUtil.toJson(content);
 
+            // ======== Envolvemos en "content" ========
+            String body = "{ \"content\": " + jsonContent + " }";
+            
             // ======== Llamada a la API ========
             HttpPut put = ConnectionAPI.putRequest(Config.CREATE_INVOICE, body);
             String responseBody = ConnectionAPI.requestAPI(client, put);
@@ -28,7 +31,7 @@ public class CreateCompleteInvoice {
             String qrBase64 = PdfTools.setQR(responseBody);
 
             // ======= Generamos el PDF ========
-            PdfTools.generateCompleteInvoicePDF(complete, qrBase64);
+            PdfTools.generateCompleteInvoicePDF(content, qrBase64);
 
             System.out.println("Factura completa generada con éxito.");
 
