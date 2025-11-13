@@ -1,6 +1,5 @@
 package com.mycompany.pruebaFiskaly;
 
-import java.util.UUID;
 import java.nio.charset.StandardCharsets;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;

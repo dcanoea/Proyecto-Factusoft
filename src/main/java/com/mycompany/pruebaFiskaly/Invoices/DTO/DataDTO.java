@@ -9,13 +9,13 @@ import java.util.Locale;
 public class DataDTO {
 
     @JsonProperty("number")
-    public String invoiceNumber;
-    public String text;
+    public String invoiceNumber; //número de factura debe ser correlativo dentro de cada serie
+    public String text; // en rectificativa se deberá indicar la causa de la corrección (rectificación).
     public String type;
     public List<ItemDTO> items = new ArrayList<ItemDTO>();
     @JsonProperty("full_amount")
     public String fullAmount;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL) // si el campo es null no lo serializa
     public String series;
 
     /**
@@ -53,29 +53,8 @@ public class DataDTO {
         this.series = series;
     }
 
-    public String getInvoiceNumber() {
-        return invoiceNumber;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public List<ItemDTO> getItems() {
-        return items;
-    }
-
     public String getFullAmount() {
         return fullAmount;
     }
-
-    public String getSeries() {
-        return series;
-    }
-    
     
 }

@@ -23,18 +23,4 @@ public class RecipientsDTO {
         this.id = id;
         this.postalCode = postalCode;
     }
-
-    public String getAddressLine() {
-        return addressLine;
-    }
-
-    public IdDTO getId() {
-        return id;
-    }
-
-    public String getPostalCode() {
-        return postalCode;
-    }
-
-    
 }

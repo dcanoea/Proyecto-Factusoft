@@ -20,7 +20,7 @@ public class CreateCompleteInvoice {
             // ======== Convertimos DTO en JSON ========
             String jsonContent = JsonUtil.toJson(content);
 
-            // ======== Envolvemos en "content" ========
+            // ======== Envolvemos en raíz "content" ========
             String body = "{ \"content\": " + jsonContent + " }";
             
             // ======== Llamada a la API ========

@@ -22,19 +22,5 @@ public class IdDTO {
         this.taxNumber = taxNumber;
         this.registered = registered;
         this.legalName = legalName;
-    }
-
-    public String getTaxNumber() {
-        return taxNumber;
-    }
-
-    public Boolean getRegistered() {
-        return registered;
-    }
-
-    public String getLegalName() {
-        return legalName;
-    }
-
-    
+    }    
 }

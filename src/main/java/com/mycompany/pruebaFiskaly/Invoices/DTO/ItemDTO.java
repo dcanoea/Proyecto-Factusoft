@@ -63,29 +63,4 @@ public class ItemDTO {
     public String getFullAmount() {
         return fullAmount;
     }
-
-    public String getQuantity() {
-        return quantity;
-    }
-
-    public SystemDTO getSystem() {
-        return system;
-    }
-
-    public String getDiscount() {
-        return discount;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getUnitAmount() {
-        return unitAmount;
-    }
-
-    public VatType getVatype() {
-        return vatype;
-    }
-
 }

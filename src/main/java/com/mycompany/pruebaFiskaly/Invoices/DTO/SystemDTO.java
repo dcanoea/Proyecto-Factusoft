@@ -1,17 +1,13 @@
 package com.mycompany.pruebaFiskaly.Invoices.DTO;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class SystemDTO {
 
     public Type type;
     public CategoryDTO category;
 
     public enum Type {
-        @JsonProperty("REGULAR")
-        REGULAR,
-        @JsonProperty("OTHER_TAX_IVA")
-        OTHER_TAX_IVA,
+        REGULAR, //Operaciones en régimen regular
+        OTHER_TAX_IVA //Operaciones sujetas a otro tipo de impuesto territorial (IVA)
     }
 
     /**
@@ -26,14 +22,4 @@ public class SystemDTO {
         this.type = type;
         this.category = category;
     }
-
-    public Type getType() {
-        return type;
-    }
-
-    public CategoryDTO getCategory() {
-        return category;
-    }
-
-    
 }

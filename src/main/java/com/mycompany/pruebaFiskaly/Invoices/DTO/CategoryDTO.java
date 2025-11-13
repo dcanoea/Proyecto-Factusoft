@@ -11,10 +11,9 @@ public class CategoryDTO {
     public Rate rate;
 
     public enum Type {
-        @JsonProperty("VAT")
         VAT,
-        @JsonProperty("NO_VAT")
-        NO_VAT
+        NO_VAT, // PUEDE SE UN TIPO DE EXENCIÓN O NO IMPONIBLE
+        INVERSE_VAT
     }
 
     public enum Rate {
@@ -40,14 +39,18 @@ public class CategoryDTO {
     }
 
     public enum Cause {
-        @JsonProperty("TAXABLE_EXEMPT_1") // Exenta por el artículo 20 de la Ley de IVA. 
-        TAXABLE_EXEMPT_1,
-        @JsonProperty("TAXABLE_EXEMPT_2")
-        TAXABLE_EXEMPT_2,
-        @JsonProperty("TAXABLE_EXEMPT_3")
-        TAXABLE_EXEMPT_3,
-        @JsonProperty("TAXABLE_EXEMPT_4")
-        TAXABLE_EXEMPT_4
+        TAXABLE_EXEMPT_1, // Exenta por el artículo 20 de la Ley de IVA. 
+        TAXABLE_EXEMPT_2, // Exenta por el artículo 21 de la Ley de IVA.
+        TAXABLE_EXEMPT_3, // Exenta por el artículo 22 de la Ley de IVA.
+        TAXABLE_EXEMPT_4, // Exenta por el artículo 23 y 24 de la Ley de IVA.
+        TAXABLE_EXEMPT_5, // Exenta por el artículo 25 de la Ley de IVA.
+        TAXABLE_EXEMPT_6, // Exenta por otra causa.
+        TAXABLE_EXEMPT_7, // Aplicable únicamente para el tipo impositivo IGIC y se trata de una causa de exención conforme al artículo 110 de la Ley 4/2012.
+        TAXABLE_EXEMPT_8, // Aplicable únicamente para el tipo impositivo IGIC y cubre otras causas de exención.
+        NON_TAXABLE_1, // es una operación no sujeta por el artículo 7 de la Ley del IVA. Otros supuestos de no sujeción. 
+        NON_TAXABLE_2, // es una operación no sujeta por reglas de localización
+        NON_TAXABLE_3, // es una operación no sujeta en el TAI por reglas de localización, pero repercute impuesto extranjero, IPSI/IGIC o IVA.
+        NON_TAXABLE_4 // es una operación no sujeta por ventas realizadas por cuenta de terceros
     }
 
     /**
@@ -61,31 +64,17 @@ public class CategoryDTO {
     public CategoryDTO(Rate rate) {
         this.type = Type.VAT;
         this.rate = rate;
-        if (rate == Rate.IVA_0){
+        if (rate == Rate.IVA_0) {
             this.type = Type.NO_VAT;
             this.rate = null;
             this.cause = Cause.TAXABLE_EXEMPT_1;
         }
     }
-    
+
     // Constructor para NO_VAT, para tratar otros caso de exención
-    public CategoryDTO(Cause cause){
+    public CategoryDTO(Cause cause) {
         this.type = Type.NO_VAT;
         this.rate = null;
         this.cause = cause;
     }
-
-    public Cause getCause() {
-        return cause;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public Rate getRate() {
-        return rate;
-    }
-
-    
 }

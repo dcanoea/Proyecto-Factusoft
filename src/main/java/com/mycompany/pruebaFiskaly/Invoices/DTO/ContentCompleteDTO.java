@@ -23,18 +23,4 @@ public class ContentCompleteDTO {
         this.recipients = recipients;
         this.type = "COMPLETE";
     }
-
-    public DataDTO getData() {
-        return data;
-    }
-
-    public List<RecipientsDTO> getRecipients() {
-        return recipients;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    
 }

@@ -2,9 +2,8 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
  */
-package com.mycompany.pruebaFiskaly.Invoices.Complete;
+package com.mycompany.pruebaFiskaly.Invoices.LLamadas.Complete;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mycompany.pruebaFiskaly.Invoices.CreateCompleteInvoice;
 import com.mycompany.pruebaFiskaly.Invoices.DTO.CategoryDTO;
 import com.mycompany.pruebaFiskaly.Invoices.DTO.ContentCompleteDTO;

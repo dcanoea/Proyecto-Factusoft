@@ -1,0 +1,95 @@
+{
+    "content": {
+        "type": "CORRECTING",
+        "method": "SUBSTITUTION",
+        "code": "CORRECTION_1",
+        "id": "cb6cef44-ae0e-4d53-9ca8-91c25a693162", 
+        "invoice": {
+            "type": "COMPLETE",
+            "data": {
+                "number": "0004",
+                "series": "R2025",
+                "text": "Factura Abono",
+                "type": "SIMPLIFIED",
+                "items": [{
+                        "quantity": "1",
+                        "system": {
+                            "type": "REGULAR",
+                            "category": {
+                                "type": "VAT",
+                                "rate": "21"
+                            }
+                        },
+                        "discount": "10",
+                        "text": "Curso B",
+                        "unit_amount": "250",
+                        "vat_type": "IVA",
+                        "full_amount": "290.40"
+                    }, {
+                        "quantity": "1",
+                        "system": {
+                            "type": "REGULAR",
+                            "category": {
+                                "cause": "TAXABLE_EXEMPT_1",
+                                "type": "NO_VAT"
+                            }
+                        },
+                        "discount": "20",
+                        "text": "Curso C",
+                        "unit_amount": "350",
+                        "vat_type": "IVA",
+                        "full_amount": "330.00"
+                    }, {
+                        "quantity": "1",
+                        "system": {
+                            "type": "REGULAR",
+                            "category": {
+                                "type": "VAT",
+                                "rate": "4"
+                            }
+                        },
+                        "text": "Libro C",
+                        "unit_amount": "35",
+                        "vat_type": "IVA",
+                        "full_amount": "36.40"
+                    }, {
+                        "quantity": "1",
+                        "system": {
+                            "type": "REGULAR",
+                            "category": {
+                                "type": "VAT",
+                                "rate": "21"
+                            }
+                        },
+                        "text": "Descuento",
+                        "unit_amount": "-50",
+                        "vat_type": "IVA",
+                        "full_amount": "-60.50"
+                    }, {
+                        "quantity": "10",
+                        "system": {
+                            "type": "REGULAR",
+                            "category": {
+                                "type": "VAT",
+                                "rate": "10"
+                            }
+                        },
+                        "text": "Clases camion",
+                        "unit_amount": "60",
+                        "vat_type": "IVA",
+                        "full_amount": "660.00"
+                    }],
+                "full_amount": "1256.30"
+            },
+            "recipients": [{
+                    "id": {
+                        "registered": true,
+                        "tax_number": "B22260863",
+                        "legal_name": "ARAGON FORMACION ACF S.L."
+                    },
+                    "address_line": "C/ Comercio 28",
+                    "postal_code": "22006"
+                }]
+        }
+    }
+}

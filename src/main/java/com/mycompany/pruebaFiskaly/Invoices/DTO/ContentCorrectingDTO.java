@@ -20,11 +20,15 @@ public class ContentCorrectingDTO {
     public InvoiceDTO invoice;
 
     public enum Method {
-        SUBSTITUTION, DIFFERENCES
+        SUBSTITUTION, //por defecto
+        DIFFERENCES
     }
 
     public enum Code {
-        CORRECTION_1, CORRECTION_2, CORRECTION_3, CORRECTION_4
+        CORRECTION_1, //es una rectificación de factura basado en el artículo 80, apartados 1, 2 y 6, de la Ley del IVA.
+        CORRECTION_2, //es una rectificación de factura basado en el artículo 80.3 de la ley del IVA.
+        CORRECTION_3, //es una rectificación de factura basado en el artículo 80.4 de la Ley del IVA.
+        CORRECTION_4  //es una rectificación de factura por otras razones.
     }
 
     public ContentCorrectingDTO() {
