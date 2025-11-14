@@ -11,8 +11,8 @@ public class Config {
     public static final String BASE_MANAGEMENT_URL = "https://dashboard.fiskaly.com/api/v0"; // API Management
 
     // Credenciales
-    public static final String API_KEY = "test_5e1qffwp4kcg6x6a8kni60p36_prueba";
-    public static final String API_SECRET = "P6IsEgkapDZjaoWQLKARPr1kd1zyp64If1dNfcUWM8n";
+    public static final String API_KEY = "test_dz8evcra8g5lccbn2xt6a2kj8_acfmanaged";
+    public static final String API_SECRET = "NhWMs0VpVe228dqr4CJUY8LKjyDofTqj08vCoxRzaWT";
 
     public static String clientID = Clients.getFirstClientID();	
 
