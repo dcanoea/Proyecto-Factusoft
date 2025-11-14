@@ -16,12 +16,8 @@ public class pruebas {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-        //InvoicesManagement.retrieveInvoice("11c53b7b-9d5e-4626-a479-5eea527eed33"); // nº 20251115
-        //System.out.println(InvoicesManagement.getInvoiceIDByNumber("20251115")); // id 11c53b7b-9d5e-4626-a479-5eea527eed33
-        //System.out.println(InvoicesManagement.getInvoiceNumberByID("11c53b7b-9d5e-4626-a479-5eea527eed33")); // 20251115
-        //InvoicesManagement.getRegistrationDescription(InvoicesManagement.getInvoiceNumberByID("fa5087fd-530d-44f9-9bee-9d0160db139d"));
         
-        //System.out.println(Validation.validateVIES("ES","B22260863"));
+        Organizations.listOrganizations();
 
     }
 
