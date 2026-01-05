@@ -5,6 +5,7 @@
 package com.mycompany.interfaz;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.mycompany.dominio.Cliente;
 import java.awt.Color;
 import java.awt.Frame;
 
@@ -15,6 +16,9 @@ import java.awt.Frame;
 public class DialogCrearFactura extends javax.swing.JDialog {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DialogCrearFactura.class.getName());
+
+// VARIABLE  PARA GUARDAR EL CLIENTE SELECCIONADO
+    private Cliente clienteElegido;
 
     /**
      * Creates new form DialogCrearFactura
@@ -160,47 +164,40 @@ public class DialogCrearFactura extends javax.swing.JDialog {
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
-        // 1. RECOGER DATOS
-        String cliente = txtClient.getText();
-        String tipoFactura = (String) jComboBoxInvoiceType.getSelectedItem();
-
-        // Validación básica
-        if (cliente.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Debes seleccionar un cliente.");
+        // Validación: ¿Hay un cliente elegido?
+        if (clienteElegido == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Por favor, busca y selecciona un cliente primero.");
             return;
         }
 
-        // 2. CERRAR EL DIÁLOGO
+        String tipoFactura = (String) jComboBoxInvoiceType.getSelectedItem();
+
+        // Cerrar el diálogo
         this.dispose();
 
-        // 3. ENVIAR DATOS A LA VENTANA PRINCIPAL
-        java.awt.Window padre = this.getOwner(); // Obtenemos la ventana de atrás
-
-        // ¡OJO! Cambia 'Dashboard' por el nombre de tu clase principal (ej: Principal, MainFrame...)
-        if (padre instanceof Principal) {
-            Principal principal = (Principal) padre;
-
-            // Llamamos al método puente que creamos en el Paso 2
-            principal.abrirNuevaFactura(cliente, tipoFactura);
+        // Enviar el OBJETO a la ventana principal
+        java.awt.Window parent = this.getOwner();
+        if (parent instanceof Principal) {
+            // Ahora llamamos al método con el objeto Cliente, no con el texto
+            ((Principal) parent).abrirNuevaFactura(clienteElegido, tipoFactura);
         }
-
     }//GEN-LAST:event_btnAcceptActionPerformed
 
     private void btnSearchClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchClientActionPerformed
-        // 1. Obtener ventana padre
-        java.awt.Window parent = javax.swing.SwingUtilities.getWindowAncestor(this);
+        DialogBuscarCliente dialog = new DialogBuscarCliente((java.awt.Frame) this.getParent(), true);
+        dialog.setVisible(true);
 
-        // 2. Abrir el buscador
-        DialogBuscarCliente buscador = new DialogBuscarCliente((Frame) parent, true);
-        buscador.setVisible(true); // Se detiene aquí esperando
+        // Al volver del buscador...
+        com.mycompany.dominio.Cliente seleccionado = dialog.getClienteSeleccionado();
 
-        // 3. Recuperar resultado
-        String resultado = buscador.getClienteSeleccionado();
+        if (seleccionado != null) {
+            // A) Guardamos el objeto completo en nuestra variable
+            this.clienteElegido = seleccionado;
 
-        // 4. Si hay resultado, ponerlo en el campo
-        if (resultado != null) {
-            txtClient.setText(resultado);
-        }    }//GEN-LAST:event_btnSearchClientActionPerformed
+            // B) Mostramos solo el nombre en el campo de texto (visual)
+            txtClient.setText(seleccionado.getFiscalName());
+        }
+	}//GEN-LAST:event_btnSearchClientActionPerformed
 
     /**
      * @param args the command line arguments

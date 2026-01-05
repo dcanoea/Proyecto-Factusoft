@@ -4,6 +4,8 @@
  */
 package com.mycompany.interfaz;
 
+import com.mycompany.dominio.Cliente;
+
 /**
  *
  * @author David CE
@@ -338,15 +340,15 @@ public class Principal extends javax.swing.JFrame {
         }
     }
 
-    public void abrirNuevaFactura(String cliente, String tipo) {
-        // 1. Crear el nuevo panel pasándole los datos
+    public void abrirNuevaFactura(Cliente cliente, String tipo) {
+        // Al crear el panel, le pasamos el objeto cliente completo
         PanelCrearFactura nuevoPanel = new PanelCrearFactura(cliente, tipo);
 
-        // 2. Ajustar tamaño (importante para que no salga enano)
+        // Ajustar tamaño y mostrar
         nuevoPanel.setSize(jPanelRight.getWidth(), jPanelRight.getHeight());
         nuevoPanel.setLocation(0, 0);
 
-        // 3. Reemplazar
+        // jPanelRight es tu contenedor central (o como se llame en tu diseño: content, bg, etc)
         jPanelRight.removeAll();
         jPanelRight.add(nuevoPanel, java.awt.BorderLayout.CENTER);
         jPanelRight.revalidate();

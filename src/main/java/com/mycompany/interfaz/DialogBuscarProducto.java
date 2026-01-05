@@ -5,26 +5,26 @@ package com.mycompany.interfaz;
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
  */
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.mycompany.dao.ProductoDAO;
+import com.mycompany.dominio.Producto;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
- * @author poker
+ * @author David CE
  */
+public class DialogBuscarProducto extends javax.swing.JDialog {
 
-public class DialogBuscarCliente extends javax.swing.JDialog {
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DialogBuscarProducto.class.getName());
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DialogBuscarCliente.class.getName());
-
-    // 1. Instanciamos el DAO para poder buscar
-    private com.mycompany.dao.ClienteDAO clienteDAO = new com.mycompany.dao.ClienteDAO();
-
-    // 2. Variable para guardar el cliente que el usuario elija
-    private com.mycompany.dominio.Cliente clienteSeleccionado;
+    private ProductoDAO productoDAO = new ProductoDAO();
+    private Producto productoSeleccionado;
 
     /**
      * Creates new form DialogCrearFactura
      */
-    public DialogBuscarCliente(java.awt.Frame parent, boolean modal) {
+    public DialogBuscarProducto(java.awt.Frame parent, boolean modal) {
         super(parent, modal ? java.awt.Dialog.ModalityType.APPLICATION_MODAL : java.awt.Dialog.ModalityType.MODELESS);
         initComponents();
         // 1. APLICAR ESTILOS VISUALES
@@ -37,78 +37,82 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
         pack();
         setLocationRelativeTo(parent);
 
-        cargarClientes(""); // Carga todos al inicio
+        // Cargar todos los productos al abrir
+        cargarProductos("");
     }
 
     private void configurarColumnas() {
-        // Nombre (150px)
-        tblResultados.getColumnModel().getColumn(0).setPreferredWidth(150);
-        // Apellido 1 (150px)
-        tblResultados.getColumnModel().getColumn(1).setPreferredWidth(150);
-        // Apellido 2 (150px)
-        tblResultados.getColumnModel().getColumn(2).setPreferredWidth(150);
-        // DNI (100px - más estrecho)
-        tblResultados.getColumnModel().getColumn(3).setPreferredWidth(100);
-        tblResultados.getColumnModel().getColumn(3).setMaxWidth(120);
-        // Nombre Comercial (El resto del espacio, min 250px)
-        tblResultados.getColumnModel().getColumn(4).setPreferredWidth(250);
+        // Código (100px)
+        tblResultados.getColumnModel().getColumn(0).setPreferredWidth(100);
+        tblResultados.getColumnModel().getColumn(0).setMaxWidth(120);
 
-        // Altura de fila cómoda
+        // Descripción (Ancho variable)
+        tblResultados.getColumnModel().getColumn(1).setPreferredWidth(300);
+
+        // Precio (100px)
+        tblResultados.getColumnModel().getColumn(2).setPreferredWidth(100);
+        tblResultados.getColumnModel().getColumn(2).setMaxWidth(120);
+
+        // IVA (80px)
+        tblResultados.getColumnModel().getColumn(3).setPreferredWidth(80);
+        tblResultados.getColumnModel().getColumn(3).setMaxWidth(100);
+
         tblResultados.setRowHeight(30);
     }
 
     private void configurarEstilos() {
-        // --- 1. FONDO PRINCIPAL ---
+        // Fondo
         panelPrincipal.setBackground(Estilos.COLOR_FONDO_MENTA);
 
-        // --- 2. CAMPO DE BÚSQUEDA ---
-        // Usamos el método específico para barras de búsqueda (redondo y blanco)
+        // Buscador
         Estilos.configurarBarraBusqueda(txtBuscar);
-        txtBuscar.putClientProperty(com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "Buscar por nombre, DNI...");
+        txtBuscar.putClientProperty(com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "Buscar por código o descripción...");
 
-        // --- 3. BOTONES DE ACCIÓN ---
+        // Botones
         Estilos.configurarBotonAccion(btnBuscar);
         Estilos.configurarBotonAccion(btnAceptar);
         Estilos.configurarBotonAccion(btnCancelar);
 
-        // Icono para el botón BUSCAR (Lupa blanca)
-        // Asegúrate de tener "img/search_Icon.svg" o cambia la ruta
+        // Icono Lupa
         FlatSVGIcon iconSearch = new FlatSVGIcon("img/search.svg", 18, 18);
         iconSearch.setColorFilter(new FlatSVGIcon.ColorFilter(c -> java.awt.Color.WHITE));
         btnBuscar.setIcon(iconSearch);
-        btnBuscar.setText(""); // Quitamos texto para dejar solo icono (o déjalo si prefieres)
+        btnBuscar.setText("");
 
-        // --- 4. TABLA ---
-        // Aplicamos el estilo completo (Fondo menta, cabecera verde, selección negra)
+        // Tabla
         Estilos.configurarTabla(tblResultados, panelCentral);
     }
 
-    // getter para recuperar el cliente desde fuera
-    public com.mycompany.dominio.Cliente getClienteSeleccionado() {
-        return clienteSeleccionado;
+    private void cargarProductos(String busqueda) {
+        // Obtenemos todos los productos (aquí podrías filtrar en el DAO si la lista es enorme)
+        // Para simplificar, traemos todos y filtramos, o usamos un método buscarPorNombre en DAO si lo creaste.
+        // Asumimos que ProductoDAO tiene listarTodos().
+        List<Producto> lista = productoDAO.listarTodos();
+
+        DefaultTableModel modelo = (DefaultTableModel) tblResultados.getModel();
+        modelo.setRowCount(0);
+
+        String filtro = busqueda.toLowerCase().trim();
+
+        for (Producto p : lista) {
+            // Filtrado simple en memoria (si tienes buscarPorNombre en DAO úsalo mejor)
+            boolean coincide = p.getDescription().toLowerCase().contains(filtro)
+                    || p.getCode().toLowerCase().contains(filtro);
+
+            if (coincide || filtro.isEmpty()) {
+                modelo.addRow(new Object[]{
+                    p.getCode(),
+                    p.getDescription(),
+                    p.getUnitPrice() + " €",
+                    p.getTaxPercent() + " %",
+                    p // Guardamos el objeto entero en la columna oculta (opcional) o usamos el índice
+                });
+            }
+        }
     }
-
-    private void cargarClientes(String busqueda) {
-        // 1. Obtener datos de la BBDD
-        java.util.List<com.mycompany.dominio.Cliente> lista;
-
-        if (busqueda == null || busqueda.trim().isEmpty()) {
-            lista = clienteDAO.listarTodos();
-        } else {
-            lista = clienteDAO.buscarPorNombre(busqueda);
-        }
-
-        // 2. Pasarlos al modelo de la tabla
-        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblResultados.getModel();
-        modelo.setRowCount(0); // Limpiar tabla anterior
-
-        for (com.mycompany.dominio.Cliente c : lista) {
-            modelo.addRow(new Object[]{
-                c.getId(), // Columna 0 (Oculta o visible)
-                c.getFiscalName(), // Columna 1
-                c.getFiscalNumber() // Columna 2
-            });
-        }
+    
+    public Producto getProductoSeleccionado() {
+        return productoSeleccionado;
     }
 
     /**
@@ -154,6 +158,8 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 10);
         panelBusqueda.add(txtBuscar, gridBagConstraints);
+
+        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -168,20 +174,20 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
 
         tblResultados.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Nombre", "Apellido 1", "Apellido 2", "DNI/NIE/CIF", "Nombre Comercial"
+                "Código", "Descripción", "Precio", "Tipo IVA"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -228,74 +234,76 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarActionPerformed
-        String texto = txtBuscar.getText(); // Tu campo de texto
-        cargarClientes(texto);
+        cargarProductos(txtBuscar.getText());
     }//GEN-LAST:event_txtBuscarActionPerformed
 
     private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
-      int fila = tblResultados.getSelectedRow();
-        
+        int fila = tblResultados.getSelectedRow();
         if (fila == -1) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Selecciona un cliente de la lista.");
+            javax.swing.JOptionPane.showMessageDialog(this, "Selecciona un producto.");
             return;
         }
 
-        // 1. Recuperar ID de la columna 0
-        int idCliente = (int) tblResultados.getValueAt(fila, 0);
+        // Recuperamos el código (columna 0) para buscarlo en la lista original 
+        // O recuperamos el objeto si lo tenemos mapeado.
+        // Haremos la estrategia de buscar en la lista cargada actual:
+        String codigo = (String) tblResultados.getValueAt(fila, 0);
 
-        // 2. Crear objeto cliente y guardarlo en la variable de la clase
-        clienteSeleccionado = new com.mycompany.dominio.Cliente();
-        clienteSeleccionado.setId(idCliente);
-        
-        // Cuidado con los índices de columna, asegúrate que coinciden con tu tabla visual
-        clienteSeleccionado.setFiscalName((String) tblResultados.getValueAt(fila, 1)); 
-        clienteSeleccionado.setFiscalNumber((String) tblResultados.getValueAt(fila, 2)); // DNI suele estar en col 3 según tu código anterior
-
-        // 3. Cerrar
+        // Buscamos en BBDD o lista para devolver el objeto exacto
+        // (Forma rápida: iterar la lista actual. Forma correcta: DAO getByCode)
+        List<Producto> lista = productoDAO.listarTodos();
+        for (Producto p : lista) {
+            if (p.getCode().equals(codigo)) {
+                this.productoSeleccionado = p;
+                break;
+            }
+        }
         this.dispose();
         }//GEN-LAST:event_btnAceptarActionPerformed
-
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
-        this.clienteSeleccionado = null; // Nos aseguramos de limpiar la selección
-        this.dispose();  
-}//GEN-LAST:event_btnCancelarActionPerformed
+        this.
+        dispose();    }//GEN-LAST:event_btnCancelarActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        cargarProductos(txtBuscar.getText());
+    }//GEN-LAST:event_btnBuscarActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-    /* Set the Nimbus look and feel */
-    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-     */
-    try {
-        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-            if ("Nimbus".equals(info.getName())) {
-                javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                break;
-            }
-        }
-    } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-        logger.log(java.util.logging.Level.SEVERE, null, ex);
-    }
-    //</editor-fold>
-
-    /* Create and display the dialog */
-    java.awt.EventQueue.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-            DialogBuscarCliente dialog = new DialogBuscarCliente(new javax.swing.JFrame(), true);
-            dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                @Override
-                public void windowClosing(java.awt.event.WindowEvent e) {
-                    System.exit(0);
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
                 }
-            });
-            dialog.setVisible(true);
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-    });
-}
+        //</editor-fold>
+
+        /* Create and display the dialog */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                DialogBuscarProducto dialog = new DialogBuscarProducto(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAceptar;

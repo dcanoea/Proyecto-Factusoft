@@ -5,12 +5,19 @@
 package com.mycompany.interfaz;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.mycompany.dominio.Producto;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -19,14 +26,14 @@ import javax.swing.border.Border;
 public class PanelCrearFactura extends javax.swing.JPanel {
 
     // Variables para guardar los datos recibidos
-    private String nombreCliente;
     private String tipoFactura;
+    private com.mycompany.dominio.Cliente cliente;
 
     /**
-     * Constructor modificado para recibir DATOS
+     * Constructor que recibe el Cliente
      */
-    public PanelCrearFactura(String nombreCliente, String tipoFactura) {
-        this.nombreCliente = nombreCliente;
+    public PanelCrearFactura(com.mycompany.dominio.Cliente cliente, String tipoFactura) {
+        this.cliente = cliente;
         this.tipoFactura = tipoFactura;
 
         initComponents();
@@ -34,23 +41,17 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         cargarDatos();
     }
 
-    public PanelCrearFactura() {
-        this("Cliente Prueba", "Completa");
-    }
-
     private void configurarEstilos() {
-        // --- 1. FONDO GENERAL ---
         Color colorMenta = Estilos.COLOR_FONDO_MENTA;
         this.setBackground(colorMenta);
         jPanelCenter.setBackground(colorMenta);
-
-        // --- 2. SOLUCIÓN PANEL DERECHO (ADIÓS GRIS) ---
-        // IMPORTANTE: Lo ponemos OPACO (true) para obligarle a pintar el color Menta
-        // Si lo ponemos transparente (false), a veces Swing pinta gris por debajo.
         jPanelRight.setOpaque(true);
-        jPanelRight.setBackground(Estilos.COLOR_VERDE_CLARO);
+        jPanelRight.setBackground(colorMenta);
 
-        // --- 3. ICONOS Y BOTONES ---
+        // --- ICONOS Y BOTONES ---
+        FlatSVGIcon homeIcon = new FlatSVGIcon("img/home_Icon.svg", 32, 32);
+        homeIcon.setColorFilter(new FlatSVGIcon.ColorFilter(c -> Estilos.COLOR_NEGRO_PURO));
+
         JButton[] botones = {btnAddLine, btnEditLine, btnDeleteLine, btnSendInvoice, btnBack};
         for (JButton btn : botones) {
             Estilos.configurarBotonAccion(btn);
@@ -64,58 +65,53 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         setIconoBlanco(btnDeleteLine, "img/delete_Icon.svg");
         setIconoBlanco(btnSendInvoice, "img/invoice_Icon.svg");
 
-        // --- 4. ESTILOS DE TABLAS ---
+        // --- CONFIGURACIÓN DE TABLAS ---
         Estilos.configurarTabla(tblCabeceraCliente, jScrollPaneCabecera);
         Estilos.configurarTabla(tblInvoices, jScrollPaneCenter);
         Estilos.configurarTabla(jTableTotal, jScrollPaneTotalFactura);
 
-        // Alturas de fila
+        // >>> CORRECCIÓN: LIMPIAR LAS FILAS VACÍAS DE NETBEANS <<<
+        // 1. Tabla Central (Facturas): La dejamos vacía (0 filas)
+        javax.swing.table.DefaultTableModel modelInvoices = (javax.swing.table.DefaultTableModel) tblInvoices.getModel();
+        modelInvoices.setRowCount(0);
+
+        // 2. Tabla Inferior (Totales): La limpiamos y añadimos 1 fila inicial a cero
+        javax.swing.table.DefaultTableModel modelTotal = (javax.swing.table.DefaultTableModel) jTableTotal.getModel();
+        modelTotal.setRowCount(0);
+        modelTotal.addRow(new Object[]{"0.00 €", "Varios", "0.00 €", "0.00 €"});
+
+        // --- TAMAÑOS Y SCROLLS ---
         tblCabeceraCliente.setRowHeight(40);
         tblInvoices.setRowHeight(35);
         jTableTotal.setRowHeight(40);
 
-        // Anchos de columna
         if (tblInvoices.getColumnModel().getColumnCount() > 0) {
             tblInvoices.getColumnModel().getColumn(0).setPreferredWidth(80);
             tblInvoices.getColumnModel().getColumn(1).setPreferredWidth(300);
             tblInvoices.getColumnModel().getColumn(6).setPreferredWidth(100);
         }
 
-        // --- 5. SOLUCIÓN BORDES Y SCROLLBARS ---
-        // A) Dimensiones fijas (para que no se aplasten)
         Dimension dimFija = new Dimension(100, 85);
         jScrollPaneCabecera.setPreferredSize(dimFija);
         jScrollPaneCabecera.setMinimumSize(dimFija);
         jScrollPaneTotalFactura.setPreferredSize(dimFija);
         jScrollPaneTotalFactura.setMinimumSize(dimFija);
 
-        // B) Quitar el "Scroll Negro" y los Bordes
-        // Desactivamos las barras de scroll para Cabecera y Totales (nunca deben tener scroll)
         jScrollPaneCabecera.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jScrollPaneCabecera.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
         jScrollPaneTotalFactura.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         jScrollPaneTotalFactura.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        // C) Huecos entre tablas
-        // Usamos borde vacío para empujar los elementos y crear espacio
-        javax.swing.border.Border huecoAbajo = javax.swing.BorderFactory.createEmptyBorder(0, 0, 20, 0); // 20px margen inferior
-
-        jScrollPaneCabecera.setBorder(huecoAbajo); // Separa Cabecera de Central
-        jScrollPaneCenter.setBorder(huecoAbajo);   // Separa Central de Totales
-        // Totales no necesita hueco abajo
-
-        // D) Fondo unificado
-        // Aseguramos que el fondo detrás de las tablas sea Menta
         jScrollPaneCabecera.getViewport().setBackground(colorMenta);
         jScrollPaneCenter.getViewport().setBackground(colorMenta);
         jScrollPaneTotalFactura.getViewport().setBackground(colorMenta);
     }
 
     private void cargarDatos() {
-        if (tblCabeceraCliente.getRowCount() > 0) {
-            tblCabeceraCliente.setValueAt(nombreCliente, 0, 0);
-            tblCabeceraCliente.setValueAt("B-12345678", 0, 1);
+        if (cliente != null && tblCabeceraCliente.getRowCount() > 0) {
+            // Ahora sacamos los datos reales del objeto
+            tblCabeceraCliente.setValueAt(cliente.getFiscalName(), 0, 0);
+            tblCabeceraCliente.setValueAt(cliente.getFiscalNumber(), 0, 1);
         }
     }
 
@@ -308,6 +304,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         jPanelRight.add(filler1, gridBagConstraints);
 
         btnAddLine.setText("Agregar Línea");
+        btnAddLine.addActionListener(this::btnAddLineActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -317,6 +314,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         jPanelRight.add(btnAddLine, gridBagConstraints);
 
         btnEditLine.setText("Editar Línea");
+        btnEditLine.addActionListener(this::btnEditLineActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -326,6 +324,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         jPanelRight.add(btnEditLine, gridBagConstraints);
 
         btnDeleteLine.setText("Eliminar Línea");
+        btnDeleteLine.addActionListener(this::btnDeleteLineActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -380,6 +379,17 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnBackActionPerformed
 
+    private void btnAddLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddLineActionPerformed
+        agregarLineaProducto();
+    }//GEN-LAST:event_btnAddLineActionPerformed
+
+    private void btnDeleteLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteLineActionPerformed
+        eliminarLineaSeleccionada();
+    }//GEN-LAST:event_btnDeleteLineActionPerformed
+
+    private void btnEditLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditLineActionPerformed
+        editarLineaSeleccionada();    }//GEN-LAST:event_btnEditLineActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddLine;
@@ -399,4 +409,218 @@ public class PanelCrearFactura extends javax.swing.JPanel {
     private javax.swing.JTable tblInvoices;
     // End of variables declaration//GEN-END:variables
 
+    // --- MÉTODOS LÓGICOS PARA AGREGAR PRODUCTOS ---
+    private void agregarLineaProducto() {
+        // 1. Abrir el buscador
+        java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
+        DialogBuscarProducto dialog = new DialogBuscarProducto((java.awt.Frame) parentWindow, true);
+        dialog.setVisible(true);
+
+        // 2. Obtener selección
+        Producto producto = dialog.getProductoSeleccionado();
+
+        if (producto != null) {
+            // 3. Pedir cantidad
+            String cantidadStr = JOptionPane.showInputDialog(this, "Cantidad para: " + producto.getDescription(), "1");
+
+            if (cantidadStr != null && !cantidadStr.isEmpty()) {
+                try {
+                    // Convertir a BigDecimal para precisión monetaria
+                    BigDecimal cantidad = new BigDecimal(cantidadStr);
+                    BigDecimal precio = producto.getUnitPrice(); // Viene de la BBDD
+                    BigDecimal iva = producto.getTaxPercent();   // Viene de la BBDD
+                    BigDecimal descuento = BigDecimal.ZERO;      // 0 por defecto
+
+                    // Cálculos
+                    BigDecimal totalBase = precio.multiply(cantidad);
+                    BigDecimal importeIva = totalBase.multiply(iva).divide(new BigDecimal(100));
+                    BigDecimal totalLinea = totalBase.add(importeIva);
+
+                    // 4. Añadir a la tabla de líneas (tblInvoices)
+                    DefaultTableModel model = (DefaultTableModel) tblInvoices.getModel();
+                    model.addRow(new Object[]{
+                        producto.getCode(),
+                        producto.getDescription(),
+                        cantidad, // Guardamos el número, no string
+                        precio,
+                        descuento,
+                        iva,
+                        totalLinea.setScale(2, RoundingMode.HALF_UP) // Redondeo a 2 decimales
+                    });
+
+                    // 5. Recalcular la tabla de abajo (Totales)
+                    calcularTotalesFactura();
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Cantidad inválida. Introduce un número (ej: 1.5)");
+                }
+            }
+        }
+    }
+
+// --- MÉTODO PARA EDITAR LÍNEA (NUEVO) ---
+    private void editarLineaSeleccionada() {
+        DefaultTableModel model = (DefaultTableModel) tblInvoices.getModel();
+        int fila = tblInvoices.getSelectedRow();
+
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona una línea para editar.");
+            return;
+        }
+
+        // 1. Recuperar valores actuales
+        String descProducto = model.getValueAt(fila, 1).toString();
+        BigDecimal cantidadActual = new BigDecimal(model.getValueAt(fila, 2).toString());
+        BigDecimal precioActual = new BigDecimal(model.getValueAt(fila, 3).toString());
+        BigDecimal descuentoActual = new BigDecimal(model.getValueAt(fila, 4).toString());
+        BigDecimal ivaPercent = new BigDecimal(model.getValueAt(fila, 5).toString());
+
+        // 2. Crear panel con formulario para el JOptionPane
+        javax.swing.JPanel panelEdicion = new javax.swing.JPanel(new java.awt.GridLayout(3, 2, 10, 10));
+        javax.swing.JTextField txtCantidad = new javax.swing.JTextField(cantidadActual.toString());
+        javax.swing.JTextField txtPrecio = new javax.swing.JTextField(precioActual.toString());
+        javax.swing.JTextField txtDescuento = new javax.swing.JTextField(descuentoActual.toString());
+
+        panelEdicion.add(new javax.swing.JLabel("Cantidad:"));
+        panelEdicion.add(txtCantidad);
+        panelEdicion.add(new javax.swing.JLabel("Precio Unitario (€):"));
+        panelEdicion.add(txtPrecio);
+        panelEdicion.add(new javax.swing.JLabel("Descuento (%):"));
+        panelEdicion.add(txtDescuento);
+
+        // 3. Mostrar el diálogo
+        int resultado = JOptionPane.showConfirmDialog(this, panelEdicion,
+                "Editar " + descProducto, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (resultado == JOptionPane.OK_OPTION) {
+            try {
+                // 4. Parsear nuevos valores
+                BigDecimal nuevaCant = new BigDecimal(txtCantidad.getText().replace(",", "."));
+                BigDecimal nuevoPrecio = new BigDecimal(txtPrecio.getText().replace(",", "."));
+                BigDecimal nuevoDesc = new BigDecimal(txtDescuento.getText().replace(",", "."));
+
+                // 5. Recalcular Total de la Línea
+                // Fórmula: (Precio * Cantidad) * (1 - Descuento/100) * (1 + IVA/100)
+                BigDecimal totalBruto = nuevoPrecio.multiply(nuevaCant);
+                BigDecimal montoDescuento = totalBruto.multiply(nuevoDesc).divide(new BigDecimal(100), RoundingMode.HALF_UP);
+                BigDecimal baseImponible = totalBruto.subtract(montoDescuento);
+
+                BigDecimal montoIVA = baseImponible.multiply(ivaPercent).divide(new BigDecimal(100), RoundingMode.HALF_UP);
+                BigDecimal totalLinea = baseImponible.add(montoIVA);
+
+                // 6. Actualizar la tabla
+                model.setValueAt(nuevaCant, fila, 2);
+                model.setValueAt(nuevoPrecio, fila, 3);
+                model.setValueAt(nuevoDesc, fila, 4);
+                model.setValueAt(totalLinea.setScale(2, RoundingMode.HALF_UP), fila, 6);
+
+                // 7. Recalcular totales generales
+                calcularTotalesFactura();
+
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Error en los números. Usa el punto '.' para decimales.");
+            }
+        }
+    }
+
+    private void calcularTotalesFactura() {
+        DefaultTableModel modelLineas = (DefaultTableModel) tblInvoices.getModel();
+        DefaultTableModel modelTotales = (DefaultTableModel) jTableTotal.getModel();
+
+        // Mapa para agrupar: Clave = % IVA, Valor = Array[Base, CuotaIVA]
+        Map<BigDecimal, BigDecimal[]> desgloseIva = new TreeMap<>();
+
+        BigDecimal granTotalBase = BigDecimal.ZERO;
+        BigDecimal granTotalIva = BigDecimal.ZERO;
+        BigDecimal granTotalPagar = BigDecimal.ZERO;
+
+        // 1. RECORRER Y CALCULAR
+        for (int i = 0; i < modelLineas.getRowCount(); i++) {
+            try {
+                BigDecimal cant = new BigDecimal(modelLineas.getValueAt(i, 2).toString());
+                BigDecimal precio = new BigDecimal(modelLineas.getValueAt(i, 3).toString());
+                BigDecimal desc = new BigDecimal(modelLineas.getValueAt(i, 4).toString());
+                BigDecimal ivaPorc = new BigDecimal(modelLineas.getValueAt(i, 5).toString());
+
+                BigDecimal bruto = cant.multiply(precio);
+                BigDecimal montoDesc = bruto.multiply(desc).divide(new BigDecimal(100), RoundingMode.HALF_UP);
+                BigDecimal baseLinea = bruto.subtract(montoDesc);
+                BigDecimal cuotaIvaLinea = baseLinea.multiply(ivaPorc).divide(new BigDecimal(100), RoundingMode.HALF_UP);
+
+                if (!desgloseIva.containsKey(ivaPorc)) {
+                    desgloseIva.put(ivaPorc, new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
+                }
+
+                BigDecimal[] acumulado = desgloseIva.get(ivaPorc);
+                acumulado[0] = acumulado[0].add(baseLinea);
+                acumulado[1] = acumulado[1].add(cuotaIvaLinea);
+
+            } catch (Exception e) {
+            }
+        }
+
+        // 2. LLENAR TABLA INFERIOR
+        modelTotales.setRowCount(0);
+
+        for (Map.Entry<BigDecimal, BigDecimal[]> entrada : desgloseIva.entrySet()) {
+            BigDecimal tipoIva = entrada.getKey();
+            BigDecimal baseGrupo = entrada.getValue()[0];
+            BigDecimal cuotaGrupo = entrada.getValue()[1];
+            BigDecimal totalGrupo = baseGrupo.add(cuotaGrupo);
+
+            modelTotales.addRow(new Object[]{
+                baseGrupo.setScale(2, RoundingMode.HALF_UP) + " €",
+                tipoIva.setScale(0, RoundingMode.DOWN) + " %",
+                cuotaGrupo.setScale(2, RoundingMode.HALF_UP) + " €",
+                totalGrupo.setScale(2, RoundingMode.HALF_UP) + " €"
+            });
+
+            granTotalBase = granTotalBase.add(baseGrupo);
+            granTotalIva = granTotalIva.add(cuotaGrupo);
+            granTotalPagar = granTotalPagar.add(totalGrupo);
+        }
+
+        // Fila final de TOTAL
+        if (desgloseIva.size() > 0) {
+            modelTotales.addRow(new Object[]{
+                "----------", "TOTAL", "----------",
+                "<html><b>" + granTotalPagar.setScale(2, RoundingMode.HALF_UP) + " €</b></html>"
+            });
+        } else {
+            modelTotales.addRow(new Object[]{"0.00 €", "0 %", "0.00 €", "0.00 €"});
+        }
+
+        // --- 3. AJUSTE DINÁMICO DE ALTURA (SOLUCIÓN AL SCROLL) ---
+        // Calculamos la altura necesaria: (Filas * AltoFila) + AltoCabecera + Un poco de margen
+        int altoFila = jTableTotal.getRowHeight();
+        int numFilas = modelTotales.getRowCount();
+        int altoCabecera = jTableTotal.getTableHeader().getPreferredSize().height;
+
+        // +5 pixels extra por si acaso los bordes
+        int alturaTotal = (numFilas * altoFila) + altoCabecera + 5;
+
+        // Obtenemos el ancho actual para no cambiarlo
+        int anchoActual = jScrollPaneTotalFactura.getPreferredSize().width;
+
+        // Aplicamos la nueva dimensión al JScrollPane (contenedor)
+        Dimension nuevaDimension = new Dimension(anchoActual, alturaTotal);
+        jScrollPaneTotalFactura.setPreferredSize(nuevaDimension);
+        jScrollPaneTotalFactura.setMinimumSize(nuevaDimension);
+
+        // IMPORTANTE: Forzar al panel padre a repintar el diseño (GridBagLayout)
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void eliminarLineaSeleccionada() {
+        DefaultTableModel model = (DefaultTableModel) tblInvoices.getModel();
+        int fila = tblInvoices.getSelectedRow();
+
+        if (fila >= 0) {
+            model.removeRow(fila);
+            calcularTotalesFactura(); // Recalcular al borrar
+        } else {
+            JOptionPane.showMessageDialog(this, "Selecciona una línea para borrar.");
+        }
+    }
 }

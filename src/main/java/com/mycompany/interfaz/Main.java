@@ -1,8 +1,11 @@
 package com.mycompany.interfaz;
 
 import com.mycompany.dao.ClienteDAO;
+import com.mycompany.dao.ProductoDAO;
 import com.mycompany.dominio.Cliente;
+import com.mycompany.dominio.Producto;
 import com.mycompany.util.HibernateUtil;
+import java.math.BigDecimal;
 
 /**
  *
@@ -30,23 +33,42 @@ public class Main {
             return;
         }
 
-        // 2. Intentar guardar un cliente de prueba
-        ClienteDAO dao = new ClienteDAO();
-        Cliente c = new Cliente();
-        c.setFiscalName("David Cano Escario");
-        c.setFiscalNumber("18053094A");
-        c.setAddress("Paseo Ramon y Cajal");
-        c.setCity("Huesca");
-        c.setZipCode("22006");
-        c.setPhone("680196618");
-        c.setEmail("dcanoea@fpvirtualaragon.com");
+        System.out.println("--- Iniciando carga de productos de prueba ---");
 
-        System.out.println("Guardando cliente...");
-        dao.guardar(c);
+        ProductoDAO productoDAO = new ProductoDAO();
 
-        System.out.println("¡Cliente guardado! Revisa tu base de datos.");
+        // 1. Crear Producto 1 (Servicio)
+        Producto p1 = new Producto();
+        p1.setCode("SERV-001");
+        p1.setDescription("Consultoría Informática (Hora)");
+        p1.setUnitPrice(new BigDecimal("45.00")); // Importante: BigDecimal con String
+        p1.setTaxPercent(new BigDecimal("21.00"));
+        p1.setActive(true);
 
-        // Cierra Hibernate al terminar la prueba
+        // 2. Crear Producto 2 (Material)
+        Producto p2 = new Producto();
+        p2.setCode("MAT-101");
+        p2.setDescription("Cable de Red CAT6 (Metro)");
+        p2.setUnitPrice(new BigDecimal("1.50"));
+        p2.setTaxPercent(new BigDecimal("21.00"));
+        p2.setActive(true);
+
+        // 3. Crear Producto 3 (Sin IVA ejemplo)
+        Producto p3 = new Producto();
+        p3.setCode("EDU-005");
+        p3.setDescription("Formación Exenta");
+        p3.setUnitPrice(new BigDecimal("150.00"));
+        p3.setTaxPercent(new BigDecimal("0.00"));
+        p3.setActive(true);
+
+        // Guardamos
+        productoDAO.guardar(p1);
+        productoDAO.guardar(p2);
+        productoDAO.guardar(p3);
+
+        System.out.println("¡3 Productos guardados correctamente!");
+
+        // Cerramos hibernate
         HibernateUtil.shutdown();
     }
 }
