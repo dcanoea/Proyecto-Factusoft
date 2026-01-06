@@ -4,21 +4,129 @@
  */
 package com.mycompany.interfaz;
 
+import com.mycompany.dao.ProductoDAO;
+import com.mycompany.dominio.Producto;
+import java.math.BigDecimal;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author DavidCe
  */
 public class PanelCrearProducto extends javax.swing.JPanel {
 
+    private ProductoDAO productoDAO = new ProductoDAO();
+    private Producto productoEditar = null; // Para saber si editamos
+
     /**
      * Creates new form PanelClientes
      */
     public PanelCrearProducto() {
         initComponents();
+        configurarEstilosCampos();
+        rellenarCombos();
+        configurarLogicaIva();
+        generarCodigoAutomatico();
+    }
+
+    // --- CONSTRUCTOR PARA MODO EDICIÓN ---
+    public PanelCrearProducto(Producto producto) {
+        initComponents();
+        configurarEstilosCampos();
+        rellenarCombos();
+        configurarLogicaIva();
+
+        this.productoEditar = producto;
+        cargarDatosEdicion();
+    }
+
+    // --- CARGAR DATOS SI EDITAMOS ---
+    private void cargarDatosEdicion() {
+        if (productoEditar != null) {
+            btnAddClient.setText("Guardar Cambios");
+
+            txtProductCode.setText(productoEditar.getCode());
+            txtDescription.setText(productoEditar.getDescription());
+            txtUnitAmount.setText(productoEditar.getUnitPrice().toString());
+
+            // --- LÓGICA INVERSA DE IVA ---
+            // Leemos el % que tiene el producto para saber qué "Régimen" seleccionar
+            BigDecimal ivaProducto = productoEditar.getTaxPercent();
+
+            // Comparamos con los valores conocidos (21, 10, 4, 0)
+            // Nota: compareTo devuelve 0 si son iguales
+            if (ivaProducto.compareTo(new BigDecimal("21.00")) == 0) {
+                jComboBoxTaxType.setSelectedIndex(0); // General
+            } else if (ivaProducto.compareTo(new BigDecimal("10.00")) == 0) {
+                jComboBoxTaxType.setSelectedIndex(1); // Reducido
+            } else if (ivaProducto.compareTo(new BigDecimal("4.00")) == 0) {
+                jComboBoxTaxType.setSelectedIndex(2); // Superreducido
+            } else if (ivaProducto.compareTo(new BigDecimal("0.00")) == 0) {
+                jComboBoxTaxType.setSelectedIndex(3); // Exento
+            }
+
+            // Al hacer setSelectedIndex arriba, el listener de 'configurarLogicaIva' saltará
+            // y pondrá el porcentaje correcto en jComboBoxTaxRate automáticamente.
+            // Aseguramos que el campo porcentaje esté visualmente bloqueado
+            jComboBoxTaxRate.setEnabled(false);
+
+            // Bloquear Código
+            txtProductCode.setEditable(false);
+            txtProductCode.setFocusable(false);
+        }
+    }
+
+    // --- MÉTODO GUARDAR ---
+    private void guardarProducto() {
+        // 1. Validaciones
+        if (txtProductCode.getText().trim().isEmpty() || txtDescription.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Código y Descripción son obligatorios.");
+            return;
+        }
+
+        try {
+            Producto p;
+            if (productoEditar != null) {
+                p = productoEditar; // Editamos el existente
+            } else {
+                p = new Producto(); // Creamos uno nuevo
+            }
+
+            // 2. Asignar datos (Cuidado con los BigDecimal)
+            p.setCode(txtProductCode.getText().trim());
+            p.setDescription(txtDescription.getText().trim());
+
+            // Convertir String a BigDecimal (reemplazando comas por puntos por si acaso)
+            String precioStr = txtUnitAmount.getText().replace(",", ".");
+            p.setUnitPrice(new BigDecimal(precioStr));
+
+            // Obtener IVA del Combo
+            String ivaStr = (String) jComboBoxTaxRate.getSelectedItem();
+            p.setTaxPercent(new BigDecimal(ivaStr));
+
+            p.setActive(true); // Por defecto activo
+
+            // 3. Guardar en BBDD
+            productoDAO.guardar(p);
+
+            JOptionPane.showMessageDialog(this, "Producto guardado correctamente.");
+
+            // 4. Volver atrás
+            btnBack.doClick();
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "El precio debe ser un número válido (ej: 10.50).");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al guardar: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // --- EXTRA: Método para mover tu código de estilos y limpiar el constructor ---
+    private void configurarEstilosCampos() {
         // --- 1. APLICAR ESTILO A LOS CAMPOS DE TEXTO (CAMBIO: Usamos el nuevo estilo Formulario) ---
-        javax.swing.JTextField[] campos = {
-            txtDescription, txtProductCode, txtUnitAmount
-        };
+        javax.swing.JTextField[] campos = {txtDescription, txtProductCode, txtUnitAmount};
 
         for (javax.swing.JTextField t : campos) {
             Estilos.configurarCampoFormulario(t);
@@ -26,10 +134,9 @@ public class PanelCrearProducto extends javax.swing.JPanel {
 
         // --- APLICAR ESTILO A LOS COMBOBOX ---
         javax.swing.JComboBox[] combos = {jComboBoxTaxType, jComboBoxTaxRate};
+
         for (javax.swing.JComboBox c : combos) {
             Estilos.aplicarEstiloComboBox(c);
-
-            // --- TRUCO FINAL DE ALINEACIÓN ---
             // Forzamos a que el ComboBox tenga la misma altura preferida que el TextField de al lado.
             // (Asumimos que txtUnitAmount ya tiene su estilo aplicado)
             java.awt.Dimension sizeRef = txtUnitAmount.getPreferredSize();
@@ -41,9 +148,7 @@ public class PanelCrearProducto extends javax.swing.JPanel {
 
         // --- 2. APLICAR ESTILO A LAS ETIQUETAS (LABELS) ---
         // Esto hará que los textos "Nombre", "Dirección", etc. se vean GRANDES
-        javax.swing.JLabel[] etiquetas = {
-            lblDescription, lblTaxType, lblProductCode, lblTaxRate, lblUnitAmount
-        };
+        javax.swing.JLabel[] etiquetas = {lblDescription, lblTaxType, lblProductCode, lblTaxRate, lblUnitAmount};
 
         for (javax.swing.JLabel l : etiquetas) {
             Estilos.configurarEtiquetaFormulario(l);
@@ -61,6 +166,53 @@ public class PanelCrearProducto extends javax.swing.JPanel {
             btn.setIconTextGap(15); // Espacio entre icono y texto
             btn.setMargin(new java.awt.Insets(10, 20, 10, 20)); // Más gorditos
         }
+    }
+
+    // --- CÓDIGO AUTOINCREMENTAL ---
+    private void generarCodigoAutomatico() {
+        if (txtProductCode != null) {
+            try {
+                int siguienteId = productoDAO.obtenerSiguienteId();
+                txtProductCode.setText(String.valueOf(siguienteId));
+
+                txtProductCode.setEditable(false);
+                txtProductCode.setFocusable(false);
+                txtProductCode.setHorizontalAlignment(javax.swing.JTextField.CENTER); // Queda mejor centrado
+            } catch (Exception e) {
+                txtProductCode.setText("ERROR");
+            }
+        }
+    }
+
+    // --- 2. LÓGICA DE IVA VINCULADO ---
+    private void rellenarCombos() {
+        // Modelo para el Régimen (Nombres)
+        jComboBoxTaxType.setModel(new DefaultComboBoxModel<>(new String[]{
+            "General (21%)", "Reducido (10%)", "Superreducido (4%)", "Exento (0%)"
+        }));
+
+        // Modelo para los Valores (Oculto o sincronizado visualmente)
+        // OJO: Este combo lo vamos a bloquear para que el usuario no toque
+        jComboBoxTaxRate.setModel(new DefaultComboBoxModel<>(new String[]{
+            "21.00", "10.00", "4.00", "0.00"
+        }));
+    }
+
+    private void configurarLogicaIva() {
+        // Bloqueamos el combo de porcentajes
+        jComboBoxTaxRate.setEnabled(false);
+
+        // Añadimos un "escucha" al combo de Tipo
+        jComboBoxTaxType.addActionListener(e -> {
+            // El índice seleccionado en el Tipo mandará sobre el índice del Porcentaje
+            int indiceSeleccionado = jComboBoxTaxType.getSelectedIndex();
+
+            // Si seleccionas el 0 (General), se selecciona el 0 (21.00) en el otro
+            jComboBoxTaxRate.setSelectedIndex(indiceSeleccionado);
+        });
+
+        // Forzamos la primera selección al iniciar
+        jComboBoxTaxType.setSelectedIndex(0);
     }
 
     /**
@@ -220,6 +372,7 @@ public class PanelCrearProducto extends javax.swing.JPanel {
         jPanelButtons.add(filler3);
 
         btnAddClient.setText("Agregar");
+        btnAddClient.addActionListener(this::btnAddClientActionPerformed);
         jPanelButtons.add(btnAddClient);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -270,6 +423,10 @@ public class PanelCrearProducto extends javax.swing.JPanel {
     private void txtProductCodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtProductCodeActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtProductCodeActionPerformed
+
+    private void btnAddClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddClientActionPerformed
+        guardarProducto();
+    }//GEN-LAST:event_btnAddClientActionPerformed
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);

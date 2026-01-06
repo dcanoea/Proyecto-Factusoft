@@ -4,11 +4,19 @@
  */
 package com.mycompany.interfaz;
 
+import com.mycompany.dao.ProductoDAO;
+import com.mycompany.dominio.Producto;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author DavidCe
  */
 public class PanelProductos extends javax.swing.JPanel {
+
+    private ProductoDAO productoDAO = new ProductoDAO(); // Instancia del DAO
 
     /**
      * Creates new form PanelClientes
@@ -96,6 +104,8 @@ public class PanelProductos extends javax.swing.JPanel {
             // Ajusta este margen si quieres los botones más o menos anchos
             btn.setMargin(new java.awt.Insets(10, 15, 10, 15));
         }
+
+        cargarProductos(""); // <--- CARGA INICIAL
     }
 
     /**
@@ -126,6 +136,8 @@ public class PanelProductos extends javax.swing.JPanel {
         jPanelCenter.setBackground(new java.awt.Color(160, 238, 204));
         jPanelCenter.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jPanelCenter.setLayout(new java.awt.GridBagLayout());
+
+        txtSearch.addActionListener(this::txtSearchActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -194,6 +206,7 @@ public class PanelProductos extends javax.swing.JPanel {
         jPanelRight.add(filler1, gridBagConstraints);
 
         btnEditProduct.setText("Editar Producto");
+        btnEditProduct.addActionListener(this::btnEditProductActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -208,6 +221,7 @@ public class PanelProductos extends javax.swing.JPanel {
         jPanelRight.add(filler2, gridBagConstraints);
 
         btnDeleteProduct.setText("Borrar Producto");
+        btnDeleteProduct.addActionListener(this::btnDeleteProductActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -220,33 +234,90 @@ public class PanelProductos extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAddProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddProductActionPerformed
-        // 1. Instanciar el formulario de productos (NO clientes)
+// 1. Crear el panel de creación
         PanelCrearProducto pnlCrear = new PanelCrearProducto();
 
-        // 2. Obtener el contenedor padre
+        // 2. Preparar el cambio de pantalla
         javax.swing.JPanel parent = (javax.swing.JPanel) getParent();
+        java.awt.event.ActionListener[] listenersHome = btnHome.getActionListeners();
 
-        // (Opcional) Capturar listeners del botón Home si usas esa lógica
-        // java.awt.event.ActionListener[] listenersHome = btnHome.getActionListeners();
-        // 3. Configurar el botón "VOLVER"
+        // 3. Configurar el botón "Volver" del nuevo panel
         pnlCrear.getBtnBack().addActionListener(e -> {
             parent.removeAll();
 
-            // --- AQUÍ ESTÁ EL CAMBIO ---
-            // Antes tenías: parent.add(new PanelClientes(), ...);
-            // Cámbialo por:
-            parent.add(new PanelProductos(), java.awt.BorderLayout.CENTER);
+            // Al volver, recreamos el panel de listado para ver los cambios
+            PanelProductos nuevoListado = new PanelProductos();
 
-            // (Opcional) Restaurar listeners del Home...
+            // Recuperamos la funcionalidad del botón Home
+            if (listenersHome != null) {
+                for (java.awt.event.ActionListener al : listenersHome) {
+                    nuevoListado.getBtnHome().addActionListener(al);
+                }
+            }
+
+            parent.add(nuevoListado, java.awt.BorderLayout.CENTER);
             parent.revalidate();
             parent.repaint();
         });
 
-        // 4. Mostrar el formulario
+        // 4. Cambiar la vista
         parent.removeAll();
         parent.add(pnlCrear, java.awt.BorderLayout.CENTER);
         parent.revalidate();
         parent.repaint();    }//GEN-LAST:event_btnAddProductActionPerformed
+
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        cargarProductos(txtSearch.getText());
+    }//GEN-LAST:event_txtSearchActionPerformed
+
+    private void btnDeleteProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteProductActionPerformed
+        borrarProductoSeleccionado();
+    }//GEN-LAST:event_btnDeleteProductActionPerformed
+
+    private void btnEditProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditProductActionPerformed
+        int fila = tblProducts.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un producto.");
+            return;
+        }
+
+        // --- CORRECCIÓN AQUÍ ---
+        // 1. Antes leíamos un INT (ID). Ahora leemos un STRING (CÓDIGO).
+        String codigo = tblProducts.getValueAt(fila, 0).toString();
+
+        // 2. Usamos el nuevo método del DAO para recuperar el objeto completo
+        Producto p = productoDAO.buscarPorCodigo(codigo);
+
+        if (p == null) {
+            JOptionPane.showMessageDialog(this, "Error: No se encontró el producto en la base de datos.");
+            return;
+        }
+
+        // 3. Pasamos el producto al constructor de edición
+        PanelCrearProducto pnlEditar = new PanelCrearProducto(p);
+
+        // --- NAVEGACIÓN (Esto lo tenías bien, se mantiene igual) ---
+        javax.swing.JPanel parent = (javax.swing.JPanel) getParent();
+        java.awt.event.ActionListener[] listenersHome = btnHome.getActionListeners();
+
+        pnlEditar.getBtnBack().addActionListener(e -> {
+            parent.removeAll();
+            PanelProductos nuevoListado = new PanelProductos();
+            if (listenersHome != null) {
+                for (java.awt.event.ActionListener al : listenersHome) {
+                    nuevoListado.getBtnHome().addActionListener(al);
+                }
+            }
+            parent.add(nuevoListado, java.awt.BorderLayout.CENTER);
+            parent.revalidate();
+            parent.repaint();
+        });
+
+        parent.removeAll();
+        parent.add(pnlEditar, java.awt.BorderLayout.CENTER);
+        parent.revalidate();
+        parent.repaint();
+    }//GEN-LAST:event_btnEditProductActionPerformed
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
@@ -272,5 +343,60 @@ public class PanelProductos extends javax.swing.JPanel {
     // Método puente para acceder al botón Home desde fuera
     public javax.swing.JButton getBtnHome() {
         return btnHome;
+    }
+
+    // --- CARGAR PRODUCTOS EN LA TABLA ---
+    private void cargarProductos(String busqueda) {
+        List<Producto> lista;
+        if (busqueda == null || busqueda.trim().isEmpty()) {
+            lista = productoDAO.listarTodos();
+        } else {
+            lista = productoDAO.buscarPorTermino(busqueda);
+        }
+
+        DefaultTableModel modelo = (DefaultTableModel) tblProducts.getModel();
+        modelo.setRowCount(0);
+
+        for (Producto p : lista) {
+            modelo.addRow(new Object[]{
+                // CORRECCIÓN: Quitamos el ID oculto. Ponemos los datos en orden visual exacto.
+                p.getCode(), // Col 0: Código
+                p.getDescription(), // Col 1: Descripción
+                p.getUnitPrice() + " €", // Col 2: Precio
+                p.getTaxPercent() + " %" // Col 3: Tipo IVA
+            });
+        }
+    }
+
+    // --- BORRAR PRODUCTO ---
+    private void borrarProductoSeleccionado() {
+        int fila = tblProducts.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un producto para borrar.");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Seguro que quieres borrar este producto?",
+                "Confirmar", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                // ID está en la columna 0
+                String codigo = tblProducts.getValueAt(fila, 0).toString();
+
+                // Llamada al DAO
+                Producto p = productoDAO.buscarPorCodigo(codigo);
+                if (p != null) {
+                    productoDAO.eliminar(p.getId());
+                }
+
+                // Recargar
+                cargarProductos(txtSearch.getText());
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al borrar: " + e.getMessage());
+            }
+        }
     }
 }

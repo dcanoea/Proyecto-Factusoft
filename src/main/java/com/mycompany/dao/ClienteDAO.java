@@ -71,6 +71,7 @@ public class ClienteDAO {
         }
     }
 
+    // Recoge el siguiente Nº de Cliente desde la BBDD. Si por alguna razón (improbable) se borran todos los clientes, no se resetea y sigue en el último que dejó.
     public int obtenerSiguienteId() {
         try (org.hibernate.Session session = com.mycompany.util.HibernateUtil.getSessionFactory().openSession()) {
 
