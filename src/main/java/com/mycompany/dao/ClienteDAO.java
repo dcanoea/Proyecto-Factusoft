@@ -14,10 +14,12 @@ public class ClienteDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             // merge: guarda si es nuevo, actualiza si ya existe (por ID)
-            session.merge(cliente); 
+            session.merge(cliente);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             System.err.println("Error guardando cliente: " + e.getMessage());
             e.printStackTrace();
         }
@@ -29,7 +31,7 @@ public class ClienteDAO {
             return session.createQuery("from Cliente", Cliente.class).list();
         }
     }
-    
+
     public List<Cliente> buscarPorNombre(String nombre) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "from Cliente where fiscalName like :nombre OR fiscalNumber like :nombre";
@@ -38,7 +40,7 @@ public class ClienteDAO {
             return query.list();
         }
     }
-    
+
     public void eliminar(int id) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -49,8 +51,60 @@ public class ClienteDAO {
             }
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             e.printStackTrace();
+        }
+    }
+
+    public boolean existeNif(String nif) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Contamos cuántos clientes tienen ese nif
+            Long count = session.createQuery("select count(c) from Cliente c where c.fiscalNumber = :nif", Long.class)
+                    .setParameter("nif", nif)
+                    .uniqueResult();
+            return count != null && count > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false; // Ante la duda, dejamos pasar (o lanzamos error)
+        }
+    }
+
+    public int obtenerSiguienteId() {
+        try (org.hibernate.Session session = com.mycompany.util.HibernateUtil.getSessionFactory().openSession()) {
+
+            String nombreBBDD = "factusoft_db";
+
+            String sql = "SELECT AUTO_INCREMENT FROM information_schema.TABLES "
+                    + "WHERE TABLE_NAME = 'clientes' AND TABLE_SCHEMA = :bbdd";
+
+            // Usamos consulta nativa pasando el parámetro y recuperando Object (más seguro)
+            Object resultado = session.createNativeQuery(sql, Object.class)
+                    .setParameter("bbdd", nombreBBDD)
+                    .uniqueResult();
+
+            if (resultado != null) {
+                // MySQL devuelve esto como BigInteger o Long, lo convertimos a int
+                return ((Number) resultado).intValue();
+            }
+
+            System.out.println("ALERTA: No se encontró el ID. Verifica que la BBDD se llama '" + nombreBBDD + "'");
+            return 1;
+
+        } catch (Exception e) {
+            System.err.println("Error al obtener ID: " + e.getMessage());
+            e.printStackTrace(); // Mira la consola si sigue saliendo 1
+            return 1;
+        }
+    }
+
+    public Cliente obtenerPorId(int id) {
+        try (org.hibernate.Session session = com.mycompany.util.HibernateUtil.getSessionFactory().openSession()) {
+            return session.get(Cliente.class, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

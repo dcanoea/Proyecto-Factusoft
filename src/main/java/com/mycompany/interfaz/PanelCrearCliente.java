@@ -4,21 +4,30 @@
  */
 package com.mycompany.interfaz;
 
+import com.mycompany.dao.ClienteDAO;
+import com.mycompany.dominio.Cliente;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author DavidCe
  */
 public class PanelCrearCliente extends javax.swing.JPanel {
 
+    private ClienteDAO clienteDAO = new ClienteDAO(); // Instancia del DAO
+    private Cliente clienteEditar = null; // Variable para saber si editamos un cliente
+
     /**
      * Creates new form PanelClientes
      */
+    // Constructor 1: MODO CREAR
     public PanelCrearCliente() {
         initComponents();
+
         // --- 1. APLICAR ESTILO A LOS CAMPOS DE TEXTO (CAMBIO: Usamos el nuevo estilo Formulario) ---
         javax.swing.JTextField[] campos = {
-            txtAddress, txtCity, txtClientNumber, txtDistrict, txtEmail,
-            txtName, txtPhone1, txtPhone2, txtSurName1, txtSurName2, txtTaxName, txtTaxNumber, txtZipCode
+            txtAddress, txtCity, txtClientNumber, txtProvince, txtEmail,
+            txtName, txtPhone1, txtPhone2, txtLastName1, txtLastName2, txtCommercialName, txtTaxNumber, txtZipCode
         };
 
         for (javax.swing.JTextField t : campos) {
@@ -29,7 +38,66 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         // Esto hará que los textos "Nombre", "Dirección", etc. se vean GRANDES
         javax.swing.JLabel[] etiquetas = {
             lblAddress, lblCity, lblClientNumber, lblDistrict, lblEmail,
-            lblName, lblPhone1, lblPhone2, lblSurName1, lblSurName2, lblTaxName, lblTaxNumber, lblZipCode
+            lblName, lblPhone1, lblPhone2, lblLastName1, lblLastName2, lblTaxName, lblTaxNumber, lblZipCode
+        };
+
+        for (javax.swing.JLabel l : etiquetas) {
+            Estilos.configurarEtiquetaFormulario(l);
+        }
+
+        // --- 3. BOTONES DE ACCIÓN ---
+        setIconoBlanco(btnAddClient, "img/add_Icon.svg");
+        setIconoBlanco(btnBack, "img/delete_Icon.svg");
+        javax.swing.JButton[] botonesAccion = {btnAddClient, btnBack};
+
+        for (javax.swing.JButton btn : botonesAccion) {
+            Estilos.configurarBotonAccion(btn);
+            // --- CORRECCIÓN DE ALINEACIÓN ---
+            btn.setHorizontalAlignment(javax.swing.SwingConstants.CENTER); // Texto Centrado
+            btn.setIconTextGap(15); // Espacio entre icono y texto
+            btn.setMargin(new java.awt.Insets(10, 20, 10, 20)); // Más gorditos
+        }
+
+        // --- CALCULAR Y MOSTRAR EL SIGUIENTE ID ---
+        if (txtClientNumber != null) { // Asegúrate de que este es el nombre de tu variable
+            try {
+                int siguiente = clienteDAO.obtenerSiguienteId();
+                txtClientNumber.setText(String.valueOf(siguiente));
+
+                // Configuración visual
+                txtClientNumber.setEditable(false); // No se puede escribir
+                txtClientNumber.setFocusable(false); // El tabulador se salta este campo
+
+                // Opcional: Centrar el número si te gusta más
+                txtClientNumber.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+            } catch (Exception e) {
+                txtClientNumber.setText("Auto"); // Fallback por si falla
+            }
+        }
+    }
+
+    // Constructor 2: MODO Editar
+    public PanelCrearCliente(Cliente cliente) {
+        initComponents();
+
+        this.clienteEditar = cliente; // Guardamos el cliente que vamos a editar
+        cargarDatosEdicion();         // Rellenamos los campos
+
+        // --- 1. APLICAR ESTILO A LOS CAMPOS DE TEXTO (CAMBIO: Usamos el nuevo estilo Formulario) ---
+        javax.swing.JTextField[] campos = {
+            txtAddress, txtCity, txtClientNumber, txtProvince, txtEmail,
+            txtName, txtPhone1, txtPhone2, txtLastName1, txtLastName2, txtCommercialName, txtTaxNumber, txtZipCode
+        };
+
+        for (javax.swing.JTextField t : campos) {
+            Estilos.configurarCampoFormulario(t);
+        }
+
+        // --- 2. APLICAR ESTILO A LAS ETIQUETAS (LABELS) ---
+        // Esto hará que los textos "Nombre", "Dirección", etc. se vean GRANDES
+        javax.swing.JLabel[] etiquetas = {
+            lblAddress, lblCity, lblClientNumber, lblDistrict, lblEmail,
+            lblName, lblPhone1, lblPhone2, lblLastName1, lblLastName2, lblTaxName, lblTaxNumber, lblZipCode
         };
 
         for (javax.swing.JLabel l : etiquetas) {
@@ -69,11 +137,11 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         lblName = new javax.swing.JLabel();
         lblTaxName = new javax.swing.JLabel();
         txtName = new javax.swing.JTextField();
-        txtTaxName = new javax.swing.JTextField();
-        lblSurName1 = new javax.swing.JLabel();
-        lblSurName2 = new javax.swing.JLabel();
-        txtSurName1 = new javax.swing.JTextField();
-        txtSurName2 = new javax.swing.JTextField();
+        txtCommercialName = new javax.swing.JTextField();
+        lblLastName1 = new javax.swing.JLabel();
+        lblLastName2 = new javax.swing.JLabel();
+        txtLastName1 = new javax.swing.JTextField();
+        txtLastName2 = new javax.swing.JTextField();
         lblAddress = new javax.swing.JLabel();
         txtAddress = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
@@ -82,7 +150,7 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         lblCity = new javax.swing.JLabel();
         txtCity = new javax.swing.JTextField();
         lblDistrict = new javax.swing.JLabel();
-        txtDistrict = new javax.swing.JTextField();
+        txtProvince = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         lblPhone1 = new javax.swing.JLabel();
         txtPhone1 = new javax.swing.JTextField();
@@ -169,16 +237,16 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 400);
         jPanelForm.add(txtName, gridBagConstraints);
 
-        txtTaxName.addActionListener(this::txtTaxNameActionPerformed);
+        txtCommercialName.addActionListener(this::txtCommercialNameActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, -300, 0, 10);
-        jPanelForm.add(txtTaxName, gridBagConstraints);
+        jPanelForm.add(txtCommercialName, gridBagConstraints);
 
-        lblSurName1.setText("Apellido 1");
+        lblLastName1.setText("Apellido 1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -186,9 +254,9 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 12, 10, 300);
-        jPanelForm.add(lblSurName1, gridBagConstraints);
+        jPanelForm.add(lblLastName1, gridBagConstraints);
 
-        lblSurName2.setText("Apellido 2");
+        lblLastName2.setText("Apellido 2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -196,23 +264,23 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, -298, 10, 10);
-        jPanelForm.add(lblSurName2, gridBagConstraints);
+        jPanelForm.add(lblLastName2, gridBagConstraints);
 
-        txtSurName1.addActionListener(this::txtSurName1ActionPerformed);
+        txtLastName1.addActionListener(this::txtLastName1ActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 400);
-        jPanelForm.add(txtSurName1, gridBagConstraints);
+        jPanelForm.add(txtLastName1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, -300, 0, 200);
-        jPanelForm.add(txtSurName2, gridBagConstraints);
+        jPanelForm.add(txtLastName2, gridBagConstraints);
 
         lblAddress.setText("Dirección");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -286,7 +354,7 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, -150, 0, 0);
-        jPanel1.add(txtDistrict, gridBagConstraints);
+        jPanel1.add(txtProvince, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -374,6 +442,7 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         jPanelButtons.add(filler3);
 
         btnAddClient.setText("Agregar");
+        btnAddClient.addActionListener(this::btnAddClientActionPerformed);
         jPanelButtons.add(btnAddClient);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -411,9 +480,9 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         add(jPanelRight, java.awt.BorderLayout.EAST);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtTaxNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTaxNameActionPerformed
+    private void txtCommercialNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCommercialNameActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtTaxNameActionPerformed
+    }//GEN-LAST:event_txtCommercialNameActionPerformed
 
     private void txtZipCodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtZipCodeActionPerformed
         // TODO add your handling code here:
@@ -427,13 +496,17 @@ public class PanelCrearCliente extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtPhone1ActionPerformed
 
-    private void txtSurName1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSurName1ActionPerformed
+    private void txtLastName1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtLastName1ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtSurName1ActionPerformed
+    }//GEN-LAST:event_txtLastName1ActionPerformed
 
     private void txtClientNumberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtClientNumberActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtClientNumberActionPerformed
+
+    private void btnAddClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddClientActionPerformed
+        guardarCliente();
+    }//GEN-LAST:event_btnAddClientActionPerformed
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
@@ -459,25 +532,25 @@ public class PanelCrearCliente extends javax.swing.JPanel {
     private javax.swing.JLabel lblClientNumber;
     private javax.swing.JLabel lblDistrict;
     private javax.swing.JLabel lblEmail;
+    private javax.swing.JLabel lblLastName1;
+    private javax.swing.JLabel lblLastName2;
     private javax.swing.JLabel lblName;
     private javax.swing.JLabel lblPhone1;
     private javax.swing.JLabel lblPhone2;
-    private javax.swing.JLabel lblSurName1;
-    private javax.swing.JLabel lblSurName2;
     private javax.swing.JLabel lblTaxName;
     private javax.swing.JLabel lblTaxNumber;
     private javax.swing.JLabel lblZipCode;
     private javax.swing.JTextField txtAddress;
     private javax.swing.JTextField txtCity;
     private javax.swing.JTextField txtClientNumber;
-    private javax.swing.JTextField txtDistrict;
+    private javax.swing.JTextField txtCommercialName;
     private javax.swing.JTextField txtEmail;
+    private javax.swing.JTextField txtLastName1;
+    private javax.swing.JTextField txtLastName2;
     private javax.swing.JTextField txtName;
     private javax.swing.JTextField txtPhone1;
     private javax.swing.JTextField txtPhone2;
-    private javax.swing.JTextField txtSurName1;
-    private javax.swing.JTextField txtSurName2;
-    private javax.swing.JTextField txtTaxName;
+    private javax.swing.JTextField txtProvince;
     private javax.swing.JTextField txtTaxNumber;
     private javax.swing.JTextField txtZipCode;
     // End of variables declaration//GEN-END:variables
@@ -488,5 +561,96 @@ public class PanelCrearCliente extends javax.swing.JPanel {
 
     public javax.swing.JButton getBtnAddClient() { // El botón "Agregar" del formulario
         return btnAddClient;
+    }
+
+    private void guardarCliente() {
+        String nif = txtTaxNumber.getText().trim();
+
+        // 1. Validaciones básicas
+        if (nif.isEmpty() || txtName.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "NIF y Nombre obligatorios.");
+            return;
+        }
+
+        // 2. Validación NIF Inteligente
+        // Solo verificamos duplicados si:
+        // A) Estamos CREANDO (clienteEditar es null)
+        // B) Estamos EDITANDO pero hemos cambiado el NIF (no es el mismo que teníamos)
+        if (clienteEditar == null || !nif.equals(clienteEditar.getFiscalNumber())) {
+            if (clienteDAO.existeNif(nif)) {
+                JOptionPane.showMessageDialog(this, "El NIF ya existe.");
+                return;
+            }
+        }
+
+        try {
+            // 3. Preparar el objeto
+            Cliente c;
+
+            if (clienteEditar != null) {
+                c = clienteEditar; // Usamos el mismo objeto (mantiene su ID)
+            } else {
+                c = new Cliente(); // Objeto nuevo
+                // El ID se genera solo en BBDD
+            }
+
+            // 4. Actualizar datos (Setters)
+            c.setFiscalNumber(nif);
+            c.setFirstName(txtName.getText().trim());
+            c.setLastName1(txtLastName1.getText().trim());
+            c.setLastName2(txtLastName2.getText().trim());
+            c.setCommercialName(txtCommercialName.getText().trim());
+
+            c.setAddress(txtAddress.getText().trim());
+            c.setCity(txtCity.getText().trim());
+            c.setZipCode(txtZipCode.getText().trim());
+            c.setProvince(txtProvince.getText().trim());
+
+            c.setPhone1(txtPhone1.getText().trim());
+            c.setPhone2(txtPhone2.getText().trim());
+            c.setEmail(txtEmail.getText().trim());
+
+            c.calcularNombreFiscal();
+
+            // 5. Guardar (merge sirve para Insert y Update)
+            clienteDAO.guardar(c);
+
+            JOptionPane.showMessageDialog(this, "Guardado correctamente.");
+
+            // Volver atrás
+            if (btnBack != null) {
+                btnBack.doClick();
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+    }
+
+    private void cargarDatosEdicion() {
+        if (clienteEditar != null) {
+            // Cambiamos título o botón para que el usuario sepa que edita
+            // btnAgregar.setText("Guardar Cambios"); 
+
+            // Rellenar campos
+            txtClientNumber.setText(String.valueOf(clienteEditar.getId()));
+            txtTaxNumber.setText(clienteEditar.getFiscalNumber());
+            txtName.setText(clienteEditar.getFirstName());
+            txtLastName1.setText(clienteEditar.getLastName1());
+            txtLastName2.setText(clienteEditar.getLastName2());
+            txtCommercialName.setText(clienteEditar.getCommercialName());
+
+            txtAddress.setText(clienteEditar.getAddress());
+            txtCity.setText(clienteEditar.getCity());
+            txtZipCode.setText(clienteEditar.getZipCode());
+            txtProvince.setText(clienteEditar.getProvince());
+
+            txtPhone1.setText(clienteEditar.getPhone1());
+            txtPhone2.setText(clienteEditar.getPhone2());
+            txtEmail.setText(clienteEditar.getEmail());
+
+            // Bloquear ID 
+            txtClientNumber.setEditable(false);
+        }
     }
 }

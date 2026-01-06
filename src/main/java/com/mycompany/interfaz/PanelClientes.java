@@ -4,11 +4,20 @@
  */
 package com.mycompany.interfaz;
 
+import com.mycompany.dao.ClienteDAO;
+import com.mycompany.dominio.Cliente;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author DavidCe
  */
 public class PanelClientes extends javax.swing.JPanel {
+
+    // Instancia del DAO
+    private ClienteDAO clienteDAO = new ClienteDAO();
 
     /**
      * Creates new form PanelClientes
@@ -54,7 +63,6 @@ public class PanelClientes extends javax.swing.JPanel {
         javax.swing.JButton[] botonesAccion = {
             btnAddClient, // Añadir Cliente
             btnInvoices, // Ver facturas
-            btnClientDetails, // Datos
             btnEditClient, // Editar
             btnDeleteClient // Borrar
         };
@@ -77,7 +85,6 @@ public class PanelClientes extends javax.swing.JPanel {
 
         // Añadir icono a los botones
         setIconoBlanco(btnInvoices, "img/invoice_Icon.svg");
-        setIconoBlanco(btnClientDetails, "img/details_icon.svg");
         setIconoBlanco(btnEditClient, "img/edit_icon.svg");
         setIconoBlanco(btnDeleteClient, "img/delete_icon.svg");
 
@@ -99,12 +106,65 @@ public class PanelClientes extends javax.swing.JPanel {
         btnAddClient.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
 
         // Ajustes finales de texto y márgenes
-        javax.swing.JButton[] botones = {btnInvoices, btnClientDetails, btnEditClient, btnDeleteClient};
+        javax.swing.JButton[] botones = {btnInvoices, btnEditClient, btnDeleteClient};
         for (javax.swing.JButton btn : botones) {
             btn.setIconTextGap(15);
             btn.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
             // Ajusta este margen si quieres los botones más o menos anchos
             btn.setMargin(new java.awt.Insets(10, 15, 10, 15));
+        }
+
+        cargarClientes("");  // <--- CARGAMOS DATOS AL INICIAR
+    }
+
+    // --- LÓGICA DE CARGA DE DATOS ---
+    private void cargarClientes(String busqueda) {
+        List<Cliente> lista;
+
+        // Usamos el DAO para buscar o listar todos
+        if (busqueda == null || busqueda.trim().isEmpty()) {
+            lista = clienteDAO.listarTodos();
+        } else {
+            lista = clienteDAO.buscarPorNombre(busqueda);
+        }
+
+        DefaultTableModel modelo = (DefaultTableModel) tblClients.getModel();
+        modelo.setRowCount(0); // Limpiar tabla
+
+        for (Cliente c : lista) {
+            modelo.addRow(new Object[]{
+                c.getId(), // Columna 0 (Nº Cliente - Oculta o visible)
+                c.getFiscalNumber(),// Columna 1 (NIF/CIF)
+                c.getFiscalName(), // Columna 2 (Nombre)
+                c.getEmail(), // Columna 3 (Email)
+                c.getPhone1() // Columna 4 (Teléfono)
+            });
+        }
+    }
+
+    // --- LÓGICA PARA BORRAR ---
+    private void borrarClienteSeleccionado() {
+        int fila = tblClients.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un cliente para borrar.");
+            return;
+        }
+
+        // Preguntar confirmación
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Estás seguro de eliminar este cliente?",
+                "Confirmar Borrado",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Obtenemos el ID de la columna 0
+            int idCliente = Integer.parseInt(tblClients.getValueAt(fila, 0).toString());
+
+            // Llamamos al DAO
+            clienteDAO.eliminar(idCliente);
+
+            // Recargamos la tabla
+            cargarClientes(txtSearch.getText()); // Asumo que tu campo de texto se llama txtBuscar
         }
     }
 
@@ -127,9 +187,8 @@ public class PanelClientes extends javax.swing.JPanel {
         btnHome = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         btnInvoices = new javax.swing.JButton();
-        btnClientDetails = new javax.swing.JButton();
-        btnEditClient = new javax.swing.JButton();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        btnEditClient = new javax.swing.JButton();
         btnDeleteClient = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(160, 238, 204));
@@ -138,6 +197,8 @@ public class PanelClientes extends javax.swing.JPanel {
         jPanelCenter.setBackground(new java.awt.Color(160, 238, 204));
         jPanelCenter.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jPanelCenter.setLayout(new java.awt.GridBagLayout());
+
+        txtSearch.addActionListener(this::txtSearchActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -208,17 +269,14 @@ public class PanelClientes extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 20, 10, 10);
         jPanelRight.add(btnInvoices, gridBagConstraints);
-
-        btnClientDetails.setText("Datos Cliente");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(10, 20, 10, 10);
-        jPanelRight.add(btnClientDetails, gridBagConstraints);
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.weighty = 1.0;
+        jPanelRight.add(filler2, gridBagConstraints);
 
         btnEditClient.setText("Editar Cliente");
+        btnEditClient.addActionListener(this::btnEditClientActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -226,13 +284,9 @@ public class PanelClientes extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(10, 20, 10, 10);
         jPanelRight.add(btnEditClient, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.weighty = 1.0;
-        jPanelRight.add(filler2, gridBagConstraints);
 
         btnDeleteClient.setText("Borrar Cliente");
+        btnDeleteClient.addActionListener(this::btnDeleteClientActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -286,16 +340,69 @@ public class PanelClientes extends javax.swing.JPanel {
         parent.repaint();
     }//GEN-LAST:event_btnAddClientActionPerformed
 
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        cargarClientes(txtSearch.getText());
+    }//GEN-LAST:event_txtSearchActionPerformed
+
+    private void btnDeleteClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteClientActionPerformed
+        borrarClienteSeleccionado();
+    }//GEN-LAST:event_btnDeleteClientActionPerformed
+
+    private void btnEditClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditClientActionPerformed
+        // 1. Verificar selección
+        int fila = tblClients.getSelectedRow();
+        if (fila == -1) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Selecciona un cliente para editar.");
+            return;
+        }
+
+        // 2. Obtener ID (Columna 0)
+        int idCliente = Integer.parseInt(tblClients.getValueAt(fila, 0).toString());
+
+        // 3. Buscar cliente completo en BBDD
+        Cliente cliente = clienteDAO.obtenerPorId(idCliente);
+
+        if (cliente == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al cargar cliente.");
+            return;
+        }
+
+        // 4. Navegación (Igual que en Añadir, pero con constructor diferente)
+        PanelCrearCliente pnlEditar = new PanelCrearCliente(cliente);
+
+        javax.swing.JPanel parent = (javax.swing.JPanel) getParent();
+        java.awt.event.ActionListener[] listenersHome = btnHome.getActionListeners();
+
+        // Configurar vuelta atrás (Copy-paste de lógica de Añadir)
+        pnlEditar.getBtnBack().addActionListener(e -> {
+            parent.removeAll();
+            PanelClientes nuevoPanel = new PanelClientes();
+            if (listenersHome != null) {
+                for (java.awt.event.ActionListener al : listenersHome) {
+                    nuevoPanel.getBtnHome().addActionListener(al);
+                }
+            }
+            parent.add(nuevoPanel, java.awt.BorderLayout.CENTER);
+            parent.revalidate();
+            parent.repaint();
+        });
+
+        // Cambiar panel
+        parent.removeAll();
+        parent.add(pnlEditar, java.awt.BorderLayout.CENTER);
+        parent.revalidate();
+        parent.repaint();
+    }//GEN-LAST:event_btnEditClientActionPerformed
+
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
-        // ESTO ES LA MAGIA: Fuerza el color blanco
+        // Fuerza el color blanco
         icon.setColorFilter(new com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter(color -> java.awt.Color.WHITE));
         btn.setIcon(icon);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddClient;
-    private javax.swing.JButton btnClientDetails;
     private javax.swing.JButton btnDeleteClient;
     private javax.swing.JButton btnEditClient;
     private javax.swing.JButton btnHome;
