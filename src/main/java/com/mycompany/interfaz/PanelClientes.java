@@ -358,7 +358,7 @@ public class PanelClientes extends javax.swing.JPanel {
     }//GEN-LAST:event_btnAddClientActionPerformed
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
-        cargarClientes(txtSearch.getText());
+        busquedaDinamica();
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void btnDeleteClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteClientActionPerformed
@@ -416,6 +416,31 @@ public class PanelClientes extends javax.swing.JPanel {
         // Fuerza el color blanco
         icon.setColorFilter(new com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter(color -> java.awt.Color.WHITE));
         btn.setIcon(icon);
+    }
+
+    private void busquedaDinamica() {
+        // Añadimos un DocumentListener al documento del JTextField
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filtrar();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filtrar();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filtrar();
+            }
+
+            // Método auxiliar para no repetir código
+            private void filtrar() {
+                cargarClientes(txtSearch.getText());
+            }
+        });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
