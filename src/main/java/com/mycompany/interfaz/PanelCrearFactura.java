@@ -510,6 +510,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         // ---------------------------------------------------------
         new Thread(() -> {
             try {
+                //Refrescamos el UUID para que no cree facturas con identificadores repetidos
                 com.mycompany.fiskaly.Config.refrescarUUID();
 
                 // LLAMADA A LA API
@@ -646,6 +647,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     // --- MÉTODOS LÓGICOS PARA AGREGAR PRODUCTOS ---
+// --- MÉTODOS LÓGICOS PARA AGREGAR PRODUCTOS ---
     private void agregarLineaProducto() {
         // 1. Abrir el buscador
         java.awt.Window parentWindow = javax.swing.SwingUtilities.getWindowAncestor(this);
@@ -662,15 +664,28 @@ public class PanelCrearFactura extends javax.swing.JPanel {
             if (cantidadStr != null && !cantidadStr.isEmpty()) {
                 try {
                     // Convertir a BigDecimal para precisión monetaria
-                    BigDecimal cantidad = new BigDecimal(cantidadStr);
+                    BigDecimal cantidad = new BigDecimal(cantidadStr.replace(",", "."));
                     BigDecimal precio = producto.getUnitPrice(); // Viene de la BBDD
                     BigDecimal iva = producto.getTaxPercent();   // Viene de la BBDD
-                    BigDecimal descuento = BigDecimal.ZERO;      // 0 por defecto
+                    BigDecimal descuentoPorc = BigDecimal.ZERO;      // 0 por defecto al agregar
 
-                    // Cálculos
-                    BigDecimal totalBase = precio.multiply(cantidad);
-                    BigDecimal importeIva = totalBase.multiply(iva).divide(new BigDecimal(100));
-                    BigDecimal totalLinea = totalBase.add(importeIva);
+                    // --- CÁLCULO UNIFICADO (Lógica PDF Fiskaly) ---
+                    // 1. Calcular el descuento en euros por UNIDAD (redondeado a 2 decimales)
+                    BigDecimal descuentoUnitario = precio.multiply(descuentoPorc)
+                            .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+
+                    // 2. Calcular el precio neto unitario
+                    BigDecimal precioNetoUnitario = precio.subtract(descuentoUnitario);
+
+                    // 3. Calcular la Base Imponible de la línea (Precio Neto * Cantidad)
+                    BigDecimal baseLinea = precioNetoUnitario.multiply(cantidad);
+
+                    // 4. Calcular importe IVA sobre la base (redondeado a 2 decimales)
+                    BigDecimal importeIva = baseLinea.multiply(iva)
+                            .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+
+                    // 5. Total Línea
+                    BigDecimal totalLinea = baseLinea.add(importeIva);
 
                     // 4. Añadir a la tabla de líneas (tblInvoices)
                     DefaultTableModel model = (DefaultTableModel) tblInvoices.getModel();
@@ -679,7 +694,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
                         producto.getDescription(),
                         cantidad, // Guardamos el número, no string
                         precio,
-                        descuento,
+                        descuentoPorc,
                         iva,
                         totalLinea.setScale(2, RoundingMode.HALF_UP) // Redondeo a 2 decimales
                     });
@@ -694,7 +709,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         }
     }
 
-// --- MÉTODO PARA EDITAR LÍNEA ---
+    // --- MÉTODO PARA EDITAR LÍNEA ---
     private void editarLineaSeleccionada() {
         DefaultTableModel model = (DefaultTableModel) tblInvoices.getModel();
         int fila = tblInvoices.getSelectedRow();
@@ -706,16 +721,17 @@ public class PanelCrearFactura extends javax.swing.JPanel {
 
         // 1. Recuperar valores actuales
         String descProducto = model.getValueAt(fila, 1).toString();
-        BigDecimal cantidadActual = new BigDecimal(model.getValueAt(fila, 2).toString());
-        BigDecimal precioActual = new BigDecimal(model.getValueAt(fila, 3).toString());
-        BigDecimal descuentoActual = new BigDecimal(model.getValueAt(fila, 4).toString());
-        BigDecimal ivaPercent = new BigDecimal(model.getValueAt(fila, 5).toString());
+        // Usamos toString() para asegurar compatibilidad si el modelo tiene Numbers o Strings
+        String cantStr = model.getValueAt(fila, 2).toString();
+        String precStr = model.getValueAt(fila, 3).toString();
+        String descStr = model.getValueAt(fila, 4).toString();
+        String ivaStr = model.getValueAt(fila, 5).toString();
 
         // 2. Crear panel con formulario para el JOptionPane
         javax.swing.JPanel panelEdicion = new javax.swing.JPanel(new java.awt.GridLayout(3, 2, 10, 10));
-        javax.swing.JTextField txtCantidad = new javax.swing.JTextField(cantidadActual.toString());
-        javax.swing.JTextField txtPrecio = new javax.swing.JTextField(precioActual.toString());
-        javax.swing.JTextField txtDescuento = new javax.swing.JTextField(descuentoActual.toString());
+        javax.swing.JTextField txtCantidad = new javax.swing.JTextField(cantStr);
+        javax.swing.JTextField txtPrecio = new javax.swing.JTextField(precStr);
+        javax.swing.JTextField txtDescuento = new javax.swing.JTextField(descStr);
 
         panelEdicion.add(new javax.swing.JLabel("Cantidad:"));
         panelEdicion.add(txtCantidad);
@@ -730,18 +746,28 @@ public class PanelCrearFactura extends javax.swing.JPanel {
 
         if (resultado == JOptionPane.OK_OPTION) {
             try {
-                // 4. Parsear nuevos valores
+                // 4. Parsear nuevos valores (Reemplazamos coma por punto por seguridad)
                 BigDecimal nuevaCant = new BigDecimal(txtCantidad.getText().replace(",", "."));
                 BigDecimal nuevoPrecio = new BigDecimal(txtPrecio.getText().replace(",", "."));
                 BigDecimal nuevoDesc = new BigDecimal(txtDescuento.getText().replace(",", "."));
+                BigDecimal ivaPercent = new BigDecimal(ivaStr.replace(",", "."));
 
-                // 5. Recalcular Total de la Línea
-                // Fórmula: (Precio * Cantidad) * (1 - Descuento/100) * (1 + IVA/100)
-                BigDecimal totalBruto = nuevoPrecio.multiply(nuevaCant);
-                BigDecimal montoDescuento = totalBruto.multiply(nuevoDesc).divide(new BigDecimal(100), RoundingMode.HALF_UP);
-                BigDecimal baseImponible = totalBruto.subtract(montoDescuento);
+                // 5. Recalcular Total de la Línea (Lógica PDF Fiskaly)
+                // A. Descuento Unitario
+                BigDecimal descuentoUnitario = nuevoPrecio.multiply(nuevoDesc)
+                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
 
-                BigDecimal montoIVA = baseImponible.multiply(ivaPercent).divide(new BigDecimal(100), RoundingMode.HALF_UP);
+                // B. Precio Neto
+                BigDecimal precioNetoUnitario = nuevoPrecio.subtract(descuentoUnitario);
+
+                // C. Base Imponible
+                BigDecimal baseImponible = precioNetoUnitario.multiply(nuevaCant);
+
+                // D. IVA
+                BigDecimal montoIVA = baseImponible.multiply(ivaPercent)
+                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+
+                // E. Total
                 BigDecimal totalLinea = baseImponible.add(montoIVA);
 
                 // 6. Actualizar la tabla
@@ -773,15 +799,31 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         // 1. RECORRER Y CALCULAR
         for (int i = 0; i < modelLineas.getRowCount(); i++) {
             try {
-                BigDecimal cant = new BigDecimal(modelLineas.getValueAt(i, 2).toString());
-                BigDecimal precio = new BigDecimal(modelLineas.getValueAt(i, 3).toString());
-                BigDecimal desc = new BigDecimal(modelLineas.getValueAt(i, 4).toString());
-                BigDecimal ivaPorc = new BigDecimal(modelLineas.getValueAt(i, 5).toString());
+                BigDecimal cant = new BigDecimal(modelLineas.getValueAt(i, 2).toString().replace(",", "."));
+                BigDecimal precio = new BigDecimal(modelLineas.getValueAt(i, 3).toString().replace(",", "."));
+                BigDecimal desc = new BigDecimal(modelLineas.getValueAt(i, 4).toString().replace(",", "."));
+                BigDecimal ivaPorc = new BigDecimal(modelLineas.getValueAt(i, 5).toString().replace(",", "."));
 
-                BigDecimal bruto = cant.multiply(precio);
-                BigDecimal montoDesc = bruto.multiply(desc).divide(new BigDecimal(100), RoundingMode.HALF_UP);
-                BigDecimal baseLinea = bruto.subtract(montoDesc);
-                BigDecimal cuotaIvaLinea = baseLinea.multiply(ivaPorc).divide(new BigDecimal(100), RoundingMode.HALF_UP);
+                // --- Lógica EXACTA para coincidir con PDF ---
+                // Descuento unitario redondeado
+                BigDecimal descuentoUnitario = precio.multiply(desc)
+                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+
+                // Precio neto unitario
+                BigDecimal precioNetoUnitario = precio.subtract(descuentoUnitario);
+
+                // Base de la línea
+                BigDecimal baseLinea = precioNetoUnitario.multiply(cant);
+
+                // IVA de la línea
+                BigDecimal cuotaIvaLinea = baseLinea.multiply(ivaPorc)
+                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+
+                // Total línea
+                BigDecimal totalLinea = baseLinea.add(cuotaIvaLinea);
+
+                // **IMPORTANTE**: Actualizamos el total visual de la línea por si el recálculo varió un céntimo
+                modelLineas.setValueAt(totalLinea.setScale(2, RoundingMode.HALF_UP), i, 6);
 
                 if (!desgloseIva.containsKey(ivaPorc)) {
                     desgloseIva.put(ivaPorc, new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO});
@@ -792,6 +834,7 @@ public class PanelCrearFactura extends javax.swing.JPanel {
                 acumulado[1] = acumulado[1].add(cuotaIvaLinea);
 
             } catch (Exception e) {
+                // Ignorar filas vacías o errores de parseo momentáneos
             }
         }
 
@@ -828,15 +871,20 @@ public class PanelCrearFactura extends javax.swing.JPanel {
 
         // --- 3. AJUSTE DINÁMICO DE ALTURA (SOLUCIÓN AL SCROLL) ---
         // Calculamos la altura necesaria: (Filas * AltoFila) + AltoCabecera + Un poco de margen
-        int altoFila = jTableTotal.getRowHeight();
+        int altoFila = jTableTotal.getRowHeight(); // Debería ser 40 según tu configuración
         int numFilas = modelTotales.getRowCount();
         int altoCabecera = jTableTotal.getTableHeader().getPreferredSize().height;
-
+        if (altoCabecera == 0) {
+            altoCabecera = 30; // Fallback por si no se ha renderizado
+        }
         // +5 pixels extra por si acaso los bordes
         int alturaTotal = (numFilas * altoFila) + altoCabecera + 5;
 
-        // Obtenemos el ancho actual para no cambiarlo
+        // Obtenemos el ancho actual para no cambiarlo, o usamos un mínimo
         int anchoActual = jScrollPaneTotalFactura.getPreferredSize().width;
+        if (anchoActual < 100) {
+            anchoActual = 100;
+        }
 
         // Aplicamos la nueva dimensión al JScrollPane (contenedor)
         Dimension nuevaDimension = new Dimension(anchoActual, alturaTotal);
