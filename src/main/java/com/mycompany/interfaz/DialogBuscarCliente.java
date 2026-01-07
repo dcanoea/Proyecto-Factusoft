@@ -35,79 +35,87 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
         // 3. AJUSTAR TAMAÑO Y POSICIÓN
         pack();
         setLocationRelativeTo(parent);
-
-        cargarClientes(""); // Carga todos al inicio
     }
 
+// --- MÉTODOS PROPIOS (COPIAR Y PEGAR EN SOURCE) ---
     private void configurarColumnas() {
-        // Nombre (150px)
-        tblResultados.getColumnModel().getColumn(0).setPreferredWidth(150);
-        // Apellido 1 (150px)
-        tblResultados.getColumnModel().getColumn(1).setPreferredWidth(150);
-        // Apellido 2 (150px)
-        tblResultados.getColumnModel().getColumn(2).setPreferredWidth(150);
-        // DNI (100px - más estrecho)
-        tblResultados.getColumnModel().getColumn(3).setPreferredWidth(100);
-        tblResultados.getColumnModel().getColumn(3).setMaxWidth(120);
-        // Nombre Comercial (El resto del espacio, min 250px)
-        tblResultados.getColumnModel().getColumn(4).setPreferredWidth(250);
+        // 1. DEFINIR EL MODELO POR CÓDIGO (Sobreescribe a Matisse)
+        // Creamos 6 columnas: ID (0), Nombre (1), Apellido1 (2), Apellido2 (3), DNI (4), Comercial (5)
+        javax.swing.table.DefaultTableModel modelo = new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{"ID", "Nombre", "Apellido 1", "Apellido 2", "DNI/NIE/CIF", "Nombre Comercial"}
+        ) {
+            boolean[] canEdit = new boolean[]{false, false, false, false, false, false};
 
-        // Altura de fila cómoda
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        };
+        tblResultados.setModel(modelo);
+
+        // 2. OCULTAR LA COLUMNA ID (Índice 0)
+        tblResultados.getColumnModel().getColumn(0).setMinWidth(0);
+        tblResultados.getColumnModel().getColumn(0).setMaxWidth(0);
+        tblResultados.getColumnModel().getColumn(0).setPreferredWidth(0);
+
+        // 3. ANCHOS DE LAS VISIBLES
+        tblResultados.getColumnModel().getColumn(1).setPreferredWidth(100); // Nombre
+        tblResultados.getColumnModel().getColumn(2).setPreferredWidth(100); // Apellido 1
+        tblResultados.getColumnModel().getColumn(3).setPreferredWidth(100); // Apellido 2
+        tblResultados.getColumnModel().getColumn(4).setPreferredWidth(100); // DNI
+        tblResultados.getColumnModel().getColumn(5).setPreferredWidth(200); // Comercial
+
+        // Altura de filas cómoda
         tblResultados.setRowHeight(30);
     }
 
     private void configurarEstilos() {
-        // --- 1. FONDO PRINCIPAL ---
         panelPrincipal.setBackground(Estilos.COLOR_FONDO_MENTA);
 
-        // --- 2. CAMPO DE BÚSQUEDA ---
-        // Usamos el método específico para barras de búsqueda (redondo y blanco)
         Estilos.configurarBarraBusqueda(txtBuscar);
-        txtBuscar.putClientProperty(com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "Buscar por nombre, DNI...");
+        txtBuscar.putClientProperty(com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "Nombre, DNI o Comercial...");
 
-        // --- 3. BOTONES DE ACCIÓN ---
         Estilos.configurarBotonAccion(btnBuscar);
         Estilos.configurarBotonAccion(btnAceptar);
         Estilos.configurarBotonAccion(btnCancelar);
 
-        // Icono para el botón BUSCAR (Lupa blanca)
-        // Asegúrate de tener "img/search_Icon.svg" o cambia la ruta
+        // Configura aquí tu icono si tienes la ruta correcta
         FlatSVGIcon iconSearch = new FlatSVGIcon("img/search.svg", 18, 18);
         iconSearch.setColorFilter(new FlatSVGIcon.ColorFilter(c -> java.awt.Color.WHITE));
         btnBuscar.setIcon(iconSearch);
-        btnBuscar.setText(""); // Quitamos texto para dejar solo icono (o déjalo si prefieres)
+        btnBuscar.setText("");
 
-        // --- 4. TABLA ---
-        // Aplicamos el estilo completo (Fondo menta, cabecera verde, selección negra)
         Estilos.configurarTabla(tblResultados, panelCentral);
     }
 
-    // getter para recuperar el cliente desde fuera
-    public com.mycompany.dominio.Cliente getClienteSeleccionado() {
-        return clienteSeleccionado;
-    }
-
     private void cargarClientes(String busqueda) {
-        // 1. Obtener datos de la BBDD
-        java.util.List<com.mycompany.dominio.Cliente> lista;
+        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblResultados.getModel();
+        modelo.setRowCount(0); // Limpiar siempre
 
+        // OPTIMIZACIÓN: Si la búsqueda está vacía, NO hacemos nada (tabla vacía)
         if (busqueda == null || busqueda.trim().isEmpty()) {
-            lista = clienteDAO.listarTodos();
-        } else {
-            lista = clienteDAO.buscarPorNombre(busqueda);
+            return;
         }
 
-        // 2. Pasarlos al modelo de la tabla
-        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblResultados.getModel();
-        modelo.setRowCount(0); // Limpiar tabla anterior
+        // Buscar en BBDD
+        java.util.List<com.mycompany.dominio.Cliente> lista = clienteDAO.buscarPorNombre(busqueda);
 
+        // Rellenar filas mapeando cada dato a su columna correcta
         for (com.mycompany.dominio.Cliente c : lista) {
             modelo.addRow(new Object[]{
-                c.getId(), // Columna 0 (Oculta o visible)
-                c.getFiscalName(), // Columna 1
-                c.getFiscalNumber() // Columna 2
+                c.getId(), // 0: ID (Oculto)
+                c.getFirstName(), // 1: Nombre
+                c.getLastName1(), // 2: Apellido 1
+                c.getLastName2(), // 3: Apellido 2
+                c.getFiscalNumber(), // 4: DNI
+                c.getCommercialName() // 5: Comercial
             });
         }
+    }
+
+    // Getter para recuperar el resultado desde fuera
+    public com.mycompany.dominio.Cliente getClienteSeleccionado() {
+        return clienteSeleccionado;
     }
 
     /**
@@ -153,6 +161,8 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 10);
         panelBusqueda.add(txtBuscar, gridBagConstraints);
+
+        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -227,8 +237,7 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarActionPerformed
-        String texto = txtBuscar.getText(); // Tu campo de texto
-        cargarClientes(texto);
+        cargarClientes(txtBuscar.getText());
     }//GEN-LAST:event_txtBuscarActionPerformed
 
     private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
@@ -239,34 +248,31 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
             return;
         }
 
-        // Recuperar solo el ID de la columna 0
+        // TRUCO: Recuperamos el ID de la columna 0 (que es invisible para el usuario pero existe en el modelo)
         int idCliente = (int) tblResultados.getValueAt(fila, 0);
 
         try {
-            // Usar el DAO para cargar el cliente COMPLETO desde la BBDD
-            // Esto rellenará dirección, código postal, email, etc.
             this.clienteSeleccionado = clienteDAO.obtenerPorId(idCliente);
-
-            // Validación de seguridad por si acaso
             if (this.clienteSeleccionado == null) {
-                javax.swing.JOptionPane.showMessageDialog(this, "Error: No se pudo recuperar la información completa del cliente.");
+                javax.swing.JOptionPane.showMessageDialog(this, "Error al recuperar datos del cliente.");
                 return;
             }
-
         } catch (Exception e) {
             e.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(this, "Error al cargar cliente: " + e.getMessage());
             return;
         }
 
-        // 3. Cerrar
-        this.dispose();
+        this.dispose(); // Cerramos ventana
         }//GEN-LAST:event_btnAceptarActionPerformed
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
         this.clienteSeleccionado = null; // Nos aseguramos de limpiar la selección
         this.dispose();
 }//GEN-LAST:event_btnCancelarActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        cargarClientes(txtBuscar.getText());
+    }//GEN-LAST:event_btnBuscarActionPerformed
 
     /**
      * @param args the command line arguments

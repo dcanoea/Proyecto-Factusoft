@@ -216,6 +216,7 @@ public class PanelFacturas extends javax.swing.JPanel {
         jPanelRight.add(btnInvoiceDetails, gridBagConstraints);
 
         btnVerifyAEAT.setText("Verificar AEAT");
+        btnVerifyAEAT.addActionListener(this::btnVerifyAEATActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -319,6 +320,75 @@ public class PanelFacturas extends javax.swing.JPanel {
             javax.swing.JOptionPane.showMessageDialog(this, "Error al recuperar datos: " + e.getMessage());
         }
     }//GEN-LAST:event_btnInvoiceDetailsActionPerformed
+
+    private void btnVerifyAEATActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVerifyAEATActionPerformed
+        // 1. Obtener la fila seleccionada
+        int fila = tblInvoices.getSelectedRow();
+
+        if (fila == -1) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Por favor, selecciona una factura de la lista para verificar.",
+                    "Selección requerida",
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            // 2. Obtener datos de la tabla
+            // Columna 0: Nº (Ej: "F-0011")
+            // Columna 4: Total Factura (Ej: "363,00 €")
+            // Columna 5: Fecha emisión (Ej: "07/01/2026 06:59")
+
+            Object objNum = tblInvoices.getValueAt(fila, 0);
+            Object objTotal = tblInvoices.getValueAt(fila, 4);
+            Object objFecha = tblInvoices.getValueAt(fila, 5);
+
+            if (objNum == null || objTotal == null || objFecha == null) {
+                return; // Evitar nulos
+            }
+
+            String numSerie = objNum.toString();
+            String totalTexto = objTotal.toString();
+            String fechaTexto = objFecha.toString();
+
+            // 3. Formatear datos para la URL (Parsing)
+            // A. IMPORTE: De "363,00 €" a "363.00"
+            // Quitamos '€', espacios y cambiamos la coma decimal por punto
+            String importeLimpio = totalTexto.replace("€", "")
+                    .replace(" ", "")
+                    .trim()
+                    .replace(",", ".");
+
+            // B. FECHA: De "07/01/2026 06:59" a "07-01-2026"
+            // Nos quedamos con los primeros 10 caracteres y cambiamos barras por guiones
+            String fechaCorta = fechaTexto.substring(0, 10).replace("/", "-");
+
+            // C. NIF: Usamos el que has pasado en el ejemplo (NIF del Emisor se configura desde Fiskaly y se obtiene con el token de autenticación)
+            String nifEmisor = "18053094A";
+
+            // 4. Construir la URL
+            // https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR?nif=...&numserie=...&fecha=...&importe=...
+            String urlBase = "https://prewww2.aeat.es/wlpl/TIKE-CONT/ValidarQR";
+            String urlFinal = String.format("%s?nif=%s&numserie=%s&fecha=%s&importe=%s",
+                    urlBase, nifEmisor, numSerie, fechaCorta, importeLimpio);
+
+            System.out.println("Verificando en AEAT: " + urlFinal); // Log para consola
+
+            // 5. Abrir en el navegador predeterminado
+            if (java.awt.Desktop.isDesktopSupported() && java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.BROWSE)) {
+                java.awt.Desktop.getDesktop().browse(new java.net.URI(urlFinal));
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this, "Tu sistema no soporta abrir navegadores automáticamente.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Error al intentar abrir la web de la AEAT:\n" + e.getMessage(),
+                    "Error",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnVerifyAEATActionPerformed
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);

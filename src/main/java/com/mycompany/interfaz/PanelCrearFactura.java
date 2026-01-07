@@ -123,9 +123,31 @@ public class PanelCrearFactura extends javax.swing.JPanel {
 
     private void cargarDatos() {
         if (cliente != null && tblCabeceraCliente.getRowCount() > 0) {
-            // Ahora sacamos los datos reales del objeto
-            tblCabeceraCliente.setValueAt(cliente.getFiscalName(), 0, 0);
-            tblCabeceraCliente.setValueAt(cliente.getFiscalNumber(), 0, 1);
+
+            // 1. Obtener el número de factura PREVISTO para mostrarlo
+            com.mycompany.dao.FacturaDAO facturaDao = new com.mycompany.dao.FacturaDAO();
+            String serieAUsar = "F";
+
+            // Lógica para detectar si es rectificativa (normaliza mayúsculas/minúsculas)
+            if (this.tipoFactura != null
+                    && (this.tipoFactura.equalsIgnoreCase("CORRECTING") || this.tipoFactura.equalsIgnoreCase("RECTIFICATIVA"))) {
+                serieAUsar = "R";
+            }
+
+            String numeroPrevisto = facturaDao.getSiguienteNumeroFactura(serieAUsar);
+
+            // 2. Asignar valores a las columnas (orden: Nº, Tipo, Nombre, DNI)
+            // Columna 0: Nº Factura
+            tblCabeceraCliente.setValueAt(numeroPrevisto, 0, 0);
+
+            // Columna 1: Tipo Factura
+            tblCabeceraCliente.setValueAt(this.tipoFactura, 0, 1);
+
+            // Columna 2: Nombre Cliente
+            tblCabeceraCliente.setValueAt(cliente.getFiscalName(), 0, 2);
+
+            // Columna 3: DNI/CIF
+            tblCabeceraCliente.setValueAt(cliente.getFiscalNumber(), 0, 3);
         }
     }
 
@@ -178,17 +200,17 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         tblCabeceraCliente.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         tblCabeceraCliente.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null}
+                {null, null, null, null}
             },
             new String [] {
-                "Nombre ", "DNI/NIE/CIF"
+                "Nº Factura", "Tipo Factura", "Nombre ", "DNI/NIE/CIF"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false
+                true, false, false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -200,6 +222,12 @@ public class PanelCrearFactura extends javax.swing.JPanel {
             }
         });
         jScrollPaneCabecera.setViewportView(tblCabeceraCliente);
+        if (tblCabeceraCliente.getColumnModel().getColumnCount() > 0) {
+            tblCabeceraCliente.getColumnModel().getColumn(0).setResizable(false);
+            tblCabeceraCliente.getColumnModel().getColumn(1).setResizable(false);
+            tblCabeceraCliente.getColumnModel().getColumn(2).setResizable(false);
+            tblCabeceraCliente.getColumnModel().getColumn(3).setResizable(false);
+        }
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -420,19 +448,34 @@ public class PanelCrearFactura extends javax.swing.JPanel {
             return;
         }
 
+        // Bloqueamos el botón temporalmente
+        btnSendInvoice.setEnabled(false);
+        btnSendInvoice.setText("Enviando...");
+
         // ---------------------------------------------------------
-        // 2. PREPARACIÓN DE DATOS PARA FISKALY (DTOs)
+        // 2. PREPARACIÓN DE DATOS (DTOs)
         // ---------------------------------------------------------
-        
         // A. RECIPIENTS (CLIENTE)
         IdDTO idDto = new IdDTO(cliente.getFiscalNumber(), true, cliente.getFiscalName());
-        RecipientsDTO recipients = new RecipientsDTO(cliente.getAddress(), idDto, cliente.getZipCode());
+
+        // >>> CORRECCIÓN AQUÍ: Incluir la Ciudad <<<
+        // Como el constructor de RecipientsDTO parece aceptar solo (Dirección, ID, Zip),
+        // concatenamos la ciudad a la dirección para que aparezca en el PDF.
+        // Asegúrate de que tu clase Cliente tiene el método .getCity() o .getPoblacion()
+        String direccionCompleta = cliente.getAddress();
+        if (cliente.getCity() != null && !cliente.getCity().isEmpty()) {
+            direccionCompleta += ", " + cliente.getCity();
+        }
+
+        // Pasamos la dirección modificada (Ej: "Paseo las Damas, Zaragoza")
+        RecipientsDTO recipients = new RecipientsDTO(direccionCompleta, idDto, cliente.getZipCode());
+
         java.util.List<RecipientsDTO> listaRecipients = new java.util.ArrayList<>();
         listaRecipients.add(recipients);
 
         // B. ITEMS (LÍNEAS)
         java.util.List<ItemDTO> listaItems = new java.util.ArrayList<>();
-        
+
         for (int i = 0; i < model.getRowCount(); i++) {
             try {
                 String descripcion = model.getValueAt(i, 1).toString();
@@ -450,12 +493,12 @@ public class PanelCrearFactura extends javax.swing.JPanel {
                 SystemDTO system = new SystemDTO(SystemDTO.Type.REGULAR, category);
 
                 ItemDTO item = new ItemDTO(
-                    String.format(Locale.US, "%.2f", cantidad),
-                    system,
-                    String.format(Locale.US, "%.2f", descuentoEuros),
-                    descripcion,
-                    String.format(Locale.US, "%.2f", precioUnit),
-                    VatType.IVA
+                        String.format(Locale.US, "%.2f", cantidad),
+                        system,
+                        String.format(Locale.US, "%.2f", descuentoEuros),
+                        descripcion,
+                        String.format(Locale.US, "%.2f", precioUnit),
+                        VatType.IVA
                 );
                 listaItems.add(item);
             } catch (Exception e) {
@@ -463,16 +506,9 @@ public class PanelCrearFactura extends javax.swing.JPanel {
             }
         }
 
-        // C. NUMERACIÓN (Desde BBDD Local)
-        com.mycompany.dao.FacturaDAO facturaDao = new com.mycompany.dao.FacturaDAO();
-        String serieAUsar = "F"; 
-        if (this.tipoFactura != null && (this.tipoFactura.equalsIgnoreCase("CORRECTING") || this.tipoFactura.equalsIgnoreCase("RECTIFICATIVA"))) {
-            serieAUsar = "R";
-        }
-        
-        // Obtenemos el siguiente número (Ej: F-0002)
-        String numeroCompleto = facturaDao.getSiguienteNumeroFactura(serieAUsar);
-        
+        // C. NUMERACIÓN
+        String numeroCompleto = tblCabeceraCliente.getValueAt(0, 0).toString();
+
         DataDTO dataDto = new DataDTO(numeroCompleto, "Factura de Venta", listaItems);
         ContentCompleteDTO contentComplete = new ContentCompleteDTO(dataDto, listaRecipients);
 
@@ -481,83 +517,73 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         // ---------------------------------------------------------
         new Thread(() -> {
             try {
-                // LLAMADA A LA API (Genera el PDF en el escritorio y devuelve el status code)
+                com.mycompany.fiskaly.Config.refrescarUUID();
+
+                // LLAMADA A LA API
                 int statusCode = com.mycompany.fiskaly.Invoices.CreateCompleteInvoice.createInvoice(contentComplete);
 
                 // VOLVER AL HILO VISUAL
                 javax.swing.SwingUtilities.invokeLater(() -> {
-                    
+
                     if (statusCode >= 200 && statusCode < 300) {
                         // === ÉXITO ===
+
+                        btnSendInvoice.setEnabled(false);
+                        btnSendInvoice.setText("Enviada"); // Mantenemos tu texto corto
+
                         try {
-                            // 1. Recuperamos el UUID usado (desde variable pública estática de Config)
                             String uuidUtilizado = com.mycompany.fiskaly.Config.random_UUID.toString();
-                            
-                            // 2. Preparamos Objeto Factura
+
                             com.mycompany.dominio.Factura nuevaFactura = new com.mycompany.dominio.Factura();
-                            
+
                             String[] partes = numeroCompleto.split("-");
-                            nuevaFactura.setSeries(partes[0]); 
+                            nuevaFactura.setSeries(partes[0]);
                             nuevaFactura.setNumber(Integer.parseInt(partes[1]));
                             nuevaFactura.setDate(java.time.LocalDateTime.now());
-                            nuevaFactura.setCliente(this.cliente); 
+                            nuevaFactura.setCliente(this.cliente);
                             nuevaFactura.setFiskalyUuid(uuidUtilizado);
-                            
-                            // -----------------------------------------------------------
-                            // 3. LEER EL PDF DEL ESCRITORIO Y GUARDARLO EN 'pdf_factura'
-                            // -----------------------------------------------------------
+
+                            // LEER EL PDF DEL ESCRITORIO
                             try {
                                 String userHome = System.getProperty("user.home");
                                 String pdfPath = userHome + "/Desktop/Factura_Completa_" + numeroCompleto + ".pdf";
                                 java.io.File pdfFile = new java.io.File(pdfPath);
-                                
+
                                 if (pdfFile.exists()) {
-                                    // Leemos bytes y convertimos a Base64
                                     byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
                                     String pdfBase64 = java.util.Base64.getEncoder().encodeToString(pdfBytes);
-                                    
-                                    // Guardamos en la entidad (Método renombrado)
                                     nuevaFactura.setPdfFactura(pdfBase64);
-                                    
-                                    System.out.println("PDF codificado y asignado a la factura (Tamaño: " + pdfBase64.length() + ")");
                                 } else {
-                                    System.err.println("No se encontró el PDF en: " + pdfPath);
-                                    nuevaFactura.setPdfFactura(null); 
+                                    nuevaFactura.setPdfFactura(null);
                                 }
                             } catch (Exception exPdf) {
                                 exPdf.printStackTrace();
-                                System.err.println("Error leyendo PDF: " + exPdf.getMessage());
                             }
 
-                            // -----------------------------------------------------------
-                            // 4. CÁLCULO DE TOTALES (BASE E IMPUESTOS) PARA BBDD
-                            // -----------------------------------------------------------
+                            // CÁLCULO DE TOTALES PARA BBDD
                             BigDecimal acumuladorBase = BigDecimal.ZERO;
                             BigDecimal acumuladorImpuestos = BigDecimal.ZERO;
-                            
+
                             java.util.List<com.mycompany.dominio.LineaFactura> lineasEntidad = new java.util.ArrayList<>();
-                            
+
                             for (int i = 0; i < model.getRowCount(); i++) {
                                 com.mycompany.dominio.LineaFactura linea = new com.mycompany.dominio.LineaFactura();
-                                
+
                                 String desc = model.getValueAt(i, 1).toString();
                                 BigDecimal cant = new BigDecimal(model.getValueAt(i, 2).toString().replace(",", "."));
                                 BigDecimal prec = new BigDecimal(model.getValueAt(i, 3).toString().replace(",", "."));
                                 BigDecimal descPorc = new BigDecimal(model.getValueAt(i, 4).toString().replace(",", "."));
                                 BigDecimal ivaPorc = new BigDecimal(model.getValueAt(i, 5).toString().replace(",", "."));
                                 BigDecimal totLinea = new BigDecimal(model.getValueAt(i, 6).toString().replace(",", "."));
-                                
-                                // CÁLCULOS MATEMÁTICOS PRECISOS
+
                                 BigDecimal bruto = prec.multiply(cant);
                                 BigDecimal descDinero = bruto.multiply(descPorc).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
                                 BigDecimal baseLinea = bruto.subtract(descDinero);
                                 BigDecimal ivaDinero = baseLinea.multiply(ivaPorc).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
-                                
-                                // Sumar a totales globales
+
                                 acumuladorBase = acumuladorBase.add(baseLinea);
                                 acumuladorImpuestos = acumuladorImpuestos.add(ivaDinero);
-                                
-                                // Rellenar Línea
+
                                 linea.setDescription(desc);
                                 linea.setQuantity(cant);
                                 linea.setUnitPrice(prec);
@@ -567,39 +593,42 @@ public class PanelCrearFactura extends javax.swing.JPanel {
                                 linea.setFactura(nuevaFactura);
                                 lineasEntidad.add(linea);
                             }
-                            
-                            // 5. ASIGNAR TOTALES CALCULADOS
+
                             nuevaFactura.setTotalBase(acumuladorBase);
                             nuevaFactura.setTotalTax(acumuladorImpuestos);
-                            nuevaFactura.setTotalAmount(new BigDecimal(dataDto.getFullAmount())); // Total final
-                            
+                            nuevaFactura.setTotalAmount(new BigDecimal(dataDto.getFullAmount()));
                             nuevaFactura.setLineas(lineasEntidad);
 
-                            // 6. GUARDAR EN MYSQL
-                            facturaDao.guardarFactura(nuevaFactura);
-                            
-                            JOptionPane.showMessageDialog(this, 
-                                "Factura " + numeroCompleto + " guardada correctamente con su PDF.", 
-                                "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                            
-                            // Opcional: Limpiar tabla
-                            // model.setRowCount(0); 
-                                
+                            // GUARDAR EN MYSQL
+                            com.mycompany.dao.FacturaDAO dao = new com.mycompany.dao.FacturaDAO();
+                            dao.guardarFactura(nuevaFactura);
+
+                            JOptionPane.showMessageDialog(this,
+                                    "Factura " + numeroCompleto + " guardada y enviada correctamente.",
+                                    "Éxito", JOptionPane.INFORMATION_MESSAGE);
+
                         } catch (Exception dbEx) {
                             dbEx.printStackTrace();
-                            JOptionPane.showMessageDialog(this, 
-                                "Factura enviada a Hacienda pero ERROR al guardar en BBDD: " + dbEx.getMessage(), 
-                                "Error BBDD", JOptionPane.WARNING_MESSAGE);
+                            JOptionPane.showMessageDialog(this,
+                                    "Factura enviada a Hacienda pero ERROR al guardar en BBDD: " + dbEx.getMessage(),
+                                    "Error BBDD", JOptionPane.WARNING_MESSAGE);
                         }
-                        
+
                     } else {
-                        // Error API (400, 401, 409, 500...)
+                        // Error API: Rehabilitar botón
+                        btnSendInvoice.setEnabled(true);
+                        btnSendInvoice.setText("Envíar Factura");
                         JOptionPane.showMessageDialog(this, "Error API Fiskaly. Código: " + statusCode, "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
+                // Error General: Rehabilitar botón
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    btnSendInvoice.setEnabled(true);
+                    btnSendInvoice.setText("Envíar Factura");
+                });
             }
         }).start();
     }//GEN-LAST:event_btnSendInvoiceActionPerformed
