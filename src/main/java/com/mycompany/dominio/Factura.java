@@ -55,8 +55,8 @@ public class Factura {
     @Column(name = "fiskaly_uuid")
     private String fiskalyUuid;
 
-    @Column(name = "qr_data", columnDefinition = "TEXT")
-    private String qrData;
+    @Column(name = "pdf_factura", columnDefinition = "LONGTEXT")
+    private String pdfFactura;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -168,14 +168,6 @@ public class Factura {
         this.fiskalyUuid = fiskalyUuid;
     }
 
-    public String getQrData() {
-        return qrData;
-    }
-
-    public void setQrData(String qrData) {
-        this.qrData = qrData;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -183,4 +175,13 @@ public class Factura {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getPdfFactura() {
+        return pdfFactura;
+    }
+
+    public void setPdfFactura(String pdfFactura) {
+        this.pdfFactura = pdfFactura;
+    }
+    
 }

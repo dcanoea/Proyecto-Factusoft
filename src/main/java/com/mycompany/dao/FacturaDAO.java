@@ -44,4 +44,31 @@ public class FacturaDAO {
                     .uniqueResult();
         }
     }
+
+    /**
+     * Calcula el siguiente número para una serie dada (ej: "F" o "R"). Devuelve
+     * formato: "F-0001", "R-0005", etc.
+     */
+    public String getSiguienteNumeroFactura(String serie) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+
+            // 1. Buscamos el número más alto SOLO dentro de esa serie (F o R)
+            String hql = "SELECT MAX(f.number) FROM Factura f WHERE f.series = :serieParam";
+
+            Integer maxNumero = (Integer) session.createQuery(hql)
+                    .setParameter("serieParam", serie)
+                    .uniqueResult();
+
+            // 2. Si no hay facturas de esa serie, empezamos por el 1
+            int siguienteNumero = (maxNumero == null) ? 1 : maxNumero + 1;
+
+            // 3. Formateamos el resultado (Serie + Guion + 4 dígitos)
+            // Ejemplo: "F-0001"
+            return serie + "-" + String.format("%04d", siguienteNumero);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return serie + "-ERROR";
+        }
+    }
 }

@@ -4,6 +4,8 @@
  */
 package com.mycompany.interfaz;
 
+import com.mycompany.fiskaly.Clients;
+
 /**
  *
  * @author DavidCe
@@ -130,6 +132,7 @@ public class PanelConfig extends javax.swing.JPanel {
         jPanelCenter.add(btnTaxpayer, gridBagConstraints);
 
         btnClientFiskaly.setText("Crear Dispositivo Cliente");
+        btnClientFiskaly.addActionListener(this::btnClientFiskalyActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -191,7 +194,6 @@ public class PanelConfig extends javax.swing.JPanel {
         jPanelRight.add(btnAddUser, gridBagConstraints);
 
         btnEditUser.setText("Editar Usuario");
-        btnEditUser.setActionCommand("Editar Usuario");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -216,6 +218,38 @@ public class PanelConfig extends javax.swing.JPanel {
 
         add(jPanelRight, java.awt.BorderLayout.EAST);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnClientFiskalyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClientFiskalyActionPerformed
+        // Ejecutamos la llamada a la API en un hilo separado
+        new Thread(() -> {
+            try {
+                // 1. Llamamos al método y esperamos que devuelva el código (int)
+                // Asegúrate de que tu método Clients.createClient() devuelve 'int'
+                int statusCode = Clients.createClient();
+
+                // 2. Volvemos al hilo de la interfaz (EDT) para mostrar el mensaje
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (statusCode == 200 || statusCode == 201) {
+                        javax.swing.JOptionPane.showMessageDialog(this,
+                                "¡Dispositivo Cliente (TSS) creado con éxito!\n",
+                                "Éxito", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        javax.swing.JOptionPane.showMessageDialog(this,
+                                "Error al crear el cliente.\nCódigo de respuesta: " + statusCode,
+                                "Error API", javax.swing.JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    javax.swing.JOptionPane.showMessageDialog(this,
+                            "Ocurrió un error de conexión: " + e.getMessage(),
+                            "Error Crítico", javax.swing.JOptionPane.ERROR_MESSAGE);
+                });
+            }
+        }).start();
+    }//GEN-LAST:event_btnClientFiskalyActionPerformed
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);

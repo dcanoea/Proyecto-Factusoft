@@ -10,7 +10,6 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
  *
  * @author poker
  */
-
 public class DialogBuscarCliente extends javax.swing.JDialog {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DialogBuscarCliente.class.getName());
@@ -233,23 +232,32 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
     }//GEN-LAST:event_txtBuscarActionPerformed
 
     private void btnAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAceptarActionPerformed
-      int fila = tblResultados.getSelectedRow();
-        
+        int fila = tblResultados.getSelectedRow();
+
         if (fila == -1) {
             javax.swing.JOptionPane.showMessageDialog(this, "Selecciona un cliente de la lista.");
             return;
         }
 
-        // 1. Recuperar ID de la columna 0
+        // Recuperar solo el ID de la columna 0
         int idCliente = (int) tblResultados.getValueAt(fila, 0);
 
-        // 2. Crear objeto cliente y guardarlo en la variable de la clase
-        clienteSeleccionado = new com.mycompany.dominio.Cliente();
-        clienteSeleccionado.setId(idCliente);
-        
-        // Cuidado con los índices de columna, asegúrate que coinciden con tu tabla visual
-        clienteSeleccionado.setFiscalName((String) tblResultados.getValueAt(fila, 1)); 
-        clienteSeleccionado.setFiscalNumber((String) tblResultados.getValueAt(fila, 2)); // DNI suele estar en col 3 según tu código anterior
+        try {
+            // Usar el DAO para cargar el cliente COMPLETO desde la BBDD
+            // Esto rellenará dirección, código postal, email, etc.
+            this.clienteSeleccionado = clienteDAO.obtenerPorId(idCliente);
+
+            // Validación de seguridad por si acaso
+            if (this.clienteSeleccionado == null) {
+                javax.swing.JOptionPane.showMessageDialog(this, "Error: No se pudo recuperar la información completa del cliente.");
+                return;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al cargar cliente: " + e.getMessage());
+            return;
+        }
 
         // 3. Cerrar
         this.dispose();
@@ -257,45 +265,45 @@ public class DialogBuscarCliente extends javax.swing.JDialog {
 
     private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
         this.clienteSeleccionado = null; // Nos aseguramos de limpiar la selección
-        this.dispose();  
+        this.dispose();
 }//GEN-LAST:event_btnCancelarActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-    /* Set the Nimbus look and feel */
-    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-     */
-    try {
-        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-            if ("Nimbus".equals(info.getName())) {
-                javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                break;
-            }
-        }
-    } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-        logger.log(java.util.logging.Level.SEVERE, null, ex);
-    }
-    //</editor-fold>
-
-    /* Create and display the dialog */
-    java.awt.EventQueue.invokeLater(new Runnable() {
-        @Override
-        public void run() {
-            DialogBuscarCliente dialog = new DialogBuscarCliente(new javax.swing.JFrame(), true);
-            dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                @Override
-                public void windowClosing(java.awt.event.WindowEvent e) {
-                    System.exit(0);
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
                 }
-            });
-            dialog.setVisible(true);
+            }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-    });
-}
+        //</editor-fold>
+
+        /* Create and display the dialog */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                DialogBuscarCliente dialog = new DialogBuscarCliente(new javax.swing.JFrame(), true);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        System.exit(0);
+                    }
+                });
+                dialog.setVisible(true);
+            }
+        });
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAceptar;

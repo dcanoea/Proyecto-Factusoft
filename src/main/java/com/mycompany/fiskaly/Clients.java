@@ -15,7 +15,7 @@ import org.json.JSONObject;
 public class Clients {
 
     // Crea un UUID único que referencia a un equipo/sistema/TPV/POS donde se hacen facturas
-    public static void createClient() {
+    public static int createClient() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String url = Config.BASE_URL + Config.CREATE_CLIENT;
             String token = Authentication.retrieveToken();
@@ -34,11 +34,12 @@ public class Clients {
 
             System.out.println("Código de respuesta: " + statusCode);
             System.out.println("Respuesta del servidor: " + responseBody);
-
+            return statusCode;
         } catch (Exception e) {
             System.out.println("Error al crear el client");
             e.printStackTrace();
         }
+        return 0;
     }
 
     // Lista todos los clients
