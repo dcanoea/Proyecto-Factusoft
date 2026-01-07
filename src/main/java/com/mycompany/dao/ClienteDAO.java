@@ -2,6 +2,7 @@ package com.mycompany.dao;
 
 import com.mycompany.dominio.Cliente;
 import com.mycompany.util.HibernateUtil;
+import java.sql.Connection;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -41,20 +42,46 @@ public class ClienteDAO {
         }
     }
 
-    public void eliminar(int id) {
-        Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
+    public void eliminar(int id) throws Exception {
+        // 1. Obtenemos la sesión de Hibernate
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        Transaction tx = null;
+
+        try {
+            // 2. Iniciamos la transacción
+            tx = session.beginTransaction();
+
+            // 3. Primero recuperamos el objeto Cliente que queremos borrar
             Cliente cliente = session.get(Cliente.class, id);
+
             if (cliente != null) {
-                session.remove(cliente);
+                // 4. Intentamos eliminarlo
+                // Hibernate lanzará una excepción aquí si hay facturas vinculadas
+                session.remove(cliente); // Nota: usa session.delete(cliente) si usas una versión antigua de Hibernate
+
+                // 5. Confirmamos los cambios
+                tx.commit();
+            } else {
+                throw new Exception("No se encontró el cliente con ID " + id);
             }
-            transaction.commit();
+
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
+            // SI OCURRE UN ERROR (ej. tiene facturas):
+
+            // A. Deshacemos cualquier cambio pendiente (Rollback)
+            if (tx != null) {
+                tx.rollback();
             }
-            e.printStackTrace();
+
+            // B. ¡IMPORTANTE! Relanzamos el error para que el PanelClientes lo capture
+            // Si no hacemos este "throw", el panel pensará que se borró bien.
+            throw new Exception("No se puede eliminar: " + e.getMessage(), e);
+
+        } finally {
+            // C. Cerramos la sesión siempre
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 

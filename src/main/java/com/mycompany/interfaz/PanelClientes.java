@@ -143,6 +143,7 @@ public class PanelClientes extends javax.swing.JPanel {
     }
 
     // --- LÓGICA PARA BORRAR ---
+// --- LÓGICA PARA BORRAR ---
     private void borrarClienteSeleccionado() {
         int fila = tblClients.getSelectedRow();
         if (fila == -1) {
@@ -157,14 +158,30 @@ public class PanelClientes extends javax.swing.JPanel {
                 JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // Obtenemos el ID de la columna 0
-            int idCliente = Integer.parseInt(tblClients.getValueAt(fila, 0).toString());
+            try {
+                // 1. Obtenemos el ID de la columna 0
+                int idCliente = Integer.parseInt(tblClients.getValueAt(fila, 0).toString());
 
-            // Llamamos al DAO
-            clienteDAO.eliminar(idCliente);
+                // 2. Intentamos borrar (Esto lanzará excepción si tiene facturas y la BBDD lo protege)
+                clienteDAO.eliminar(idCliente);
 
-            // Recargamos la tabla
-            cargarClientes(txtSearch.getText()); // Asumo que tu campo de texto se llama txtBuscar
+                // 3. Si pasa la línea anterior, es que se borró bien. Recargamos la tabla.
+                cargarClientes(txtSearch.getText());
+
+                JOptionPane.showMessageDialog(this, "Cliente eliminado correctamente.");
+
+            } catch (Exception e) {
+                // 4. Si hay error (ej. tiene facturas), entramos aquí:
+                String motivoTecnico = e.getMessage(); // Captura el mensaje de la base de datos
+
+                JOptionPane.showMessageDialog(this,
+                        "No se ha podido borrar el cliente.\n\n"
+                        + "MOTIVO MÁS PROBABLE:\n"
+                        + "El cliente tiene facturas asociadas y la base de datos impide dejar facturas huérfanas.\n\n"
+                        + "DETALLE TÉCNICO:\n" + motivoTecnico,
+                        "Error de Integridad",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
