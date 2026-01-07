@@ -216,6 +216,11 @@ public class PanelClientes extends javax.swing.JPanel {
         jPanelCenter.setLayout(new java.awt.GridBagLayout());
 
         txtSearch.addActionListener(this::txtSearchActionPerformed);
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtSearchKeyReleased(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -358,7 +363,7 @@ public class PanelClientes extends javax.swing.JPanel {
     }//GEN-LAST:event_btnAddClientActionPerformed
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
-        busquedaDinamica();
+
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void btnDeleteClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteClientActionPerformed
@@ -410,6 +415,10 @@ public class PanelClientes extends javax.swing.JPanel {
         parent.revalidate();
         parent.repaint();
     }//GEN-LAST:event_btnEditClientActionPerformed
+
+    private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
+        busquedaDinamica();
+    }//GEN-LAST:event_txtSearchKeyReleased
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
