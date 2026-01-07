@@ -163,7 +163,7 @@ public class PanelFacturas extends javax.swing.JPanel {
                 {null, null, null, null, null, null}
             },
             new String [] {
-                "Nº", "Nº Cliente", "Descripción", "Estado", "Total Factura", "Fecha emisión"
+                "Nº", "Cliente", "Descripción", "Estado", "Total Factura", "Fecha emisión"
             }
         ));
         jScrollPaneCenter.setViewportView(tblInvoices);
@@ -206,6 +206,7 @@ public class PanelFacturas extends javax.swing.JPanel {
         jPanelRight.add(filler1, gridBagConstraints);
 
         btnInvoiceDetails.setText("Datos Factura");
+        btnInvoiceDetails.addActionListener(this::btnInvoiceDetailsActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -251,6 +252,73 @@ public class PanelFacturas extends javax.swing.JPanel {
         // AL VOLVER DEL DIÁLOGO, REFRESCAMOS:
         cargarTablaFacturas();
     }//GEN-LAST:event_btnCreateInvoiceActionPerformed
+
+    private void btnInvoiceDetailsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvoiceDetailsActionPerformed
+        // 1. Verificar si hay una fila seleccionada
+        int selectedRow = tblInvoices.getSelectedRow();
+        if (selectedRow == -1) {
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Por favor, selecciona una factura de la tabla primero.",
+                    "Atención", javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // 2. Obtener el número de la factura de la columna 0 (Ej: "F-0004")
+        String numeroCompleto = (String) tblInvoices.getValueAt(selectedRow, 0);
+
+        try {
+            // Desglosamos "F-0004" en "F" y "4"
+            String[] partes = numeroCompleto.split("-");
+            String serie = partes[0];
+            int numero = Integer.parseInt(partes[1]);
+
+            // 3. Recuperar la factura completa de la BBDD
+            com.mycompany.dao.FacturaDAO dao = new com.mycompany.dao.FacturaDAO();
+            com.mycompany.dominio.Factura factura = dao.obtenerPorSerieYNumero(serie, numero);
+
+            if (factura != null) {
+                // 4. Verificar si tiene PDF guardado
+                String pdfBase64 = factura.getPdfFactura();
+
+                if (pdfBase64 != null && !pdfBase64.isEmpty() && !pdfBase64.startsWith("ERROR")) {
+
+                    // --- PROCESO DE APERTURA DEL PDF ---
+                    try {
+                        // A. Decodificar de Base64 a Bytes
+                        byte[] pdfBytes = java.util.Base64.getDecoder().decode(pdfBase64);
+
+                        // B. Crear un archivo temporal en el ordenador
+                        // (Los visores de PDF necesitan un archivo físico para abrirse)
+                        java.io.File tempFile = java.io.File.createTempFile("Factura_" + numeroCompleto + "_", ".pdf");
+                        tempFile.deleteOnExit(); // Se borrará al cerrar el programa java (opcional)
+
+                        // C. Escribir los bytes en el archivo
+                        java.nio.file.Files.write(tempFile.toPath(), pdfBytes);
+
+                        // D. Abrir con el visor por defecto del sistema
+                        if (java.awt.Desktop.isDesktopSupported()) {
+                            java.awt.Desktop.getDesktop().open(tempFile);
+                        } else {
+                            javax.swing.JOptionPane.showMessageDialog(this, "El sistema no soporta abrir archivos automáticamente.");
+                        }
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        javax.swing.JOptionPane.showMessageDialog(this, "Error al abrir el PDF: " + ex.getMessage());
+                    }
+
+                } else {
+                    javax.swing.JOptionPane.showMessageDialog(this,
+                            "Esta factura no tiene un PDF almacenado en la base de datos.",
+                            "Sin PDF", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "Error al recuperar datos: " + e.getMessage());
+        }
+    }//GEN-LAST:event_btnInvoiceDetailsActionPerformed
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
@@ -320,7 +388,7 @@ public class PanelFacturas extends javax.swing.JPanel {
             });
         }
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCreateInvoice;
     private javax.swing.JButton btnHome;

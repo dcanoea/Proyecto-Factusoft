@@ -72,4 +72,18 @@ public class FacturaDAO {
             return serie + "-ERROR";
         }
     }
+
+    // Método para recuperar una factura específica por su serie y número
+    public com.mycompany.dominio.Factura obtenerPorSerieYNumero(String serie, int numero) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM Factura f WHERE f.series = :serie AND f.number = :num";
+            return session.createQuery(hql, com.mycompany.dominio.Factura.class)
+                    .setParameter("serie", serie)
+                    .setParameter("num", numero)
+                    .uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
