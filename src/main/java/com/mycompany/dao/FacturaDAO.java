@@ -30,8 +30,9 @@ public class FacturaDAO {
 
     public List<Factura> listarTodas() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // join fetch carga el cliente asociado de una vez para optimizar rendimiento
-            return session.createQuery("from Factura f join fetch f.cliente", Factura.class).list();
+            // join fetch carga cliente. 
+            // Añadido: "ORDER BY f.id DESC" para ver las últimas primero
+            return session.createQuery("from Factura f join fetch f.cliente order by f.id desc", Factura.class).list();
         }
     }
 

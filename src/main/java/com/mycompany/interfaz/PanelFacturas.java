@@ -21,21 +21,25 @@ public class PanelFacturas extends javax.swing.JPanel {
         Estilos.configurarTabla(tblInvoices, jScrollPaneCenter);
 
         // --- DEFINIR ANCHOS DE COLUMNAS ---
-        // Nº Factura: 90px (Tamaño ideal para números de 4-5 cifras)
+// --- DEFINIR ANCHOS DE COLUMNAS (Total aprox: 800-900px) ---
+        // 0. Nº Factura
         tblInvoices.getColumnModel().getColumn(0).setPreferredWidth(90);
-        tblInvoices.getColumnModel().getColumn(0).setMaxWidth(110);
+        tblInvoices.getColumnModel().getColumn(0).setMaxWidth(100);
 
-        // Nº Cliente: 90 px
-        tblInvoices.getColumnModel().getColumn(1).setPreferredWidth(90);
+        // 1. Cliente (Le damos un poco más de espacio)
+        tblInvoices.getColumnModel().getColumn(1).setPreferredWidth(180);
 
-        // Descripción: 250px 
-        tblInvoices.getColumnModel().getColumn(2).setPreferredWidth(450);
+        // 2. Descripción (Reducimos un poco porque ya no tiene la fecha dentro)
+        tblInvoices.getColumnModel().getColumn(2).setPreferredWidth(200);
 
-        // Estado: 90 px
-        tblInvoices.getColumnModel().getColumn(3).setPreferredWidth(50);
+        // 3. Estado
+        tblInvoices.getColumnModel().getColumn(3).setPreferredWidth(80);
 
-        // Total Factura: 90 px
-        tblInvoices.getColumnModel().getColumn(4).setPreferredWidth(50);
+        // 4. Total
+        tblInvoices.getColumnModel().getColumn(4).setPreferredWidth(80);
+
+        // 5. Fecha Emisión
+        tblInvoices.getColumnModel().getColumn(5).setPreferredWidth(120);
 
         // Bloquear reordenamiento
         tblInvoices.getTableHeader().setReorderingAllowed(false);
@@ -99,6 +103,9 @@ public class PanelFacturas extends javax.swing.JPanel {
             // Ajusta este margen si quieres los botones más o menos anchos
             btn.setMargin(new java.awt.Insets(10, 15, 10, 15));
         }
+
+        // --- 4. CARGAR DATOS DE FACTURAS DE LA BASE DE DATOS ---
+        cargarTablaFacturas();
     }
 
     /**
@@ -150,13 +157,13 @@ public class PanelFacturas extends javax.swing.JPanel {
 
         tblInvoices.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "Nº", "Nº Cliente", "Descripción", "Estado", "Total Factura"
+                "Nº", "Nº Cliente", "Descripción", "Estado", "Total Factura", "Fecha emisión"
             }
         ));
         jScrollPaneCenter.setViewportView(tblInvoices);
@@ -166,6 +173,7 @@ public class PanelFacturas extends javax.swing.JPanel {
             tblInvoices.getColumnModel().getColumn(2).setResizable(false);
             tblInvoices.getColumnModel().getColumn(3).setResizable(false);
             tblInvoices.getColumnModel().getColumn(4).setResizable(false);
+            tblInvoices.getColumnModel().getColumn(5).setResizable(false);
         }
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -240,10 +248,8 @@ public class PanelFacturas extends javax.swing.JPanel {
         // El código se detendrá aquí hasta que el usuario cierre el diálogo
         dialog.setVisible(true);
 
-        // 4. (Opcional) Refrescar la tabla al volver
-        // Una vez se cierra el diálogo, el código continúa aquí.
-        // Si tienes un método para recargar datos, llámalo:
-        // cargarFacturasEnTabla();
+        // AL VOLVER DEL DIÁLOGO, REFRESCAMOS:
+        cargarTablaFacturas();
     }//GEN-LAST:event_btnCreateInvoiceActionPerformed
 
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
@@ -253,6 +259,68 @@ public class PanelFacturas extends javax.swing.JPanel {
         btn.setIcon(icon);
     }
 
+    // MÉTODO PARA CARGAR LAS FACTURAS
+    public void cargarTablaFacturas() {
+        // 1. Limpiar la tabla actual
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tblInvoices.getModel();
+        model.setRowCount(0);
+
+        // 2. Obtener datos
+        com.mycompany.dao.FacturaDAO dao = new com.mycompany.dao.FacturaDAO();
+        java.util.List<com.mycompany.dominio.Factura> lista = dao.listarTodas();
+
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        // 3. Rellenar filas
+        for (com.mycompany.dominio.Factura f : lista) {
+
+            // A. Nº Factura
+            String numeroFormateado = f.getSeries() + "-" + String.format("%04d", f.getNumber());
+
+            // B. Cliente
+            String nombreCliente = "Desconocido";
+            if (f.getCliente() != null) {
+                nombreCliente = f.getCliente().getFiscalName();
+            }
+
+            // C. Descripción
+            String descripcion = "FACTURA GENERAL";
+            if (f.getSeries() != null) {
+                if (f.getSeries().equalsIgnoreCase("F")) {
+                    descripcion = "FACTURA COMPLETA";
+                } else if (f.getSeries().equalsIgnoreCase("R")) {
+                    descripcion = "FACTURA RECTIFICATIVA";
+                }
+            }
+
+            // D. Estado (CAMBIO SOLICITADO)
+            String estado = "PENDIENTE";
+            // Si hay UUID, consideramos que está enviada correctamente
+            if (f.getFiskalyUuid() != null && !f.getFiskalyUuid().isEmpty()) {
+                estado = "ENVIADA";
+            }
+
+            // E. Fecha de Emisión (NUEVA COLUMNA)
+            String fechaTexto = "";
+            if (f.getDate() != null) {
+                fechaTexto = f.getDate().format(formatter);
+            } else if (f.getCreatedAt() != null) {
+                // Fallback por si date es nulo (usamos created_at)
+                fechaTexto = f.getCreatedAt().format(formatter);
+            }
+
+            // F. Añadir fila (AHORA CON 6 ELEMENTOS)
+            model.addRow(new Object[]{
+                numeroFormateado, // 0. Nº
+                nombreCliente, // 1. Cliente
+                descripcion, // 2. Descripción
+                estado, // 3. Estado (ENVIADA / PENDIENTE)
+                String.format("%.2f €", f.getTotalAmount()), // 4. Total
+                fechaTexto // 5. Fecha Emisión
+            });
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCreateInvoice;
     private javax.swing.JButton btnHome;
