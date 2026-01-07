@@ -6,6 +6,7 @@ package com.mycompany.interfaz;
 
 import com.mycompany.dao.ClienteDAO;
 import com.mycompany.dominio.Cliente;
+import com.mycompany.fiskaly.Validation;
 import javax.swing.JOptionPane;
 
 /**
@@ -564,21 +565,36 @@ public class PanelCrearCliente extends javax.swing.JPanel {
     }
 
     private void guardarCliente() {
-        String nif = txtTaxNumber.getText().trim();
+        String nif = txtTaxNumber.getText().trim().toUpperCase(); // Convertimos a mayúsculas aquí
 
-        // 1. Validaciones básicas
+        // 1. Validaciones básicas (Campos vacíos)
         if (nif.isEmpty() || txtName.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "NIF y Nombre obligatorios.");
+            JOptionPane.showMessageDialog(this, "NIF y Nombre son obligatorios.");
             return;
         }
 
-        // 2. Validación NIF Inteligente
+        // --- VALIDACIÓN MATEMÁTICA DEL NIF/CIF/NIE ---
+        if (!Validation.validateTaxID(nif)) {
+            JOptionPane.showMessageDialog(this,
+                    "El NIF/CIF/NIE introducido NO es válido.\n"
+                    + "El dígito de control (letra o número final) no coincide.",
+                    "Identificación Incorrecta",
+                    JOptionPane.WARNING_MESSAGE);
+
+            // Ponemos el foco en el campo para que el usuario corrija
+            txtTaxNumber.requestFocus();
+            txtTaxNumber.selectAll();
+            return; // DETENEMOS EL PROCESO DE GUARDADO
+        }
+        // ----------------------------------------------------
+
+        // 2. Validación NIF Duplicado (DAO)
         // Solo verificamos duplicados si:
         // A) Estamos CREANDO (clienteEditar es null)
         // B) Estamos EDITANDO pero hemos cambiado el NIF (no es el mismo que teníamos)
         if (clienteEditar == null || !nif.equals(clienteEditar.getFiscalNumber())) {
             if (clienteDAO.existeNif(nif)) {
-                JOptionPane.showMessageDialog(this, "El NIF ya existe.");
+                JOptionPane.showMessageDialog(this, "Ya existe un cliente con ese NIF.");
                 return;
             }
         }
@@ -595,7 +611,7 @@ public class PanelCrearCliente extends javax.swing.JPanel {
             }
 
             // 4. Actualizar datos (Setters)
-            c.setFiscalNumber(nif);
+            c.setFiscalNumber(nif); // Ya validado y en mayúsculas
             c.setFirstName(txtName.getText().trim());
             c.setLastName1(txtLastName1.getText().trim());
             c.setLastName2(txtLastName2.getText().trim());
@@ -615,15 +631,16 @@ public class PanelCrearCliente extends javax.swing.JPanel {
             // 5. Guardar (merge sirve para Insert y Update)
             clienteDAO.guardar(c);
 
-            JOptionPane.showMessageDialog(this, "Guardado correctamente.");
+            JOptionPane.showMessageDialog(this, "Cliente guardado correctamente.");
 
-            // Volver atrás
+            // Volver atrás automáticamente
             if (btnBack != null) {
                 btnBack.doClick();
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al guardar en base de datos:\n" + e.getMessage());
         }
     }
 
