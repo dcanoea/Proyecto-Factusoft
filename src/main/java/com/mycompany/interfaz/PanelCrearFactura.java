@@ -124,29 +124,22 @@ public class PanelCrearFactura extends javax.swing.JPanel {
     private void cargarDatos() {
         if (cliente != null && tblCabeceraCliente.getRowCount() > 0) {
 
-            // 1. Obtener el número de factura PREVISTO para mostrarlo
+            // 1. Calculamos la serie actual (F26)
+            String serieActual = obtenerSerieConAnio();
+
+            // 2. Preguntamos a la BBDD Local cuál toca
             com.mycompany.dao.FacturaDAO facturaDao = new com.mycompany.dao.FacturaDAO();
-            String serieAUsar = "F";
 
-            // Lógica para detectar si es rectificativa (normaliza mayúsculas/minúsculas)
-            if (this.tipoFactura != null
-                    && (this.tipoFactura.equalsIgnoreCase("CORRECTING") || this.tipoFactura.equalsIgnoreCase("RECTIFICATIVA"))) {
-                serieAUsar = "R";
-            }
+            // El DAO buscará el MAX(number) donde series = 'F26'
+            // Si no hay ninguna, devolverá "F26-0001"
+            String numeroPrevisto = facturaDao.getSiguienteNumeroFactura(serieActual);
 
-            String numeroPrevisto = facturaDao.getSiguienteNumeroFactura(serieAUsar);
-
-            // 2. Asignar valores a las columnas (orden: Nº, Tipo, Nombre, DNI)
-            // Columna 0: Nº Factura
+            // 3. Lo pintamos en la tabla
             tblCabeceraCliente.setValueAt(numeroPrevisto, 0, 0);
 
-            // Columna 1: Tipo Factura
+            // 4. Rellenamos resto de datos del cliente
             tblCabeceraCliente.setValueAt(this.tipoFactura, 0, 1);
-
-            // Columna 2: Nombre Cliente
             tblCabeceraCliente.setValueAt(cliente.getFiscalName(), 0, 2);
-
-            // Columna 3: DNI/CIF
             tblCabeceraCliente.setValueAt(cliente.getFiscalNumber(), 0, 3);
         }
     }
@@ -865,6 +858,23 @@ public class PanelCrearFactura extends javax.swing.JPanel {
         } else {
             JOptionPane.showMessageDialog(this, "Selecciona una línea para borrar.");
         }
+    }
+
+    // --- MÉTODO AUXILIAR: CALCULAR SERIE CON AÑO (Ej: "F26") ---
+    private String obtenerSerieConAnio() {
+        // 1. Determinar letra (F normal o R rectificativa)
+        String letra = "F";
+        if (this.tipoFactura != null
+                && (this.tipoFactura.equalsIgnoreCase("CORRECTING") || this.tipoFactura.equalsIgnoreCase("RECTIFICATIVA"))) {
+            letra = "R";
+        }
+
+        // 2. Obtener año actual (2 dígitos)
+        // java.time.Year.now().getValue() devuelve 2026 -> substring(2) coge "26"
+        String anio = String.valueOf(java.time.Year.now().getValue()).substring(2);
+
+        // 3. Retornar concatenado
+        return letra + anio;
     }
 
     //---- MÉTODOS RELACIONADOS CON JSON FISKALY -----
