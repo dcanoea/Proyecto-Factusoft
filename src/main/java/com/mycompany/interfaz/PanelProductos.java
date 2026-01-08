@@ -9,6 +9,8 @@ import com.mycompany.dominio.Producto;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
@@ -17,6 +19,7 @@ import javax.swing.table.DefaultTableModel;
 public class PanelProductos extends javax.swing.JPanel {
 
     private ProductoDAO productoDAO = new ProductoDAO(); // Instancia del DAO
+    private TableRowSorter<TableModel> sorter; //Sirve para filtrar en la búsqueda dinámica del producto
 
     /**
      * Creates new form PanelClientes
@@ -138,6 +141,11 @@ public class PanelProductos extends javax.swing.JPanel {
         jPanelCenter.setLayout(new java.awt.GridBagLayout());
 
         txtSearch.addActionListener(this::txtSearchActionPerformed);
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtSearchKeyReleased(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -319,6 +327,28 @@ public class PanelProductos extends javax.swing.JPanel {
         parent.repaint();
     }//GEN-LAST:event_btnEditProductActionPerformed
 
+    private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
+        // 1. Obtener texto
+        String texto = txtSearch.getText().trim();
+
+        // Seguridad por si el sorter no se inició
+        if (sorter == null) {
+            return;
+        }
+
+        // 2. Filtrar visualmente (sin ir a la base de datos)
+        if (texto.length() == 0) {
+            sorter.setRowFilter(null); // Mostrar todo
+        } else {
+            try {
+                // (?i) ignora mayúsculas/minúsculas y busca en CUALQUIER columna
+                sorter.setRowFilter(javax.swing.RowFilter.regexFilter("(?i)" + texto));
+            } catch (Exception e) {
+                // Ignorar errores de caracteres especiales
+            }
+        }
+    }//GEN-LAST:event_txtSearchKeyReleased
+
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
         // ESTO ES LA MAGIA: Fuerza el color blanco
@@ -366,6 +396,9 @@ public class PanelProductos extends javax.swing.JPanel {
                 p.getTaxPercent() + " %" // Col 3: Tipo IVA
             });
         }
+
+        sorter = new javax.swing.table.TableRowSorter<>(modelo);
+        tblProducts.setRowSorter(sorter);
     }
 
     // --- BORRAR PRODUCTO ---
