@@ -62,7 +62,6 @@ public class PanelClientes extends javax.swing.JPanel {
         // Creamos una lista con todos los botones para aplicarles el estilo "Píldora Negra" de golpe
         javax.swing.JButton[] botonesAccion = {
             btnAddClient, // Añadir Cliente
-            btnInvoices, // Ver facturas
             btnEditClient, // Editar
             btnDeleteClient // Borrar
         };
@@ -84,7 +83,6 @@ public class PanelClientes extends javax.swing.JPanel {
         btnHome.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
         // Añadir icono a los botones
-        setIconoBlanco(btnInvoices, "img/invoice_Icon.svg");
         setIconoBlanco(btnEditClient, "img/edit_icon.svg");
         setIconoBlanco(btnDeleteClient, "img/delete_icon.svg");
 
@@ -106,7 +104,7 @@ public class PanelClientes extends javax.swing.JPanel {
         btnAddClient.setVerticalTextPosition(javax.swing.SwingConstants.CENTER);
 
         // Ajustes finales de texto y márgenes
-        javax.swing.JButton[] botones = {btnInvoices, btnEditClient, btnDeleteClient};
+        javax.swing.JButton[] botones = {btnEditClient, btnDeleteClient};
         for (javax.swing.JButton btn : botones) {
             btn.setIconTextGap(15);
             btn.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -203,7 +201,6 @@ public class PanelClientes extends javax.swing.JPanel {
         jPanelRight = new javax.swing.JPanel();
         btnHome = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
-        btnInvoices = new javax.swing.JButton();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         btnEditClient = new javax.swing.JButton();
         btnDeleteClient = new javax.swing.JButton();
@@ -281,16 +278,6 @@ public class PanelClientes extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weighty = 1.0;
         jPanelRight.add(filler1, gridBagConstraints);
-
-        btnInvoices.setText("Ver Facturas");
-        btnInvoices.addActionListener(this::btnInvoicesActionPerformed);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(10, 20, 10, 10);
-        jPanelRight.add(btnInvoices, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -319,10 +306,6 @@ public class PanelClientes extends javax.swing.JPanel {
 
         add(jPanelRight, java.awt.BorderLayout.EAST);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnInvoicesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvoicesActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnInvoicesActionPerformed
 
     private void btnAddClientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddClientActionPerformed
         // 1. Instanciar el formulario de creación
@@ -457,7 +440,6 @@ public class PanelClientes extends javax.swing.JPanel {
     private javax.swing.JButton btnDeleteClient;
     private javax.swing.JButton btnEditClient;
     private javax.swing.JButton btnHome;
-    private javax.swing.JButton btnInvoices;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.JPanel jPanelCenter;
