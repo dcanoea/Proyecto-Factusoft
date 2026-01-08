@@ -4,11 +4,16 @@
  */
 package com.mycompany.interfaz;
 
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
 /**
  *
  * @author DavidCe
  */
 public class PanelFacturas extends javax.swing.JPanel {
+
+    private TableRowSorter<TableModel> sorter;
 
     /**
      * Creates new form PanelClientes
@@ -47,7 +52,7 @@ public class PanelFacturas extends javax.swing.JPanel {
         // --- 2. BARRA DE BÚSQUEDA
         // --- APLICAR ESTILO A LA BARRA DE BÚSQUEDA ---
         Estilos.configurarBarraBusqueda(txtSearch);
-        txtSearch.putClientProperty(com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "Buscar Factura por Nº");
+        txtSearch.putClientProperty(com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "Buscar Factura por Nº o Cliente");
 
         // --- 3. BOTONES
         // --- APLICAR ESTILO A LOS BOTONES ---
@@ -136,6 +141,12 @@ public class PanelFacturas extends javax.swing.JPanel {
         jPanelCenter.setBackground(new java.awt.Color(160, 238, 204));
         jPanelCenter.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jPanelCenter.setLayout(new java.awt.GridBagLayout());
+
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtSearchKeyReleased(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -390,6 +401,50 @@ public class PanelFacturas extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnVerifyAEATActionPerformed
 
+    private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
+        // 1. Obtener texto limpio
+        String textoUsuario = txtSearch.getText().trim();
+
+        // Seguridad: Si el sorter no está inicializado, no hacemos nada
+        if (sorter == null) {
+            return;
+        }
+
+        // 2. Filtrar
+        if (textoUsuario.length() == 0) {
+            sorter.setRowFilter(null); // Mostrar todo si está vacío
+        } else {
+            // Filtro personalizado (ignora acentos y mayúsculas)
+            sorter.setRowFilter(new javax.swing.RowFilter<Object, Object>() {
+                @Override
+                public boolean include(javax.swing.RowFilter.Entry<? extends Object, ? extends Object> entry) {
+
+                    // A. Normalizamos lo que el usuario escribió (minusculas y sin tildes)
+                    String buscador = quitarTildes(textoUsuario.toLowerCase());
+
+                    // B. Buscamos en Columna 0 (Nº Factura)
+                    if (entry.getStringValue(0) != null) {
+                        String numFactura = quitarTildes(entry.getStringValue(0).toLowerCase());
+                        if (numFactura.contains(buscador)) {
+                            return true;
+                        }
+                    }
+
+                    // C. Buscamos en Columna 1 (Nombre Cliente)
+                    if (entry.getStringValue(1) != null) {
+                        String nomCliente = quitarTildes(entry.getStringValue(1).toLowerCase());
+                        if (nomCliente.contains(buscador)) {
+                            return true;
+                        }
+                    }
+
+                    // Si no coincide con ninguna, ocultamos la fila
+                    return false;
+                }
+            });
+        }
+    }//GEN-LAST:event_txtSearchKeyReleased
+
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
         // Fuerza el color blanco
@@ -457,6 +512,18 @@ public class PanelFacturas extends javax.swing.JPanel {
                 fechaTexto // 5. Fecha Emisión
             });
         }
+
+        sorter = new javax.swing.table.TableRowSorter<>(model);
+        tblInvoices.setRowSorter(sorter);
+    }
+
+    // Método auxiliar para normalizar texto (quitar tildes y diéresis)
+    private String quitarTildes(String texto) {
+        if (texto == null) {
+            return "";
+        }
+        String normalizado = java.text.Normalizer.normalize(texto, java.text.Normalizer.Form.NFD);
+        return normalizado.replaceAll("\\p{M}", "");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

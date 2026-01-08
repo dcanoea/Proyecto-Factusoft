@@ -5,6 +5,8 @@
 package com.mycompany.interfaz;
 
 import com.mycompany.fiskaly.Clients;
+import com.mycompany.fiskaly.Config;
+import com.mycompany.fiskaly.Signers;
 
 /**
  *
@@ -26,7 +28,6 @@ public class PanelConfig extends javax.swing.JPanel {
             btnAPIKey,
             btnTaxpayer,
             btnClientFiskaly,
-            btnInvoicesExport,
             btnAddUser,
             btnEditUser,
             btnDeleteUser
@@ -53,13 +54,12 @@ public class PanelConfig extends javax.swing.JPanel {
         setIconoBlanco(btnAPIKey, "img/key.svg");
         setIconoBlanco(btnTaxpayer, "img/taxpayer.svg");
         setIconoBlanco(btnClientFiskaly, "img/keyboard.svg");
-        setIconoBlanco(btnInvoicesExport, "img/export.svg");
         setIconoBlanco(btnAddUser, "img/user_add.svg");
         setIconoBlanco(btnEditUser, "img/user_edit.svg");
         setIconoBlanco(btnDeleteUser, "img/user_delete.svg");
 
         // Ajustes finales de texto y márgenes
-        javax.swing.JButton[] botones = {btnDashboardFiskaly, btnAPIKey, btnTaxpayer, btnClientFiskaly, btnInvoicesExport};
+        javax.swing.JButton[] botones = {btnDashboardFiskaly, btnAPIKey, btnTaxpayer, btnClientFiskaly};
         for (javax.swing.JButton btn : botones) {
             btn.setIconTextGap(15);
             btn.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -83,7 +83,6 @@ public class PanelConfig extends javax.swing.JPanel {
         btnDashboardFiskaly = new javax.swing.JButton();
         btnTaxpayer = new javax.swing.JButton();
         btnClientFiskaly = new javax.swing.JButton();
-        btnInvoicesExport = new javax.swing.JButton();
         btnAPIKey = new javax.swing.JButton();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
         jPanelRight = new javax.swing.JPanel();
@@ -114,6 +113,7 @@ public class PanelConfig extends javax.swing.JPanel {
         jPanelCenter.add(filler4, gridBagConstraints);
 
         btnDashboardFiskaly.setText("Dashboard Fiskaly");
+        btnDashboardFiskaly.addActionListener(this::btnDashboardFiskalyActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -123,6 +123,7 @@ public class PanelConfig extends javax.swing.JPanel {
         jPanelCenter.add(btnDashboardFiskaly, gridBagConstraints);
 
         btnTaxpayer.setText("Crear Dispositivo Firmante");
+        btnTaxpayer.addActionListener(this::btnTaxpayerActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -141,16 +142,8 @@ public class PanelConfig extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 15, 0);
         jPanelCenter.add(btnClientFiskaly, gridBagConstraints);
 
-        btnInvoicesExport.setText("Exportar Facturas");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 15, 0);
-        jPanelCenter.add(btnInvoicesExport, gridBagConstraints);
-
         btnAPIKey.setText("Cambiar API Key");
+        btnAPIKey.addActionListener(this::btnAPIKeyActionPerformed);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -251,6 +244,47 @@ public class PanelConfig extends javax.swing.JPanel {
         }).start();
     }//GEN-LAST:event_btnClientFiskalyActionPerformed
 
+    private void btnDashboardFiskalyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDashboardFiskalyActionPerformed
+        abrirURL("https://dashboard.fiskaly.com");
+    }//GEN-LAST:event_btnDashboardFiskalyActionPerformed
+
+    private void btnAPIKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAPIKeyActionPerformed
+        abrirDialogoCredenciales();
+    }//GEN-LAST:event_btnAPIKeyActionPerformed
+
+    private void btnTaxpayerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTaxpayerActionPerformed
+        // Ejecutamos la llamada a la API en un hilo separado
+        new Thread(() -> {
+            try {
+                Config.refrescarUUID();// importante para obtener un nuevo UUID
+                
+                // 1. Llamamos al método y esperamos que devuelva el código (int)
+                int statusCode = Signers.createSigner();
+                        
+                // 2. Volvemos al hilo de la interfaz (EDT) para mostrar el mensaje
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (statusCode == 200 || statusCode == 201) {
+                        javax.swing.JOptionPane.showMessageDialog(this,
+                                "¡Dispositivo Firmante creado con éxito!\n",
+                                "Éxito", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        javax.swing.JOptionPane.showMessageDialog(this,
+                                "Error al crear el firmante.\nCódigo de respuesta: " + statusCode,
+                                "Error API", javax.swing.JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    javax.swing.JOptionPane.showMessageDialog(this,
+                            "Ocurrió un error de conexión: " + e.getMessage(),
+                            "Error Crítico", javax.swing.JOptionPane.ERROR_MESSAGE);
+                });
+            }
+        }).start();
+    }//GEN-LAST:event_btnTaxpayerActionPerformed
+
     private void setIconoBlanco(javax.swing.JButton btn, String rutaSvg) {
         com.formdev.flatlaf.extras.FlatSVGIcon icon = new com.formdev.flatlaf.extras.FlatSVGIcon(rutaSvg, 20, 20);
         // Fuerza el color blanco
@@ -258,6 +292,75 @@ public class PanelConfig extends javax.swing.JPanel {
         btn.setIcon(icon);
     }
 
+    private void abrirURL(String url) {
+        try {
+            // 1. Verificar si el sistema soporta la clase Desktop
+            if (java.awt.Desktop.isDesktopSupported()) {
+                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+
+                // 2. Verificar si soporta la acción de abrir navegador
+                if (desktop.isSupported(java.awt.Desktop.Action.BROWSE)) {
+                    // 3. Abrir la URL
+                    desktop.browse(new java.net.URI(url));
+                } else {
+                    javax.swing.JOptionPane.showMessageDialog(this,
+                            "Tu sistema no permite abrir navegadores automáticamente.",
+                            "Error", javax.swing.JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "Error al intentar abrir el enlace:\n" + e.getMessage(),
+                    "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void abrirDialogoCredenciales() {
+        // 1. Campos de texto rellenos con lo que haya actualmente
+        javax.swing.JTextField txtApiKey = new javax.swing.JTextField(com.mycompany.fiskaly.Config.API_KEY);
+        javax.swing.JPasswordField txtApiSecret = new javax.swing.JPasswordField(com.mycompany.fiskaly.Config.API_SECRET);
+
+        // 2. Panel visual
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.GridLayout(0, 1, 5, 5));
+        panel.add(new javax.swing.JLabel("Introduce tu API Key de Fiskaly:"));
+        panel.add(txtApiKey);
+        panel.add(new javax.swing.JLabel("Introduce tu API Secret:"));
+        panel.add(txtApiSecret);
+
+        // Checkbox opcional para ver la contraseña
+        javax.swing.JCheckBox chkVer = new javax.swing.JCheckBox("Mostrar Secret");
+        chkVer.addActionListener(e -> {
+            txtApiSecret.setEchoChar(chkVer.isSelected() ? (char) 0 : '•');
+        });
+        panel.add(chkVer);
+
+        // 3. Mostrar Diálogo
+        int resultado = javax.swing.JOptionPane.showConfirmDialog(this, panel,
+                "Configuración Persistente Fiskaly",
+                javax.swing.JOptionPane.OK_CANCEL_OPTION,
+                javax.swing.JOptionPane.PLAIN_MESSAGE);
+
+        // 4. Guardar
+        if (resultado == javax.swing.JOptionPane.OK_OPTION) {
+            String nuevaKey = txtApiKey.getText().trim();
+            String nuevoSecret = new String(txtApiSecret.getPassword()).trim();
+
+            if (!nuevaKey.isEmpty() && !nuevoSecret.isEmpty()) {
+
+                // Llamamos al método que guarda en RAM y en DISCO
+                Config.guardarCredenciales(nuevaKey, nuevoSecret);
+
+                javax.swing.JOptionPane.showMessageDialog(this,
+                        "¡Guardado! Las credenciales se recordarán la próxima vez que abras la app.");
+            } else {
+                javax.swing.JOptionPane.showMessageDialog(this,
+                        "No se han guardado cambios (campos vacíos).",
+                        "Aviso", javax.swing.JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAPIKey;
     private javax.swing.JButton btnAddUser;
@@ -266,7 +369,6 @@ public class PanelConfig extends javax.swing.JPanel {
     private javax.swing.JButton btnDeleteUser;
     private javax.swing.JButton btnEditUser;
     private javax.swing.JButton btnHome;
-    private javax.swing.JButton btnInvoicesExport;
     private javax.swing.JButton btnTaxpayer;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;

@@ -1,8 +1,6 @@
 package com.mycompany.interfaz;
 
-import com.mycompany.dao.ClienteDAO;
 import com.mycompany.dao.ProductoDAO;
-import com.mycompany.dominio.Cliente;
 import com.mycompany.dominio.Producto;
 import com.mycompany.util.HibernateUtil;
 import java.math.BigDecimal;

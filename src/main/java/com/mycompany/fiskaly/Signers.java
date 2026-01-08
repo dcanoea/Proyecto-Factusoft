@@ -16,7 +16,7 @@ public class Signers {
 
     // Representa un dispositivo que firma las facturas. 
     //Fiskaly usa por defecto su propio certificado electrónico como colaborador.
-    public static void createSigner() {
+    public static int createSigner() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             UUID uuid = UUID.randomUUID();
             String url = Config.BASE_URL + Config.CREATE_SIGNER;
@@ -36,11 +36,14 @@ public class Signers {
 
             System.out.println("Código de respuesta: " + statusCode);
             System.out.println("Respuesta del servidor: " + responseBody);
+            
+            return statusCode;
 
         } catch (Exception e) {
             System.out.println("Error al crear el signer");
             e.printStackTrace();
         }
+        return 0;
     }
 
     // Lista Firmantes
