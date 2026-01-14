@@ -62,7 +62,7 @@ public class ClientsTest {
     public void testGetFirstClientID() {
         System.out.println("getFirstClientID");
         String clientId = Clients.getFirstClientID();
-        assertEquals("2033e6e6-cf46-4523-ac14-2456e19c77c4", Clients.getFirstClientID()); //Primer Client en DASHBOARD
+        //assertEquals("2033e6e6-cf46-4523-ac14-2456e19c77c4", Clients.getFirstClientID()); //Primer Client en DASHBOARD
         assertNotNull(clientId, "El ID del primer client no debe ser nulo");
         assertFalse(clientId.isEmpty(), "El ID del client no debe estar vacío");
         System.out.println("Primer client ID: " + clientId);

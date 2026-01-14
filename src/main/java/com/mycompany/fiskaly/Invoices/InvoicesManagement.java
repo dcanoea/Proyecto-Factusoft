@@ -16,9 +16,9 @@ public class InvoicesManagement {
     public static void listInvoices() {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpGet get = ConnectionAPI.getRequest(Config.INVOICES);
- 
+
             System.out.println(ConnectionAPI.requestAPI(client, get));
-            
+
         } catch (Exception e) {
             System.out.println("Error al recuperar los clients");
             e.printStackTrace();
@@ -55,7 +55,7 @@ public class InvoicesManagement {
             HttpGet get = ConnectionAPI.getRequest(Config.INVOICES + "/" + invoiceID);
 
             String responseBody = ConnectionAPI.requestAPI(client, get);
-            
+
             JSONObject json = new JSONObject(responseBody);
             if (!json.has("content")) {
                 System.err.println("No se encontró el contenido de la factura: " + invoiceID);
@@ -147,8 +147,8 @@ public class InvoicesManagement {
     public static String getInvoiceFullAmount(String invoiceNumber) {
         String invoiceID = getInvoiceIDByNumber(invoiceNumber);
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpGet get = ConnectionAPI.getRequest(Config.INVOICES + "/" + invoiceID);   
-            
+            HttpGet get = ConnectionAPI.getRequest(Config.INVOICES + "/" + invoiceID);
+
             String responseBody = ConnectionAPI.requestAPI(client, get);
 
             ObjectMapper mapper = new ObjectMapper();
@@ -171,5 +171,99 @@ public class InvoicesManagement {
             System.err.println("Error al recuperar la factura: " + invoiceID);
             return null;
         }
+    }
+
+    /**
+     * Busca la siguiente factura escaneando TODOS los Clients (TPVs) de la
+     * cuenta. Es más lento, pero garantiza que no repitas números aunque
+     * cambies de ordenador.
+     */
+    public static String getGlobalNextInvoiceNumber(String serie) {
+        int maxNumeroGlobal = 0;
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+
+            // 1. Obtener la lista de TODOS los Clients
+            HttpGet getClients = ConnectionAPI.getRequest(Config.CLIENTS);
+            String responseClients = ConnectionAPI.requestAPI(httpClient, getClients);
+            JSONObject jsonClients = new JSONObject(responseClients);
+
+            if (!jsonClients.has("results")) {
+                String yearShort = java.time.Year.now().getValue() % 100 + "";
+                return serie + yearShort + "-0001";
+            }
+
+            JSONArray listaClients = jsonClients.getJSONArray("results");
+            System.out.println(">>> Escaneando " + listaClients.length() + " terminales...");
+
+            // 2. Recorremos cada Client
+            for (int i = 0; i < listaClients.length(); i++) {
+                try {
+                    String unClientID = listaClients.getJSONObject(i).getJSONObject("content").getString("id");
+
+                    // Pedimos facturas de ESTE cliente
+                    String urlInvoices = "/clients/" + unClientID + "/invoices";
+                    HttpGet getInv = ConnectionAPI.getRequest(urlInvoices);
+                    String resInv = ConnectionAPI.requestAPI(httpClient, getInv);
+                    JSONObject jsonInv = new JSONObject(resInv);
+
+                    if (jsonInv.has("results")) {
+                        JSONArray invoices = jsonInv.getJSONArray("results");
+
+                        for (int k = 0; k < invoices.length(); k++) {
+                            JSONObject item = invoices.getJSONObject(k);
+                            if (!item.has("content")) {
+                                continue;
+                            }
+
+                            String innerDataString = item.getJSONObject("content").optString("data", "");
+                            if (!innerDataString.isEmpty()) {
+
+                                // Parseamos el String grande
+                                JSONObject rootJson = new JSONObject(innerDataString);
+
+                                // <--- CORRECCIÓN CRÍTICA: El número está DENTRO de otro objeto "data" --->
+                                if (rootJson.has("data")) {
+                                    JSONObject dataReal = rootJson.getJSONObject("data");
+
+                                    if (dataReal.has("number")) {
+                                        String fullNum = dataReal.getString("number"); // Ahora sí coge "F26-0015"
+
+                                        // Comprobamos la serie
+                                        if (fullNum.startsWith(serie)) {
+                                            String[] parts = fullNum.split("-");
+                                            if (parts.length >= 2) {
+                                                try {
+                                                    int num = Integer.parseInt(parts[parts.length - 1]);
+                                                    // System.out.println("DEBUG: Encontrada " + fullNum); // Descomenta si quieres verlas pasar
+                                                    if (num > maxNumeroGlobal) {
+                                                        maxNumeroGlobal = num;
+                                                    }
+                                                } catch (NumberFormatException ex) {
+                                                    // Ignorar si no es número
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                // <--- FIN CORRECCIÓN --->
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    continue;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        System.out.println(">>> Máximo encontrado: " + maxNumeroGlobal);
+
+        // Generar siguiente: F26-0016
+        String yearShort = java.time.Year.now().getValue() % 100 + "";
+        return serie + yearShort + "-" + String.format("%04d", maxNumeroGlobal + 1);
     }
 }

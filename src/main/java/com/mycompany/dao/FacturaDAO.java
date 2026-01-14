@@ -62,6 +62,8 @@ public class FacturaDAO {
 
             // 2. Si no hay facturas de esa serie, empezamos por el 1
             int siguienteNumero = (maxNumero == null) ? 1 : maxNumero + 1;
+            
+            
 
             // 3. Formateamos el resultado (Serie + Guion + 4 dígitos)
             // Ejemplo: "F-0001"

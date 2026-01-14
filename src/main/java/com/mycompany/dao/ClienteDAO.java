@@ -2,7 +2,6 @@ package com.mycompany.dao;
 
 import com.mycompany.dominio.Cliente;
 import com.mycompany.util.HibernateUtil;
-import java.sql.Connection;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -57,7 +56,7 @@ public class ClienteDAO {
             if (cliente != null) {
                 // 4. Intentamos eliminarlo
                 // Hibernate lanzará una excepción aquí si hay facturas vinculadas
-                session.remove(cliente); // Nota: usa session.delete(cliente) si usas una versión antigua de Hibernate
+                session.remove(cliente);
 
                 // 5. Confirmamos los cambios
                 tx.commit();

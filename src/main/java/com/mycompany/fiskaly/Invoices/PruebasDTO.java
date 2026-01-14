@@ -1,5 +1,6 @@
 package com.mycompany.fiskaly.Invoices;
 
+import com.mycompany.fiskaly.Clients;
 import com.mycompany.fiskaly.Invoices.DTO.CategoryDTO;
 import com.mycompany.fiskaly.Invoices.DTO.ContentCompleteDTO;
 import com.mycompany.fiskaly.Invoices.DTO.ContentCorrectingDTO;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 public class PruebasDTO {
 
     public static void main(String[] args) {
-
+/*
         //String numFactura = "20251118"; //completas
         String numFactura = "0008"; //rectificativas
 
@@ -24,11 +25,11 @@ public class PruebasDTO {
         SystemDTO pruebaSystem = new SystemDTO(SystemDTO.Type.REGULAR, pruebaCategory);
         ItemDTO item1 = new ItemDTO("1", pruebaSystem, "-10", "Curso B", "-250", ItemDTO.VatType.IVA);
         items.add(item1);
-        /*// item 2   NO FUNCIONA (CONSULTAR GESTORÍA PARA IMPLEMENTAR UN MÉTODO O OTRO (OTHER_TAX_IVA O REGULAR)
+        // item 2   NO FUNCIONA (CONSULTAR GESTORÍA PARA IMPLEMENTAR UN MÉTODO O OTRO (OTHER_TAX_IVA O REGULAR)
         pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_0);
         pruebaSystem = new SystemDTO(SystemDTO.Type.OTHER_TAX_IVA, pruebaCategory);
         ItemDTO item2 = new ItemDTO("1", pruebaSystem, "20", "Curso C", "350", ItemDTO.VatType.OTHER);
-        items.add(item2);*/
+        items.add(item2);
         // item 2
         pruebaCategory = new CategoryDTO(CategoryDTO.Rate.IVA_0);
         pruebaSystem = new SystemDTO(SystemDTO.Type.REGULAR, pruebaCategory);
@@ -67,6 +68,10 @@ public class PruebasDTO {
                 ContentCorrectingDTO.Code.CORRECTION_1, "20251118", invoice);
 
         CreateCorrectingInvoice.createCorrectingInvoice(contentCorrecting);
+
+*/
+
+        InvoicesManagement.getGlobalNextInvoiceNumber("F");
     }
 
 }

@@ -504,44 +504,83 @@ public class PanelCrearFactura extends javax.swing.JPanel {
 
         DataDTO dataDto = new DataDTO(numeroCompleto, "Factura de Venta", listaItems);
         ContentCompleteDTO contentComplete = new ContentCompleteDTO(dataDto, listaRecipients);
-
+        
         // ---------------------------------------------------------
         // 3. ENVÍO Y GUARDADO (HILO SECUNDARIO)
         // ---------------------------------------------------------
+
+        // Guardamos las listas en variables finales para usarlas dentro del hilo
+        final java.util.List<ItemDTO> finalItems = listaItems;
+        final java.util.List<RecipientsDTO> finalRecipients = listaRecipients;
+
         new Thread(() -> {
             try {
-                //Refrescamos el UUID para que no cree facturas con identificadores repetidos
-                com.mycompany.fiskaly.Config.refrescarUUID();
+                // 1. SINCRONIZACIÓN: Preguntamos a la nube cuál es el número REAL ahora mismo
+                // (Esto tarda unos milisegundos, por eso va en el hilo)
+                com.mycompany.fiskaly.Config.refrescarUUID(); // Refresco credenciales
 
-                // LLAMADA A LA API
-                int statusCode = com.mycompany.fiskaly.Invoices.CreateCompleteInvoice.createInvoice(contentComplete);
+                // ¡AQUÍ ESTÁ LA MAGIA! Calculamos el número fresco
+                String serie = "F"; // O la que uses dinámicamente
+                String numeroOficial = com.mycompany.fiskaly.Invoices.InvoicesManagement.getGlobalNextInvoiceNumber(serie);
 
-                // VOLVER AL HILO VISUAL
+                if (numeroOficial == null) {
+                    throw new Exception("No se pudo conectar con Fiskaly para sincronizar el número.");
+                }
+
+                System.out.println(">>> Número sincronizado asignado: " + numeroOficial);
+
+                // 2. RE-CREAMOS LOS DTOs CON EL NÚMERO NUEVO
+                // No usamos el de la tabla, usamos 'numeroOficial'
+                DataDTO dataDtoFinal = new DataDTO(numeroOficial, "Factura de Venta", finalItems);
+                ContentCompleteDTO contentCompleteFinal = new ContentCompleteDTO(dataDtoFinal, finalRecipients);
+
+                // 3. LLAMADA A LA API (Con el número correcto)
+                int statusCode = com.mycompany.fiskaly.Invoices.CreateCompleteInvoice.createInvoice(contentCompleteFinal);
+
+                // 4. VOLVER AL HILO VISUAL
                 javax.swing.SwingUtilities.invokeLater(() -> {
 
                     if (statusCode >= 200 && statusCode < 300) {
                         // === ÉXITO ===
 
+                        // Actualizamos la tabla visualmente para que el usuario vea el cambio de número
+                        tblCabeceraCliente.setValueAt(numeroOficial, 0, 0);
+
                         btnSendInvoice.setEnabled(false);
-                        btnSendInvoice.setText("Enviada"); // Mantenemos tu texto corto
+                        btnSendInvoice.setText("Enviada");
 
                         try {
                             String uuidUtilizado = com.mycompany.fiskaly.Config.random_UUID.toString();
-
                             com.mycompany.dominio.Factura nuevaFactura = new com.mycompany.dominio.Factura();
 
-                            String[] partes = numeroCompleto.split("-");
-                            nuevaFactura.setSeries(partes[0]);
-                            nuevaFactura.setNumber(Integer.parseInt(partes[1]));
+                            // Parseamos el número nuevo (Ej: F26-0016)
+                            // Usamos lógica segura por si cambia el formato
+                            String[] partes = numeroOficial.split("-");
+                            nuevaFactura.setSeries(partes[0]); // Ej: F26
+                            // Cogemos la última parte como número entero
+                            nuevaFactura.setNumber(Integer.parseInt(partes[partes.length - 1]));
+
                             nuevaFactura.setDate(java.time.LocalDateTime.now());
                             nuevaFactura.setCliente(this.cliente);
                             nuevaFactura.setFiskalyUuid(uuidUtilizado);
 
-                            // LEER EL PDF DEL ESCRITORIO
+                            // OJO CON EL PDF: Si lo generaste antes con el número viejo, 
+                            // aquí intentará buscar el nuevo. 
+                            // Lo ideal es regenerar el PDF aquí o aceptar que el nombre del archivo en escritorio sea el viejo.
+                            // Para no romper tu código, intentamos leer con el numeroOficial:
                             try {
                                 String userHome = System.getProperty("user.home");
-                                String pdfPath = userHome + "/Desktop/Factura_Completa_" + numeroCompleto + ".pdf";
+                                // Intentamos buscar con el nuevo nombre
+                                String pdfPath = userHome + "/Desktop/Factura_Completa_" + numeroOficial + ".pdf";
                                 java.io.File pdfFile = new java.io.File(pdfPath);
+
+                                // Si no existe (porque el PDF se generó con el numero viejo en la tabla),
+                                // intentamos buscarlo con el numero viejo que había en la tabla antes de enviar
+                                if (!pdfFile.exists()) {
+                                    String numeroViejoTabla = tblCabeceraCliente.getValueAt(0, 0).toString(); // Ojo, esto lee del componente (riesgo leve)
+                                    pdfPath = userHome + "/Desktop/Factura_Completa_" + numeroViejoTabla + ".pdf";
+                                    pdfFile = new java.io.File(pdfPath);
+                                }
 
                                 if (pdfFile.exists()) {
                                     byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
@@ -554,15 +593,15 @@ public class PanelCrearFactura extends javax.swing.JPanel {
                                 exPdf.printStackTrace();
                             }
 
-                            // CÁLCULO DE TOTALES PARA BBDD
+                            // ... (TU CÓDIGO DE CÁLCULO DE TOTALES SIGUE IGUAL AQUÍ) ...
+                            // Copia y pega tu bloque "CÁLCULO DE TOTALES PARA BBDD" exacto
+                            // Solo asegúrate de usar 'nuevaFactura'
                             BigDecimal acumuladorBase = BigDecimal.ZERO;
                             BigDecimal acumuladorImpuestos = BigDecimal.ZERO;
-
                             java.util.List<com.mycompany.dominio.LineaFactura> lineasEntidad = new java.util.ArrayList<>();
 
                             for (int i = 0; i < model.getRowCount(); i++) {
                                 com.mycompany.dominio.LineaFactura linea = new com.mycompany.dominio.LineaFactura();
-
                                 String desc = model.getValueAt(i, 1).toString();
                                 BigDecimal cant = new BigDecimal(model.getValueAt(i, 2).toString().replace(",", "."));
                                 BigDecimal prec = new BigDecimal(model.getValueAt(i, 3).toString().replace(",", "."));
@@ -590,7 +629,12 @@ public class PanelCrearFactura extends javax.swing.JPanel {
 
                             nuevaFactura.setTotalBase(acumuladorBase);
                             nuevaFactura.setTotalTax(acumuladorImpuestos);
-                            nuevaFactura.setTotalAmount(new BigDecimal(dataDto.getFullAmount()));
+                            // Usamos dataDtoFinal que tiene el numero correcto
+                            // Ojo: fullAmount viene del DTO, hay que calcularlo o fiarse del DTO previo
+                            // Como el total no cambia al cambiar el número, puedes recalcularlo:
+                            BigDecimal totalFinal = acumuladorBase.add(acumuladorImpuestos);
+                            nuevaFactura.setTotalAmount(totalFinal);
+
                             nuevaFactura.setLineas(lineasEntidad);
 
                             // GUARDAR EN MYSQL
@@ -598,30 +642,30 @@ public class PanelCrearFactura extends javax.swing.JPanel {
                             dao.guardarFactura(nuevaFactura);
 
                             JOptionPane.showMessageDialog(this,
-                                    "Factura " + numeroCompleto + " guardada y enviada correctamente.",
+                                    "Factura " + numeroOficial + " (Sincronizada) guardada y enviada correctamente.",
                                     "Éxito", JOptionPane.INFORMATION_MESSAGE);
 
                         } catch (Exception dbEx) {
                             dbEx.printStackTrace();
                             JOptionPane.showMessageDialog(this,
-                                    "Factura enviada a Hacienda pero ERROR al guardar en BBDD: " + dbEx.getMessage(),
+                                    "Error al guardar en BBDD: " + dbEx.getMessage(),
                                     "Error BBDD", JOptionPane.WARNING_MESSAGE);
                         }
 
                     } else {
-                        // Error API: Rehabilitar botón
+                        // Error API
                         btnSendInvoice.setEnabled(true);
-                        btnSendInvoice.setText("Envíar Factura");
+                        btnSendInvoice.setText("Enviar Factura");
                         JOptionPane.showMessageDialog(this, "Error API Fiskaly. Código: " + statusCode, "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
-                // Error General: Rehabilitar botón
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     btnSendInvoice.setEnabled(true);
-                    btnSendInvoice.setText("Envíar Factura");
+                    btnSendInvoice.setText("Enviar Factura");
+                    JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
                 });
             }
         }).start();
