@@ -216,6 +216,8 @@ public class PanelConfig extends javax.swing.JPanel {
         // Ejecutamos la llamada a la API en un hilo separado
         new Thread(() -> {
             try {
+                Config.refrescarUUID();// importante para obtener un nuevo UUID
+                
                 // 1. Llamamos al método y esperamos que devuelva el código (int)
                 // Asegúrate de que tu método Clients.createClient() devuelve 'int'
                 int statusCode = Clients.createClient();
@@ -257,10 +259,10 @@ public class PanelConfig extends javax.swing.JPanel {
         new Thread(() -> {
             try {
                 Config.refrescarUUID();// importante para obtener un nuevo UUID
-                
+
                 // 1. Llamamos al método y esperamos que devuelva el código (int)
                 int statusCode = Signers.createSigner();
-                        
+
                 // 2. Volvemos al hilo de la interfaz (EDT) para mostrar el mensaje
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     if (statusCode == 200 || statusCode == 201) {
@@ -360,7 +362,7 @@ public class PanelConfig extends javax.swing.JPanel {
             }
         }
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAPIKey;
     private javax.swing.JButton btnAddUser;
