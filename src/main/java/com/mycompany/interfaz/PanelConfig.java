@@ -28,9 +28,6 @@ public class PanelConfig extends javax.swing.JPanel {
             btnAPIKey,
             btnTaxpayer,
             btnClientFiskaly,
-            btnAddUser,
-            btnEditUser,
-            btnDeleteUser
         };
 
         for (javax.swing.JButton btn : botonesAccion) {
@@ -54,9 +51,6 @@ public class PanelConfig extends javax.swing.JPanel {
         setIconoBlanco(btnAPIKey, "img/key.svg");
         setIconoBlanco(btnTaxpayer, "img/taxpayer.svg");
         setIconoBlanco(btnClientFiskaly, "img/keyboard.svg");
-        setIconoBlanco(btnAddUser, "img/user_add.svg");
-        setIconoBlanco(btnEditUser, "img/user_edit.svg");
-        setIconoBlanco(btnDeleteUser, "img/user_delete.svg");
 
         // Ajustes finales de texto y márgenes
         javax.swing.JButton[] botones = {btnDashboardFiskaly, btnAPIKey, btnTaxpayer, btnClientFiskaly};
@@ -88,9 +82,6 @@ public class PanelConfig extends javax.swing.JPanel {
         jPanelRight = new javax.swing.JPanel();
         btnHome = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
-        btnAddUser = new javax.swing.JButton();
-        btnEditUser = new javax.swing.JButton();
-        btnDeleteUser = new javax.swing.JButton();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
 
         setBackground(new java.awt.Color(160, 238, 204));
@@ -176,33 +167,6 @@ public class PanelConfig extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weighty = 0.5;
         jPanelRight.add(filler1, gridBagConstraints);
-
-        btnAddUser.setText("Crear Usuario");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(10, 20, 10, 10);
-        jPanelRight.add(btnAddUser, gridBagConstraints);
-
-        btnEditUser.setText("Editar Usuario");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(10, 20, 10, 10);
-        jPanelRight.add(btnEditUser, gridBagConstraints);
-
-        btnDeleteUser.setText("Borrar Usuario");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(10, 20, 10, 10);
-        jPanelRight.add(btnDeleteUser, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -365,11 +329,8 @@ public class PanelConfig extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAPIKey;
-    private javax.swing.JButton btnAddUser;
     private javax.swing.JButton btnClientFiskaly;
     private javax.swing.JButton btnDashboardFiskaly;
-    private javax.swing.JButton btnDeleteUser;
-    private javax.swing.JButton btnEditUser;
     private javax.swing.JButton btnHome;
     private javax.swing.JButton btnTaxpayer;
     private javax.swing.Box.Filler filler1;

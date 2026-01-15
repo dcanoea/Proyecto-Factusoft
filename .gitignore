@@ -19,12 +19,6 @@
 *.tar.gz
 *.rar
 
-Instaladores/xampp-installer*
-Instaladores/workbench*
-target/
-*.jar
-*.exe
-
 # Maven Files #
 *.lst
 
